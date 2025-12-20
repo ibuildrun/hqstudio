@@ -2,15 +2,19 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+  workflow_dispatch:
 
 env:
   DOTNET_VERSION: '8.0.x'
   NODE_VERSION: '20'
   REGISTRY: ghcr.io
-  API_IMAGE_NAME: ${{ github.repository }}/api
-  WEB_IMAGE_NAME: ${{ github.repository }}/web
+
+permissions:
+  contents: write
+  packages: write
+  issues: write
+  pull-requests: write
 
 jobs:
   # ===========================================
@@ -22,6 +26,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -43,15 +49,44 @@ jobs:
           npm test
 
   # ===========================================
-  # Build & Push Docker Images
+  # Semantic Release
   # ===========================================
-  build-and-push:
-    name: Build & Push Images
+  release:
+    name: Semantic Release
     runs-on: ubuntu-latest
     needs: test
-    permissions:
-      contents: read
-      packages: write
+    outputs:
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Semantic Release
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+  # ===========================================
+  # Build & Push Docker Images
+  # ===========================================
+  docker:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: release
+    if: needs.release.outputs.new_release_published == 'true'
     
     steps:
       - uses: actions/checkout@v4
@@ -63,49 +98,32 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Extract metadata for API
-        id: meta-api
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-      
-      - name: Extract metadata for Web
-        id: meta-web
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-      
-      - name: Build and push API image
+      - name: Build and push API
         uses: docker/build-push-action@v5
         with:
           context: ./HQStudio.API
           push: true
-          tags: ${{ steps.meta-api.outputs.tags }}
-          labels: ${{ steps.meta-api.outputs.labels }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/api:${{ needs.release.outputs.new_release_version }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/api:latest
       
-      - name: Build and push Web image
+      - name: Build and push Web
         uses: docker/build-push-action@v5
         with:
           context: ./HQStudio.Web
           push: true
-          tags: ${{ steps.meta-web.outputs.tags }}
-          labels: ${{ steps.meta-web.outputs.labels }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/web:${{ needs.release.outputs.new_release_version }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/web:latest
 
   # ===========================================
   # Build Desktop Release
   # ===========================================
-  build-desktop:
+  desktop:
     name: Build Desktop
     runs-on: windows-latest
-    needs: test
+    needs: release
+    if: needs.release.outputs.new_release_published == 'true'
     
     steps:
       - uses: actions/checkout@v4
@@ -116,50 +134,13 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       
       - name: Publish Desktop
-        run: dotnet publish HQStudio.Desktop/HQStudio.csproj -c Release -r win-x64 --self-contained -o ./publish
+        run: dotnet publish HQStudio.Desktop/HQStudio.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o ./publish
       
-      - name: Upload Desktop artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: HQStudio-Desktop-${{ github.ref_name }}
-          path: ./publish/
-
-  # ===========================================
-  # Create GitHub Release
-  # ===========================================
-  create-release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    needs: [build-and-push, build-desktop]
-    permissions:
-      contents: write
-    
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Create ZIP
+        run: Compress-Archive -Path ./publish/* -DestinationPath HQStudio-Desktop-v${{ needs.release.outputs.new_release_version }}.zip
       
-      - name: Download Desktop artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: HQStudio-Desktop-${{ github.ref_name }}
-          path: ./desktop-release
-      
-      - name: Create ZIP archive
-        run: |
-          cd desktop-release
-          zip -r ../HQStudio-Desktop-${{ github.ref_name }}.zip .
-      
-      - name: Generate changelog
-        id: changelog
-        run: |
-          echo "## Changes" > CHANGELOG.md
-          git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"- %s" >> CHANGELOG.md || echo "- Initial release" >> CHANGELOG.md
-      
-      - name: Create Release
+      - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
-          body_path: CHANGELOG.md
-          files: |
-            HQStudio-Desktop-${{ github.ref_name }}.zip
-          generate_release_notes: true
+          tag_name: v${{ needs.release.outputs.new_release_version }}
+          files: HQStudio-Desktop-v${{ needs.release.outputs.new_release_version }}.zip

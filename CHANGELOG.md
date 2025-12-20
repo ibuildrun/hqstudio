@@ -5,35 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+> 📝 Этот файл автоматически обновляется при релизе через semantic-release
+
 ## [Unreleased]
 
-### Added
-- Initial project setup with monorepo structure
-- HQStudio.API - ASP.NET Core 8.0 backend with JWT auth
-- HQStudio.Web - Next.js 14 frontend with Tailwind CSS
-- HQStudio.Desktop - WPF desktop application
-- Full test coverage (API, Web, Desktop)
-- Docker support with hot-reload for development
-- CI/CD with GitHub Actions
-- Keyboard navigation in Desktop app
-- Favicon for Web and Desktop
+### 🚀 Новые возможности
+- Monorepo структура проекта (API, Web, Desktop)
+- JWT аутентификация
+- Управление клиентами и заказами
+- Обработка заявок на обратный звонок
+- Дашборд со статистикой
+- Админ-панель для управления контентом
+- Оффлайн синхронизация в Desktop
+- Система автообновления Desktop
+- CI/CD с GitHub Actions
+- Conventional Commits + автоматический changelog
 
-### Features
-- User authentication with JWT
-- Client management (CRUD)
-- Order management with services
-- Callback requests handling
-- Dashboard with statistics
-- Admin panel for content management
-- Offline sync support in Desktop
-- Auto-update system for Desktop
+### 🐛 Исправления
+- Клавиатурная навигация в Desktop
 
-## [1.0.0] - 2024-12-21
-
-### Added
-- First stable release
-- Complete API with all endpoints
-- Responsive web interface
-- Desktop CRM application
-- PostgreSQL support for production
-- SQLite for development
+### 📦 Инфраструктура
+- Docker поддержка (dev + prod)
+- PostgreSQL для production
+- SQLite для разработки

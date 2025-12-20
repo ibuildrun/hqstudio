@@ -1,0 +1,45 @@
+{
+  "branches": ["main"],
+  "plugins": [
+    ["@semantic-release/commit-analyzer", {
+      "preset": "conventionalcommits",
+      "releaseRules": [
+        { "type": "feat", "release": "minor" },
+        { "type": "fix", "release": "patch" },
+        { "type": "perf", "release": "patch" },
+        { "type": "refactor", "release": "patch" },
+        { "type": "docs", "release": false },
+        { "type": "style", "release": false },
+        { "type": "chore", "release": false },
+        { "type": "test", "release": false },
+        { "type": "build", "release": false },
+        { "type": "ci", "release": false }
+      ]
+    }],
+    ["@semantic-release/release-notes-generator", {
+      "preset": "conventionalcommits",
+      "presetConfig": {
+        "types": [
+          { "type": "feat", "section": "🚀 Новые возможности" },
+          { "type": "fix", "section": "🐛 Исправления" },
+          { "type": "perf", "section": "⚡ Производительность" },
+          { "type": "refactor", "section": "♻️ Рефакторинг" },
+          { "type": "docs", "section": "📚 Документация", "hidden": true },
+          { "type": "style", "section": "💄 Стили", "hidden": true },
+          { "type": "test", "section": "✅ Тесты", "hidden": true },
+          { "type": "build", "section": "📦 Сборка", "hidden": true },
+          { "type": "ci", "section": "👷 CI/CD", "hidden": true },
+          { "type": "chore", "section": "🔧 Прочее", "hidden": true }
+        ]
+      }
+    }],
+    ["@semantic-release/changelog", {
+      "changelogFile": "CHANGELOG.md"
+    }],
+    ["@semantic-release/git", {
+      "assets": ["CHANGELOG.md", "package.json"],
+      "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+    }],
+    "@semantic-release/github"
+  ]
+}
