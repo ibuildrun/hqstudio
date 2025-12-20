@@ -5,15 +5,15 @@ services:
     container_name: hqstudio-db
     restart: always
     environment:
-      - POSTGRES_USER=hqstudio
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-HQStudio2024!}
-      - POSTGRES_DB=hqstudio
+      - POSTGRES_USER=${POSTGRES_USER:-hqstudio}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-HQStudio2024!}
+      - POSTGRES_DB=${POSTGRES_DB:-hqstudio}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - hqstudio-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U hqstudio -d hqstudio"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hqstudio} -d ${POSTGRES_DB:-hqstudio}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,7 +25,7 @@ services:
         reservations:
           memory: 256M
 
-  # Backend API - изолированный сервис
+  # Backend API
   api:
     build:
       context: ./HQStudio.API
@@ -33,14 +33,14 @@ services:
     container_name: hqstudio-api
     restart: always
     ports:
-      - "5000:5000"
+      - "${API_PORT:-5000}:5000"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5000
-      - ConnectionStrings__DefaultConnection=Host=db;Database=hqstudio;Username=hqstudio;Password=${DB_PASSWORD:-HQStudio2024!}
+      - ConnectionStrings__DefaultConnection=Host=db;Database=${POSTGRES_DB:-hqstudio};Username=${POSTGRES_USER:-hqstudio};Password=${POSTGRES_PASSWORD:-HQStudio2024!}
       - Jwt__Key=${JWT_KEY:-HQStudioSuperSecretKeyForJwtTokenGeneration2024!}
-      - Jwt__Issuer=HQStudio
-      - Jwt__Audience=HQStudioClients
+      - Jwt__Issuer=${JWT_ISSUER:-HQStudio}
+      - Jwt__Audience=${JWT_AUDIENCE:-HQStudioClients}
     depends_on:
       db:
         condition: service_healthy
@@ -59,7 +59,7 @@ services:
         reservations:
           memory: 256M
 
-  # Web Frontend - изолированный сервис
+  # Web Frontend
   web:
     build:
       context: ./HQStudio.Web
@@ -67,10 +67,10 @@ services:
     container_name: hqstudio-web
     restart: always
     ports:
-      - "3000:3000"
+      - "${WEB_PORT:-3000}:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:5000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     networks:
       - hqstudio-network
