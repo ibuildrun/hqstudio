@@ -1,0 +1,74 @@
+<Window x:Class="HQStudio.Views.Dialogs.EditClientDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Редактирование клиента" 
+        Height="520" Width="500"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        KeyDown="Window_KeyDown"
+        FocusManager.FocusedElement="{Binding ElementName=NameBox}">
+
+    <Border Background="{DynamicResource BgDialogBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1">
+
+        
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="{DynamicResource BgDialogHeaderBrush}" CornerRadius="16,16,0,0" 
+                    MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid>
+                    <TextBlock x:Name="TitleText" Text="Новый клиент" FontSize="15" FontWeight="SemiBold" 
+                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="20,0"/>
+                    <Button Content="✕" HorizontalAlignment="Right" Click="Close_Click"
+                            Background="Transparent" Foreground="#606060" BorderThickness="0"
+                            Width="50" Height="50" FontSize="14" Cursor="Hand"/>
+                </Grid>
+            </Border>
+
+            <!-- Form -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="24,20">
+                <StackPanel>
+                    <TextBlock Text="ИМЯ КЛИЕНТА" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <TextBox x:Name="NameBox" Style="{DynamicResource InputText}" Margin="0,0,0,16" TabIndex="0"/>
+
+                    <TextBlock Text="ТЕЛЕФОН" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <TextBox x:Name="PhoneBox" Style="{DynamicResource InputText}" Margin="0,0,0,16" TabIndex="1"/>
+
+                    <TextBlock Text="АВТОМОБИЛЬ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <TextBox x:Name="CarBox" Style="{DynamicResource InputText}" Margin="0,0,0,16" TabIndex="2"/>
+
+                    <TextBlock Text="ГОС. НОМЕР" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <TextBox x:Name="CarNumberBox" Style="{DynamicResource InputText}" Margin="0,0,0,16"
+                             CharacterCasing="Upper" TabIndex="3"/>
+
+                    <TextBlock Text="ЗАМЕТКИ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <TextBox x:Name="NotesBox" Style="{DynamicResource InputText}" 
+                             TextWrapping="Wrap" AcceptsReturn="True" Height="80"
+                             VerticalContentAlignment="Top" TabIndex="4"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Buttons -->
+            <Border Grid.Row="2" Background="{DynamicResource BgDialogHeaderBrush}" Padding="24,16" CornerRadius="0,0,16,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="Отмена" Style="{DynamicResource BtnSecondary}" 
+                            Click="Cancel_Click" Margin="0,0,8,0" TabIndex="6" IsCancel="True"/>
+                    <Button Grid.Column="1" Content="Сохранить" Style="{DynamicResource BtnPrimary}" 
+                            Click="Save_Click" Margin="8,0,0,0" TabIndex="5" IsDefault="True"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

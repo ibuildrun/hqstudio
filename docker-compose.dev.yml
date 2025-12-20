@@ -1,0 +1,82 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: hqstudio-db-dev
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=hqstudio
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-HQStudio2024!}
+      - POSTGRES_DB=hqstudio
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+    networks:
+      - hqstudio-network-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hqstudio -d hqstudio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Backend API (Development) - изолированный сервис
+  api:
+    build:
+      context: ./HQStudio.API
+      dockerfile: Dockerfile
+    container_name: hqstudio-api-dev
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Host=db;Database=hqstudio;Username=hqstudio;Password=${DB_PASSWORD:-HQStudio2024!}
+      - Jwt__Key=${JWT_KEY:-HQStudioSuperSecretKeyForJwtTokenGeneration2024!}
+      - Jwt__Issuer=HQStudio
+      - Jwt__Audience=HQStudioClients
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hqstudio-network-dev
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/services || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Web Frontend (Development) - изолированный сервис
+  web:
+    build:
+      context: ./HQStudio.Web
+      dockerfile: Dockerfile.dev
+    container_name: hqstudio-web-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./HQStudio.Web:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    networks:
+      - hqstudio-network-dev
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  postgres-data-dev:
+    name: hqstudio-postgres-data-dev
+
+networks:
+  hqstudio-network-dev:
+    driver: bridge

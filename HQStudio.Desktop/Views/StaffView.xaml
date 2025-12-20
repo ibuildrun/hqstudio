@@ -1,0 +1,153 @@
+<UserControl x:Class="HQStudio.Views.StaffView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <TextBlock Style="{DynamicResource TextH1}">
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="White" BlurRadius="15" ShadowDepth="0" Opacity="0.2"/>
+                </TextBlock.Effect>
+                СОТРУДНИКИ
+            </TextBlock>
+            <TextBlock Text="Управление командой • Двойной клик для редактирования" 
+                       Style="{DynamicResource TextBody}" Margin="0,8,0,0"/>
+        </StackPanel>
+
+        <!-- Toolbar -->
+        <Grid Grid.Row="1" Margin="0,0,0,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <Border Style="{DynamicResource Badge}" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Всего: " FontSize="12" Foreground="#707070"/>
+                        <TextBlock Text="{Binding Users.Count}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="🗑️ Удалить" Style="{DynamicResource BtnDanger}" Margin="0,0,12,0"
+                        Command="{Binding DeleteUserCommand}"/>
+                <Button Content="+ Добавить сотрудника" Style="{DynamicResource BtnPrimary}"
+                        Command="{Binding AddUserCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Staff Grid -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Users}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{DynamicResource CardHoverable}" Margin="0,0,16,16" Width="280"
+                                MouseLeftButtonDown="User_MouseLeftButtonDown">
+                            <Grid>
+                                <!-- Status indicator -->
+                                <Ellipse Width="12" Height="12" HorizontalAlignment="Right" 
+                                         VerticalAlignment="Top" Margin="0,-4,-4,0">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Fill" Value="#404040"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                    <Setter Property="Fill" Value="#4CAF50"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+
+                                <StackPanel>
+                                    <!-- Avatar -->
+                                    <Border Width="72" Height="72" CornerRadius="36" Background="{DynamicResource BgIconBrush}" 
+                                            Margin="0,0,0,16" HorizontalAlignment="Center">
+                                        <TextBlock Text="👤" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <TextBlock Text="{Binding DisplayName}" FontSize="16" FontWeight="SemiBold" 
+                                               Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding Username, StringFormat=@{0}}" 
+                                               Style="{DynamicResource TextSmall}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+
+                                    <!-- Role Badge -->
+                                    <Border HorizontalAlignment="Center" CornerRadius="6" Padding="12,6" Margin="0,0,0,12">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#2A2A2A"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Role}" Value="Admin">
+                                                        <Setter Property="Background" Value="#2A2A1A"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock FontSize="11" FontWeight="Medium">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#909090"/>
+                                                    <Setter Property="Text" Value="Работник"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Role}" Value="Admin">
+                                                            <Setter Property="Foreground" Value="#FFC107"/>
+                                                            <Setter Property="Text" Value="Администратор"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+
+                                    <!-- Status -->
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Ellipse Width="8" Height="8" Margin="0,0,8,0">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Setter Property="Fill" Value="#404040"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                            <Setter Property="Fill" Value="#4CAF50"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+                                        <TextBlock FontSize="12">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="Неактивен"/>
+                                                    <Setter Property="Foreground" Value="#707070"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                            <Setter Property="Text" Value="Активен"/>
+                                                            <Setter Property="Foreground" Value="#4CAF50"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,0 +1,12 @@
+Dockerfile*
+docker-compose*
+.dockerignore
+node_modules
+npm-debug.log
+.next
+.git
+.gitignore
+README.md
+.env
+.env.*
+!.env.example

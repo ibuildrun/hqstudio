@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  hqstudio-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: hqstudio-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    networks:
+      - hqstudio-network
+
+  # Tuna tunnel для разработки (tuna.am - российский сервис)
+  tuna:
+    image: alpine:latest
+    container_name: hqstudio-tuna-dev
+    restart: unless-stopped
+    depends_on:
+      - hqstudio-dev
+    volumes:
+      - ./tuna:/app
+    working_dir: /app
+    environment:
+      - TUNA_TOKEN=${TUNA_TOKEN}
+    entrypoint: ["/bin/sh", "-c"]
+    command: 
+      - |
+        apk add --no-cache curl
+        curl -fsSL https://get.tuna.am | sh
+        tuna http hqstudio-dev:3000 --subdomain ${TUNA_SUBDOMAIN:-hqstudio-dev}
+    networks:
+      - hqstudio-network
+
+networks:
+  hqstudio-network:
+    driver: bridge

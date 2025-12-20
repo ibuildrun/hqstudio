@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  hqstudio-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hqstudio-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    networks:
+      - hqstudio-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Tuna tunnel для публичного доступа (tuna.am - российский сервис)
+  # Установите tuna CLI: https://tuna.am/docs/install
+  # Или используйте локальную установку tuna вместо Docker
+  tuna:
+    image: alpine:latest
+    container_name: hqstudio-tuna
+    restart: unless-stopped
+    depends_on:
+      - hqstudio-web
+    volumes:
+      - ./tuna:/app
+    working_dir: /app
+    environment:
+      - TUNA_TOKEN=${TUNA_TOKEN}
+    entrypoint: ["/bin/sh", "-c"]
+    command: 
+      - |
+        apk add --no-cache curl
+        curl -fsSL https://get.tuna.am | sh
+        tuna http hqstudio-web:3000 --subdomain ${TUNA_SUBDOMAIN:-hqstudio}
+    networks:
+      - hqstudio-network
+
+networks:
+  hqstudio-network:
+    driver: bridge

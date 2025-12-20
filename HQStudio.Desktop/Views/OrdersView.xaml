@@ -1,0 +1,146 @@
+<UserControl x:Class="HQStudio.Views.OrdersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <TextBlock Style="{DynamicResource TextH1}">
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="White" BlurRadius="15" ShadowDepth="0" Opacity="0.2"/>
+                </TextBlock.Effect>
+                ЗАКАЗЫ
+            </TextBlock>
+            <TextBlock Text="Управление заказами • Двойной клик для редактирования" 
+                       Style="{DynamicResource TextBody}" Margin="0,8,0,0"/>
+        </StackPanel>
+
+        <!-- Toolbar -->
+        <Grid Grid.Row="1" Margin="0,0,0,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <Border Style="{DynamicResource Badge}" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Всего: " FontSize="12" Foreground="#707070"/>
+                        <TextBlock Text="{Binding Orders.Count}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="✓ Завершить" Style="{DynamicResource BtnSuccess}" Margin="0,0,12,0"
+                        Command="{Binding CompleteOrderCommand}"/>
+                <Button Content="+ Новый заказ" Style="{DynamicResource BtnPrimary}"
+                        Command="{Binding AddOrderCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Orders List -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Orders}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{DynamicResource CardHoverable}" Margin="0,0,0,12"
+                                MouseLeftButtonDown="Order_MouseLeftButtonDown">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Order Number -->
+                                <Border Grid.Column="0" Width="64" Height="64" CornerRadius="14" 
+                                        Background="{DynamicResource BgIconBrush}" Margin="0,0,20,0">
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock Text="#" FontSize="12" Foreground="#505050" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Id}" FontSize="20" FontWeight="Bold"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Order Info -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Client.Name, FallbackValue='Клиент не указан'}" 
+                                               FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding ServicesDisplay}" Style="{DynamicResource TextBody}"
+                                               TextTrimming="CharacterEllipsis" MaxWidth="350" Margin="0,0,0,4"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="📅" FontSize="12" Margin="0,0,6,0"/>
+                                        <TextBlock Text="{Binding CreatedAt, StringFormat=dd.MM.yyyy в HH:mm}" 
+                                                   Style="{DynamicResource TextSmall}"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Status Badge -->
+                                <Border Grid.Column="2" CornerRadius="8" Padding="14,8" Margin="0,0,24,0"
+                                        VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#2A2A2A"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Status}" Value="Завершен">
+                                                    <Setter Property="Background" Value="#1A2A1A"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="В работе">
+                                                    <Setter Property="Background" Value="#2A2A1A"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock FontSize="12" FontWeight="Medium">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#909090"/>
+                                                <Setter Property="Text" Value="{Binding Status}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Завершен">
+                                                        <Setter Property="Foreground" Value="#4CAF50"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="В работе">
+                                                        <Setter Property="Foreground" Value="#FFC107"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+
+                                <!-- Price -->
+                                <StackPanel Grid.Column="3" VerticalAlignment="Center" MinWidth="120" 
+                                            HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding TotalPrice, StringFormat={}{0:N0} ₽}" 
+                                               FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" 
+                                               HorizontalAlignment="Right"/>
+                                    <TextBlock Text="Сумма заказа" Style="{DynamicResource TextSmall}" 
+                                               HorizontalAlignment="Right" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Empty State -->
+        <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Visibility="{Binding Orders.Count, Converter={StaticResource CountToVisibility}}">
+            <Border Width="80" Height="80" CornerRadius="40" Background="#141414" Margin="0,0,0,20">
+                <TextBlock Text="📋" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="Заказов пока нет" Style="{DynamicResource TextH3}" HorizontalAlignment="Center"/>
+            <TextBlock Text="Создайте первый заказ" Style="{DynamicResource TextSmall}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

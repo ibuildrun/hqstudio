@@ -1,0 +1,180 @@
+<Window x:Class="HQStudio.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:HQStudio.ViewModels"
+        xmlns:views="clr-namespace:HQStudio.Views"
+        Title="HQ Studio" 
+        Height="850" Width="1450"
+        MinHeight="650" MinWidth="1100"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        KeyDown="Window_KeyDown"
+        Icon="/Resources/app.ico">
+    
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <Border Background="{DynamicResource BgPrimaryBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1">
+
+        
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="56"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Custom Title Bar -->
+            <Border Grid.Row="0" Grid.ColumnSpan="2" Background="{DynamicResource BgSecondaryBrush}" 
+                    CornerRadius="16,16,0,0" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="24,0">
+                        <TextBlock Text="HQ" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontFamily="Segoe UI Black">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="White" BlurRadius="15" ShadowDepth="0" Opacity="0.4"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                        <TextBlock Text=" STUDIO" FontSize="22" FontWeight="Light" Foreground="#505050"
+                                   VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource BgAvatarBrush}" CornerRadius="4" Padding="8,3" Margin="15,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="v1.0" FontSize="10" Foreground="#505050"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Current Page Title -->
+                    <TextBlock Text="{Binding CurrentViewName}" FontSize="14" Foreground="#404040"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                    <!-- Window Controls -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="10,0">
+                        <Button Content="─" Click="MinimizeButton_Click" Style="{DynamicResource BtnIcon}"
+                                Width="50" Height="56" FontSize="12"/>
+                        <Button Content="□" Click="MaximizeButton_Click" Style="{DynamicResource BtnIcon}"
+                                Width="50" Height="56" FontSize="12"/>
+                        <Button x:Name="CloseBtn" Content="✕" Click="CloseButton_Click" 
+                                Width="50" Height="56" FontSize="12" Cursor="Hand"
+                                Background="Transparent" Foreground="#707070" BorderThickness="0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#C42B1C"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Sidebar -->
+            <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource BgSecondaryBrush}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- User Info -->
+                    <Border Grid.Row="0" Padding="24,20" BorderBrush="#1A1A1A" BorderThickness="0,0,0,1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Border Grid.Column="0" Width="48" Height="48" CornerRadius="24" 
+                                    Background="{DynamicResource BgAvatarBrush}" Margin="0,0,14,0">
+                                <TextBlock Text="👤" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding UserDisplayName}" FontSize="15" FontWeight="SemiBold" 
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <Border Background="#1A2A1A" CornerRadius="4" Padding="6,2" 
+                                        HorizontalAlignment="Left" Margin="0,4,0,0">
+                                    <TextBlock Text="{Binding UserRole}" FontSize="10" Foreground="#4CAF50"/>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Navigation -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="16,24">
+                            <TextBlock Text="ОСНОВНОЕ" Style="{DynamicResource TextLabel}" Margin="12,0,0,12"/>
+                            
+                            <Button Content="🏠  Главная" Style="{DynamicResource BtnNav}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="Dashboard"/>
+                            <Button Content="🔧  Услуги" Style="{DynamicResource BtnNav}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="Services"/>
+                            <Button Content="👥  Клиенты" Style="{DynamicResource BtnNav}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="Clients"/>
+                            <Button Content="📋  Заказы" Style="{DynamicResource BtnNav}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="Orders"/>
+                            
+                            <TextBlock Text="УПРАВЛЕНИЕ" Style="{DynamicResource TextLabel}" Margin="12,30,0,12"/>
+                            
+                            <Button Content="👤  Сотрудники" Style="{DynamicResource BtnNav}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="Staff"/>
+                            <Button Content="⚙️  Настройки" Style="{DynamicResource BtnNav}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Footer -->
+                    <Border Grid.Row="2" Padding="20" BorderBrush="#1A1A1A" BorderThickness="0,1,0,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                <TextBlock Text="📍" FontSize="12" Margin="0,0,6,0"/>
+                                <TextBlock Text="Сургут, ХМАО-Югра" Style="{DynamicResource TextSmall}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <TextBlock Text="📞" FontSize="12" Margin="0,0,6,0"/>
+                                <TextBlock Text="+7-929-293-52-22" Style="{DynamicResource TextSmall}"/>
+                            </StackPanel>
+                            <Button Content="Выйти" Style="{DynamicResource BtnSecondary}" 
+                                    Command="{Binding LogoutCommand}" Click="LogoutButton_Click"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Main Content Area -->
+            <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource BgPrimaryBrush}" Padding="32">
+                <ContentControl Content="{Binding CurrentView}">
+                    <ContentControl.Resources>
+                        <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+                            <views:DashboardView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type vm:ServicesViewModel}">
+                            <views:ServicesView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type vm:ClientsViewModel}">
+                            <views:ClientsView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type vm:OrdersViewModel}">
+                            <views:OrdersView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type vm:StaffViewModel}">
+                            <views:StaffView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+                            <views:SettingsView/>
+                        </DataTemplate>
+                    </ContentControl.Resources>
+                </ContentControl>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

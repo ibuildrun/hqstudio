@@ -1,0 +1,126 @@
+<Window x:Class="HQStudio.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:HQStudio.ViewModels"
+        Title="HQ Studio - Вход" 
+        Height="720" Width="500"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        KeyDown="Window_KeyDown"
+        FocusManager.FocusedElement="{Binding ElementName=UsernameBox}"
+        Icon="/Resources/app.ico">
+    
+    <Window.DataContext>
+        <vm:LoginViewModel/>
+    </Window.DataContext>
+
+    <Border Background="#0A0A0A" CornerRadius="20" BorderBrush="#1A1A1A" BorderThickness="1">
+
+        
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="56"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title Bar -->
+            <Border Grid.Row="0" Background="Transparent" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid>
+                    <TextBlock Text="HQ Studio" FontSize="12" Foreground="#404040" 
+                               VerticalAlignment="Center" Margin="20,0,0,0"/>
+                    <Button Content="✕" HorizontalAlignment="Right" Margin="10,0" 
+                            Click="CloseButton_Click" Style="{DynamicResource BtnIcon}"/>
+                </Grid>
+            </Border>
+
+            <!-- Main Content -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel VerticalAlignment="Center" Margin="60,30">
+                    
+                    <!-- Logo with Glow Effect -->
+                    <Border Margin="0,0,0,8">
+                        <TextBlock Text="HQ" FontSize="72" FontWeight="Bold" 
+                                   Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"
+                                   FontFamily="Segoe UI Black">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="White" BlurRadius="35" ShadowDepth="0" Opacity="0.5"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                    </Border>
+                    
+                    <TextBlock Text="STUDIO" FontSize="28" FontWeight="Light" 
+                               Foreground="#707070" HorizontalAlignment="Center"
+                               Margin="0,0,0,4"/>
+                    
+                    <TextBlock Text="ТЮНИНГ АВТОМОБИЛЕЙ" FontSize="11" 
+                               Foreground="#404040" HorizontalAlignment="Center"
+                               Margin="0,0,0,35"/>
+
+                    <!-- Login Form -->
+                    <TextBlock Text="ЛОГИН" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <TextBox x:Name="UsernameBox" 
+                             Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{DynamicResource InputText}" Margin="0,0,0,16"
+                             FontSize="14" TabIndex="0"
+                             KeyDown="InputField_KeyDown"/>
+
+                    <TextBlock Text="ПАРОЛЬ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <PasswordBox x:Name="PasswordBox" Style="{DynamicResource InputPassword}" 
+                                 Margin="0,0,0,6" PasswordChanged="PasswordBox_PasswordChanged"
+                                 TabIndex="1" KeyDown="InputField_KeyDown"/>
+
+                    <!-- Error Message -->
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#F44336" 
+                               FontSize="12" Margin="0,6,0,12" HorizontalAlignment="Center"
+                               MinHeight="16"/>
+
+                    <!-- Login Button -->
+                    <Button Content="ВОЙТИ" Command="{Binding LoginCommand}"
+                            Style="{DynamicResource BtnPrimary}" Height="48" TabIndex="2"
+                            IsDefault="True"/>
+
+                    <!-- Credentials Hint -->
+                    <Border Background="#141414" CornerRadius="10" Padding="16,12" Margin="0,20,0,0">
+                        <StackPanel>
+                            <TextBlock Text="ТЕСТОВЫЕ ДАННЫЕ" Style="{DynamicResource TextLabel}" 
+                                       HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                    <TextBlock Text="Админ" FontSize="11" Foreground="#505050" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="admin / admin" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" 
+                                               FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,3,0,0"/>
+                                </StackPanel>
+                                
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                    <TextBlock Text="Работник" FontSize="11" Foreground="#505050" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="worker / worker" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" 
+                                               FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,3,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Loading Overlay -->
+            <Border Grid.Row="1" Background="#E60A0A0A" CornerRadius="0,0,20,20"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Border Width="60" Height="60" CornerRadius="30" Background="#141414" Margin="0,0,0,16">
+                        <TextBlock Text="⟳" FontSize="28" Foreground="{DynamicResource TextPrimaryBrush}" 
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="Вход в систему..." FontSize="14" Foreground="#808080"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

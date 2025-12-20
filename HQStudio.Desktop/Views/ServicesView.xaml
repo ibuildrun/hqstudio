@@ -1,0 +1,88 @@
+<UserControl x:Class="HQStudio.Views.ServicesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <TextBlock Style="{DynamicResource TextH1}">
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="White" BlurRadius="15" ShadowDepth="0" Opacity="0.2"/>
+                </TextBlock.Effect>
+                УСЛУГИ
+            </TextBlock>
+            <TextBlock Text="Управление каталогом услуг • Двойной клик для редактирования" 
+                       Style="{DynamicResource TextBody}" Margin="0,8,0,0"/>
+        </StackPanel>
+
+        <!-- Toolbar -->
+        <Grid Grid.Row="1" Margin="0,0,0,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{DynamicResource InputSearch}" HorizontalAlignment="Left"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="🗑️ Удалить" Style="{DynamicResource BtnDanger}" Margin="0,0,12,0"
+                        Command="{Binding DeleteServiceCommand}"/>
+                <Button Content="+ Добавить услугу" Style="{DynamicResource BtnPrimary}"
+                        Command="{Binding AddServiceCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Services List -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Services}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{DynamicResource CardHoverable}" Margin="0,0,0,12"
+                                MouseLeftButtonDown="Service_MouseLeftButtonDown">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Width="64" Height="64" CornerRadius="14" 
+                                        Background="{DynamicResource BgIconBrush}" Margin="0,0,20,0">
+                                    <TextBlock Text="{Binding Icon}" FontSize="28" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" 
+                                               Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                    <Border Style="{DynamicResource Badge}" HorizontalAlignment="Left" Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding Category}" FontSize="11" Foreground="#909090"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding Description}" Style="{DynamicResource TextSmall}"
+                                               TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="36"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" MinWidth="120">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <TextBlock Text="от " FontSize="12" Foreground="#606060"/>
+                                        <TextBlock Text="{Binding PriceFrom, StringFormat={}{0:N0}}" 
+                                                   FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        <TextBlock Text=" ₽" FontSize="12" Foreground="#606060" 
+                                                   VerticalAlignment="Bottom" Margin="0,0,0,4"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

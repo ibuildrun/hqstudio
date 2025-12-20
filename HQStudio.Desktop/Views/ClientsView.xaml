@@ -1,0 +1,96 @@
+<UserControl x:Class="HQStudio.Views.ClientsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <TextBlock Style="{DynamicResource TextH1}">
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="White" BlurRadius="15" ShadowDepth="0" Opacity="0.2"/>
+                </TextBlock.Effect>
+                КЛИЕНТЫ
+            </TextBlock>
+            <TextBlock Text="База клиентов • Двойной клик для редактирования" 
+                       Style="{DynamicResource TextBody}" Margin="0,8,0,0"/>
+        </StackPanel>
+
+        <!-- Toolbar -->
+        <Grid Grid.Row="1" Margin="0,0,0,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{DynamicResource InputSearch}" HorizontalAlignment="Left"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="🗑️ Удалить" Style="{DynamicResource BtnDanger}" Margin="0,0,12,0"
+                        Command="{Binding DeleteClientCommand}"/>
+                <Button Content="+ Добавить клиента" Style="{DynamicResource BtnPrimary}"
+                        Command="{Binding AddClientCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Clients List -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Clients}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{DynamicResource CardHoverable}" Margin="0,0,0,12" Padding="20"
+                                MouseLeftButtonDown="Client_MouseLeftButtonDown">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Width="50" Height="50" CornerRadius="25" 
+                                        Background="{DynamicResource BgIconBrush}" Margin="0,0,16,0">
+                                    <TextBlock Text="👤" FontSize="22" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" 
+                                               Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Phone}" Style="{DynamicResource TextSmall}" Margin="0,0,16,0"/>
+                                        <TextBlock Text="{Binding Car}" Style="{DynamicResource TextSmall}" Foreground="#909090"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                    <Border Background="{DynamicResource BgIconBrush}" CornerRadius="6" Padding="10,5" Margin="0,0,0,4">
+                                        <TextBlock Text="{Binding CarNumber}" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" 
+                                                   FontFamily="Consolas" FontWeight="SemiBold"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding CreatedAt, StringFormat=dd.MM.yyyy}" 
+                                               Style="{DynamicResource TextSmall}" HorizontalAlignment="Right"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Empty State -->
+        <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Visibility="{Binding Clients.Count, Converter={StaticResource CountToVisibility}}">
+            <Border Width="80" Height="80" CornerRadius="40" Background="#141414" Margin="0,0,0,20">
+                <TextBlock Text="👥" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="Клиентов пока нет" Style="{DynamicResource TextH3}" HorizontalAlignment="Center"/>
+            <TextBlock Text="Добавьте первого клиента" Style="{DynamicResource TextSmall}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

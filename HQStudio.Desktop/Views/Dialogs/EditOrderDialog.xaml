@@ -1,0 +1,168 @@
+<Window x:Class="HQStudio.Views.Dialogs.EditOrderDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Редактирование заказа" 
+        Height="650" Width="550"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        KeyDown="Window_KeyDown"
+        FocusManager.FocusedElement="{Binding ElementName=ClientCombo}">
+
+    <Border Background="{DynamicResource BgDialogBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="{DynamicResource BgDialogHeaderBrush}" CornerRadius="16,16,0,0" 
+                    MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid>
+                    <TextBlock x:Name="TitleText" Text="Новый заказ" FontSize="15" FontWeight="SemiBold" 
+                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="20,0"/>
+                    <Button Content="✕" HorizontalAlignment="Right" Click="Close_Click"
+                            Background="Transparent" Foreground="#606060" BorderThickness="0"
+                            Width="50" Height="50" FontSize="14" Cursor="Hand"/>
+                </Grid>
+            </Border>
+
+            <!-- Form -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="24,20">
+                <StackPanel>
+                    <TextBlock Text="КЛИЕНТ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <ComboBox x:Name="ClientCombo" Style="{DynamicResource InputComboBox}" Margin="0,0,0,16"
+                              DisplayMemberPath="Name"/>
+
+                    <TextBlock Text="УСЛУГИ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    
+                    <!-- Service Search -->
+                    <Grid Margin="0,0,0,8">
+                        <TextBox x:Name="ServiceSearchBox" Style="{DynamicResource InputText}" 
+                                 TextChanged="ServiceSearch_TextChanged"
+                                 GotFocus="ServiceSearchBox_GotFocus"
+                                 LostFocus="ServiceSearchBox_LostFocus"/>
+                        <TextBlock x:Name="SearchPlaceholder" Text="🔍 Поиск услуги..." 
+                                   Foreground="{DynamicResource TextMutedBrush}" 
+                                   VerticalAlignment="Center" Margin="16,0" IsHitTestVisible="False"/>
+                    </Grid>
+                    
+                    <!-- Service Search Results Popup -->
+                    <Popup x:Name="ServicePopup" PlacementTarget="{Binding ElementName=ServiceSearchBox}" 
+                           Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
+                        <Border Background="{DynamicResource BgCardBrush}" CornerRadius="8" 
+                                BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1"
+                                MaxHeight="200" Width="{Binding ActualWidth, ElementName=ServiceSearchBox}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl x:Name="ServiceSearchResults">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border x:Name="ItemBorder" Background="Transparent" 
+                                                    Padding="12,10" Cursor="Hand"
+                                                    MouseLeftButtonDown="ServiceItem_Click">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="30"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="16"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="13" 
+                                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                    <TextBlock Grid.Column="2" FontSize="12" Foreground="{DynamicResource TextMutedBrush}">
+                                                        <Run Text="от"/>
+                                                        <Run Text="{Binding PriceFrom, StringFormat={}{0:N0}}"/>
+                                                        <Run Text="₽"/>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                            <DataTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ItemBorder" Property="Background" 
+                                                            Value="{DynamicResource BgHoverBrush}"/>
+                                                </Trigger>
+                                            </DataTemplate.Triggers>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                    </Popup>
+                    
+                    <!-- Selected Services -->
+                    <ItemsControl x:Name="SelectedServicesList" Margin="0,0,0,16">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="8" 
+                                        Padding="12,8" Margin="0,4">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="26"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="14"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="13" 
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" FontSize="12" Foreground="#4CAF50" 
+                                                   VerticalAlignment="Center" Margin="8,0">
+                                            <Run Text="{Binding PriceFrom, StringFormat={}{0:N0}}"/>
+                                            <Run Text="₽"/>
+                                        </TextBlock>
+                                        <Button Grid.Column="3" Content="✕" Width="24" Height="24" 
+                                                Background="Transparent" Foreground="#808080" 
+                                                BorderThickness="0" Cursor="Hand" FontSize="10"
+                                                Tag="{Binding Id}" Click="RemoveService_Click"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="СТАТУС" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <ComboBox x:Name="StatusCombo" Style="{DynamicResource InputComboBox}" Margin="0,0,0,16">
+                        <ComboBoxItem Content="Новый" IsSelected="True"/>
+                        <ComboBoxItem Content="В работе"/>
+                        <ComboBoxItem Content="Завершен"/>
+                    </ComboBox>
+
+                    <TextBlock Text="СУММА (₽)" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="PriceBox" Grid.Column="0" Style="{DynamicResource InputText}"/>
+                        <Button Grid.Column="1" Content="Авто" Style="{DynamicResource BtnSecondary}" 
+                                Padding="12,10" Margin="8,0,0,0" Click="AutoPrice_Click"
+                                ToolTip="Рассчитать сумму по выбранным услугам"/>
+                    </Grid>
+
+                    <TextBlock Text="ЗАМЕТКИ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <TextBox x:Name="NotesBox" Style="{DynamicResource InputText}" 
+                             TextWrapping="Wrap" AcceptsReturn="True" Height="80"
+                             VerticalContentAlignment="Top"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Buttons -->
+            <Border Grid.Row="2" Background="{DynamicResource BgDialogHeaderBrush}" Padding="24,16" CornerRadius="0,0,16,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="Отмена" Style="{DynamicResource BtnSecondary}" 
+                            Click="Cancel_Click" Margin="0,0,8,0" IsCancel="True"/>
+                    <Button Grid.Column="1" Content="Сохранить" Style="{DynamicResource BtnPrimary}" 
+                            Click="Save_Click" Margin="8,0,0,0" IsDefault="True"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

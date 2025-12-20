@@ -1,0 +1,210 @@
+<UserControl x:Class="HQStudio.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel>
+            
+            <!-- Hero Section -->
+            <Border Style="{DynamicResource Card}" Padding="40" Margin="0,0,0,24">
+                <Border.Effect>
+                    <DropShadowEffect Color="White" BlurRadius="30" ShadowDepth="0" Opacity="0.05"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="ПРОФЕССИОНАЛЬНОЕ" Style="{DynamicResource TextLabel}" Margin="0,0,0,10"/>
+                        <TextBlock FontSize="44" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,5">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="White" BlurRadius="25" ShadowDepth="0" Opacity="0.35"/>
+                            </TextBlock.Effect>
+                            ДООСНАЩЕНИЕ
+                        </TextBlock>
+                        <TextBlock Text="ВАШЕГО АВТОМОБИЛЯ" FontSize="44" FontWeight="Light" Foreground="#606060"/>
+                        <TextBlock Text="Сургут • HQ Studio • Качество без компромиссов" 
+                                   Style="{DynamicResource TextSmall}" Margin="0,24,0,0"/>
+                    </StackPanel>
+                    
+                    <Border Grid.Column="1" Width="140" Height="140" CornerRadius="70" 
+                            Background="{DynamicResource BgAvatarBrush}" VerticalAlignment="Center">
+                        <Border.Effect>
+                            <DropShadowEffect Color="White" BlurRadius="40" ShadowDepth="0" Opacity="0.2"/>
+                        </Border.Effect>
+                        <TextBlock Text="HQ" FontSize="52" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontFamily="Segoe UI Black"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Stats Cards -->
+            <Grid Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{DynamicResource CardHoverable}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <Border Width="48" Height="48" CornerRadius="12" Background="{DynamicResource BgIconBrush}" 
+                                HorizontalAlignment="Left" Margin="0,0,0,16">
+                            <TextBlock Text="👥" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="{Binding TotalClients}" FontSize="36" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="Клиентов" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{DynamicResource CardHoverable}" Margin="6,0">
+                    <StackPanel>
+                        <Border Width="48" Height="48" CornerRadius="12" Background="{DynamicResource BgIconBrush}" 
+                                HorizontalAlignment="Left" Margin="0,0,0,16">
+                            <TextBlock Text="📋" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="{Binding TotalOrders}" FontSize="36" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="Всего заказов" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{DynamicResource CardHoverable}" Margin="6,0">
+                    <StackPanel>
+                        <Border Width="48" Height="48" CornerRadius="12" Background="#2A2A1A" 
+                                HorizontalAlignment="Left" Margin="0,0,0,16">
+                            <TextBlock Text="⚡" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="{Binding ActiveOrders}" FontSize="36" FontWeight="Bold" Foreground="#FFC107"/>
+                        <TextBlock Text="В работе" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="3" Style="{DynamicResource CardHoverable}" Margin="12,0,0,0">
+                    <StackPanel>
+                        <Border Width="48" Height="48" CornerRadius="12" Background="#1A2A1A" 
+                                HorizontalAlignment="Left" Margin="0,0,0,16">
+                            <TextBlock Text="💰" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="{Binding TotalRevenue, StringFormat={}{0:N0} ₽}" 
+                                   FontSize="28" FontWeight="Bold" Foreground="#4CAF50"/>
+                        <TextBlock Text="Выручка" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Services Section -->
+            <Grid Margin="0,0,0,16">
+                <TextBlock Text="НАШИ УСЛУГИ" Style="{DynamicResource TextLabel}"/>
+                <TextBlock Text="{Binding FeaturedServices.Count, StringFormat={}{0} услуг}" 
+                           Style="{DynamicResource TextSmall}" HorizontalAlignment="Right"/>
+            </Grid>
+
+            <ItemsControl ItemsSource="{Binding FeaturedServices}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="3"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{DynamicResource CardHoverable}" Margin="0,0,12,12">
+                            <StackPanel>
+                                <Border Width="56" Height="56" CornerRadius="14" Background="{DynamicResource BgIconBrush}" 
+                                        HorizontalAlignment="Left" Margin="0,0,0,16">
+                                    <TextBlock Text="{Binding Icon}" FontSize="26" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" 
+                                           Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                <TextBlock Text="{Binding Description}" Style="{DynamicResource TextSmall}"
+                                           TextWrapping="Wrap" MaxHeight="54" Margin="0,0,0,16"
+                                           TextTrimming="CharacterEllipsis"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="от " FontSize="14" Foreground="#606060"/>
+                                    <TextBlock Text="{Binding PriceFrom, StringFormat={}{0:N0}}" 
+                                               FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text=" ₽" FontSize="14" Foreground="#606060" 
+                                               VerticalAlignment="Bottom" Margin="0,0,0,3"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Service Statistics -->
+            <Grid Margin="0,12,0,16" Visibility="{Binding ServiceStatistics.Count, Converter={StaticResource CountToVisibility}, FallbackValue=Collapsed}">
+                <TextBlock Text="📊 ПОПУЛЯРНЫЕ УСЛУГИ" Style="{DynamicResource TextLabel}"/>
+            </Grid>
+            
+            <Border Style="{DynamicResource Card}" Margin="0,0,0,24" 
+                    Visibility="{Binding ServiceStatistics.Count, Converter={StaticResource CountToVisibility}, FallbackValue=Collapsed}">
+                <ItemsControl ItemsSource="{Binding ServiceStatistics}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <TextBlock Grid.Column="0" Text="{Binding Service.Icon}" FontSize="20" 
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Service.Name}" FontSize="14" 
+                                           Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                <Border Grid.Column="2" Background="{DynamicResource BgHoverBrush}" 
+                                        CornerRadius="6" Padding="10,4" Margin="8,0">
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}">
+                                        <Run Text="{Binding OrderCount}"/>
+                                        <Run Text="заказов"/>
+                                    </TextBlock>
+                                </Border>
+                                <TextBlock Grid.Column="3" FontSize="14" FontWeight="SemiBold" 
+                                           Foreground="#4CAF50" VerticalAlignment="Center">
+                                    <Run Text="{Binding TotalRevenue, StringFormat={}{0:N0}}"/>
+                                    <Run Text="₽"/>
+                                </TextBlock>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+
+            <!-- Contact Info -->
+            <Border Style="{DynamicResource Card}" Margin="0,12,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="📍 АДРЕС" Style="{DynamicResource TextLabel}" Margin="0,0,0,10"/>
+                        <TextBlock Text="Нефтеюганское шоссе, 22 ст1" FontSize="14" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="Сургут, ХМАО-Югра" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="🕐 РЕЖИМ РАБОТЫ" Style="{DynamicResource TextLabel}" Margin="0,0,0,10"/>
+                        <TextBlock Text="Ежедневно" FontSize="14" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="09:00 - 21:00" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="📞 КОНТАКТЫ" Style="{DynamicResource TextLabel}" Margin="0,0,0,10"/>
+                        <TextBlock Text="+7-929-293-52-22" FontSize="14" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="Игонин Павел Васильевич" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
