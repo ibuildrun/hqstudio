@@ -1,11 +1,3 @@
-## 1.0.0 (2025-12-20)
-
-
-### 🚀 Новые возможности
-
-* добавлен CI/CD и подготовка к релизу ([249d0cc](https://github.com/randomu3/hqstudio/commit/249d0ccc9368ec5e49ba0d877b5bdd9212ea63ce))
-* добавлены тесты, клавиатурная навигация и иконки ([042fb1e](https://github.com/randomu3/hqstudio/commit/042fb1e13bcd423cb1ccad3541598fdd79959bb6))
-
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -15,24 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > 📝 Этот файл автоматически обновляется при релизе через semantic-release
 
-## [Unreleased]
+## [1.0.0](https://github.com/randomu3/hqstudio/releases/tag/v1.0.0) (2025-12-20)
 
 ### 🚀 Новые возможности
-- Monorepo структура проекта (API, Web, Desktop)
-- JWT аутентификация
-- Управление клиентами и заказами
-- Обработка заявок на обратный звонок
-- Дашборд со статистикой
-- Админ-панель для управления контентом
-- Оффлайн синхронизация в Desktop
-- Система автообновления Desktop
-- CI/CD с GitHub Actions
-- Conventional Commits + автоматический changelog
 
-### 🐛 Исправления
-- Клавиатурная навигация в Desktop
+* добавлен CI/CD и подготовка к релизу ([249d0cc](https://github.com/randomu3/hqstudio/commit/249d0ccc9368ec5e49ba0d877b5bdd9212ea63ce))
+* добавлены тесты, клавиатурная навигация и иконки ([042fb1e](https://github.com/randomu3/hqstudio/commit/042fb1e13bcd423cb1ccad3541598fdd79959bb6))
 
-### 📦 Инфраструктура
-- Docker поддержка (dev + prod)
-- PostgreSQL для production
-- SQLite для разработки
+### � Инфраструктура
+
+* Monorepo структура проекта (API, Web, Desktop)
+* JWT аутентификация
+* Docker поддержка (dev + prod)
+* PostgreSQL для production, SQLite для разработки
+* CI/CD с GitHub Actions
+* Conventional Commits + автоматический changelog
