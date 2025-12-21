@@ -140,7 +140,7 @@ jobs:
         run: Compress-Archive -Path ./publish/* -DestinationPath HQStudio-Desktop-v${{ needs.release.outputs.new_release_version }}.zip
       
       - name: Upload to Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.release.outputs.new_release_version }}
           files: HQStudio-Desktop-v${{ needs.release.outputs.new_release_version }}.zip
