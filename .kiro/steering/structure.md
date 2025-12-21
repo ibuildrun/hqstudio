@@ -5,8 +5,21 @@
 /
 ├── HQStudio.Web/           # Next.js web application
 ├── HQStudio.Desktop/       # WPF desktop application
+├── HQStudio.Desktop.Tests/ # Desktop unit tests
 ├── HQStudio.API/           # ASP.NET Core API (shared backend)
-└── HQStudio.API.Tests/     # API integration tests
+├── HQStudio.API.Tests/     # API integration tests
+├── docs/                   # Documentation (API.md, ARCHITECTURE.md)
+├── .github/
+│   ├── workflows/          # CI/CD pipelines
+│   ├── ISSUE_TEMPLATE/     # Bug/feature templates
+│   ├── dependabot.yml      # Auto-update dependencies
+│   └── pull_request_template.md
+├── .kiro/steering/         # AI assistant context
+├── CHANGELOG.md            # Auto-generated changelog
+├── CONTRIBUTING.md         # Contribution guide
+├── SECURITY.md             # Security policy
+├── LICENSE                 # MIT License
+└── .editorconfig           # Code style settings
 ```
 
 ---

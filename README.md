@@ -7,7 +7,7 @@
 
 Комплексное решение для автотюнинг студии: веб-сайт, API и десктопное CRM приложение.
 
-🌐 **[Демо сайт](https://randomu3.github.io/hqstudio/)** | 📦 **[Релизы](https://github.com/randomu3/hqstudio/releases)** | 📖 **[Документация](CONTRIBUTING.md)**
+🌐 **[Демо сайт](https://randomu3.github.io/hqstudio/)** | 📦 **[Релизы](https://github.com/randomu3/hqstudio/releases)** | 📖 **[API Docs](docs/API.md)** | 🏛️ **[Архитектура](docs/ARCHITECTURE.md)**
 
 ## 🏗️ Структура проекта
 

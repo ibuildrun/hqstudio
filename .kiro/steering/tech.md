@@ -1,6 +1,6 @@
 # Technology Stack
 
-## Web Application (HQStudio site)
+## Web Application (HQStudio.Web)
 
 ### Framework & Runtime
 - Next.js 14 with App Router
@@ -17,14 +17,20 @@
 - `framer-motion` - Animations and scroll effects
 - `lucide-react` - Icon library
 - `@google/generative-ai` - AI integration (Gemini)
+- `eslint` + `eslint-config-next` - Linting
 
 ### State Management
 - React Context API (`lib/store.tsx`)
 - localStorage for persistence
 
+### Testing
+- Vitest for unit tests
+- Tests in `__tests__/` directory
+
 ### Deployment
 - Docker with multi-stage builds
-- Tuna tunneling for public access (Russian ngrok alternative)
+- GitHub Pages for static export
+- Tuna tunneling for public access
 
 ### Commands
 ```bash
@@ -37,6 +43,9 @@ npm run start
 
 # Linting
 npm run lint
+
+# Tests
+npm test
 
 # Docker
 docker-compose up --build -d              # Production
@@ -119,3 +128,53 @@ dotnet publish -c Release
 | `Jwt__Key` | JWT signing key (min 32 chars) |
 | `Jwt__Issuer` | JWT issuer |
 | `Jwt__Audience` | JWT audience |
+
+
+---
+
+## CI/CD & Automation
+
+### GitHub Actions Workflows
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `ci.yml` | Push/PR to main | Run tests for API, Web, Desktop |
+| `release.yml` | Push to main | Semantic versioning, CHANGELOG, GitHub Release |
+| `pages.yml` | Push to main | Deploy Web to GitHub Pages |
+| `codeql.yml` | Push/PR/Weekly | Security analysis |
+
+### Semantic Release
+- Conventional Commits format required
+- Auto-versioning: `feat:` → minor, `fix:` → patch
+- Auto-generates CHANGELOG.md
+- Creates GitHub Releases with artifacts
+
+### Dependabot
+- Weekly updates for npm (Web)
+- Weekly updates for NuGet (API, Desktop)
+- Monthly updates for GitHub Actions
+
+### Commit Message Format
+```
+type(scope): description
+
+Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore
+Scopes: api, web, desktop, ci, deps
+```
+
+---
+
+## Code Quality
+
+### EditorConfig
+- Unified code style across all editors
+- 4 spaces for C#, 2 spaces for TS/JS/JSON/YAML
+- UTF-8 encoding, LF line endings
+
+### ESLint (Web)
+- `next/core-web-vitals` preset
+- Warnings for `<img>` usage (prefer `next/image`)
+
+### Testing
+- API: xUnit + FluentAssertions + WebApplicationFactory
+- Web: Vitest
+- Desktop: xUnit (unit tests only in CI)
