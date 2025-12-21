@@ -134,7 +134,7 @@ export const DEFAULT_SITE_DATA = {
     { id: 'arctic', name: 'Arctic Blue', color: 'rgba(0, 191, 255, 0.4)', desc: 'Свежесть и концентрация за рулем' },
     { id: 'royal', name: 'Royal Violet', color: 'rgba(138, 43, 226, 0.4)', desc: 'Элегантность и статус вашего интерьера' }
   ],
-  moodlightImage: "https://images.unsplash.com/photo-1542362567-b055002b91f4?auto=format&fit=crop&q=80&w=1200&grayscale=true",
+  moodlightImage: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=1200",
   // Configurator
   configuratorTitle: "Консьерж-сервис",
   configuratorSubtitle: "Создайте свой идеальный пакет комфорта",

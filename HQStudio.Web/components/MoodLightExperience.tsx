@@ -63,7 +63,7 @@ export default function MoodLightExperience() {
 
           <div className="w-full md:w-1/2 relative aspect-square md:aspect-auto md:h-[600px] bg-neutral-900 rounded-2xl overflow-hidden shadow-2xl group">
             <img 
-              src={data.moodlightImage || "https://images.unsplash.com/photo-1542362567-b055002b91f4?auto=format&fit=crop&q=80&w=1200&grayscale=true"} 
+              src={data.moodlightImage || "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=1200"} 
               alt="Interior" 
               className="w-full h-full object-cover opacity-50 transition-transform duration-1000 group-hover:scale-105"
             />
