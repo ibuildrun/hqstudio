@@ -1,3 +1,10 @@
+## [1.2.0](https://github.com/randomu3/hqstudio/compare/v1.1.4...v1.2.0) (2025-12-21)
+
+
+### 🚀 Новые возможности
+
+* добавлен журнал ответственности и PWA с уведомлениями ([dc0f025](https://github.com/randomu3/hqstudio/commit/dc0f0252d6af025ad4d1116c1ef163f710be3c61))
+
 ## [1.1.4](https://github.com/randomu3/hqstudio/compare/v1.1.3...v1.1.4) (2025-12-21)
 
 
