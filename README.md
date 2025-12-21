@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/randomu3/hqstudio/actions/workflows/ci.yml/badge.svg)](https://github.com/randomu3/hqstudio/actions/workflows/ci.yml)
 [![Release](https://github.com/randomu3/hqstudio/actions/workflows/release.yml/badge.svg)](https://github.com/randomu3/hqstudio/actions/workflows/release.yml)
+[![codecov](https://codecov.io/gh/randomu3/hqstudio/graph/badge.svg)](https://codecov.io/gh/randomu3/hqstudio)
 [![GitHub release](https://img.shields.io/github/v/release/randomu3/hqstudio)](https://github.com/randomu3/hqstudio/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

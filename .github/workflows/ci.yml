@@ -32,8 +32,17 @@ jobs:
       - name: Build
         run: dotnet build HQStudio.API.Tests/HQStudio.API.Tests.csproj --no-restore
       
-      - name: Test
-        run: dotnet test HQStudio.API.Tests/HQStudio.API.Tests.csproj --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+      - name: Test with Coverage
+        run: dotnet test HQStudio.API.Tests/HQStudio.API.Tests.csproj --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+      - name: Upload API Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/**/coverage.cobertura.xml
+          flags: api
+          name: api-coverage
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
       
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -72,8 +81,17 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
       
-      - name: Test
-        run: npm test
+      - name: Test with Coverage
+        run: npm test -- --coverage
+
+      - name: Upload Web Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/coverage-final.json
+          flags: web
+          name: web-coverage
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   # ===========================================
   # Desktop Build (Windows only)
