@@ -7,7 +7,9 @@ namespace HQStudio.Desktop.Tests;
 /// <summary>
 /// Integration tests for ApiService against running API.
 /// Requires API to be running at http://localhost:5000
+/// These tests are skipped in CI (Category=Integration)
 /// </summary>
+[Trait("Category", "Integration")]
 public class ApiServiceIntegrationTests : IAsyncLifetime
 {
     private readonly ApiServiceTestClient _api;

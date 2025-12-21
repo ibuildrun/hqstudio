@@ -97,7 +97,7 @@ jobs:
         run: dotnet build HQStudio.Desktop/HQStudio.csproj --configuration Release --no-restore
       
       - name: Test
-        run: dotnet test HQStudio.Desktop.Tests/HQStudio.Desktop.Tests.csproj --verbosity normal
+        run: dotnet test HQStudio.Desktop.Tests/HQStudio.Desktop.Tests.csproj --verbosity normal --filter "Category!=Integration"
 
   # ===========================================
   # Docker Build Test
