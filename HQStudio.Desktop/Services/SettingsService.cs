@@ -21,6 +21,7 @@ namespace HQStudio.Services
         public AppSettings Settings { get; private set; } = new();
 
         public event Action? ThemeChanged;
+        public event Action<string>? ApiUrlChanged;
 
         private SettingsService()
         {
@@ -55,5 +56,21 @@ namespace HQStudio.Services
         public bool IsDarkTheme => Settings.Theme == "Dark";
         public string ApiUrl => Settings.ApiUrl;
         public bool UseApi => Settings.UseApi;
+
+        public void SetApiUrl(string url)
+        {
+            if (Settings.ApiUrl != url)
+            {
+                Settings.ApiUrl = url;
+                SaveSettings();
+                ApiUrlChanged?.Invoke(url);
+            }
+        }
+
+        public void SetUseApi(bool useApi)
+        {
+            Settings.UseApi = useApi;
+            SaveSettings();
+        }
     }
 }

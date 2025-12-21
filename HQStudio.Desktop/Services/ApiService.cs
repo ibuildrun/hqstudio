@@ -12,21 +12,56 @@ namespace HQStudio.Services
         private static ApiService? _instance;
         public static ApiService Instance => _instance ??= new ApiService();
 
-        private readonly HttpClient _http;
+        private HttpClient _http;
         private string? _token;
-        private readonly string _baseUrl;
+        private string _baseUrl;
 
         public bool IsConnected { get; private set; }
+        public bool IsAuthenticated => !string.IsNullOrEmpty(_token);
         public ApiUser? CurrentUser { get; private set; }
         public string BaseUrl => _baseUrl;
 
         private ApiService()
         {
             _baseUrl = SettingsService.Instance.ApiUrl;
-            _http = new HttpClient { BaseAddress = new Uri(_baseUrl) };
-            _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _http = CreateHttpClient(_baseUrl);
+            
+            // Подписываемся на изменение URL API
+            SettingsService.Instance.ApiUrlChanged += OnApiUrlChanged;
+        }
+
+        private HttpClient CreateHttpClient(string baseUrl)
+        {
+            var client = new HttpClient { BaseAddress = new Uri(baseUrl) };
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             // Идентификатор Desktop клиента для снятия ограничений на бекенде
-            _http.DefaultRequestHeaders.Add("X-Client-Type", "Desktop");
+            client.DefaultRequestHeaders.Add("X-Client-Type", "Desktop");
+            client.Timeout = TimeSpan.FromSeconds(10);
+            return client;
+        }
+
+        private void OnApiUrlChanged(string newUrl)
+        {
+            _baseUrl = newUrl;
+            var oldToken = _token;
+            _http.Dispose();
+            _http = CreateHttpClient(newUrl);
+            
+            // Восстанавливаем токен если был
+            if (!string.IsNullOrEmpty(oldToken))
+            {
+                SetToken(oldToken);
+            }
+            
+            IsConnected = false;
+        }
+
+        /// <summary>
+        /// Принудительно переинициализирует HttpClient с текущим URL из настроек
+        /// </summary>
+        public void Reinitialize()
+        {
+            OnApiUrlChanged(SettingsService.Instance.ApiUrl);
         }
 
         public void SetToken(string token)
@@ -203,23 +238,26 @@ namespace HQStudio.Services
                 if (status != null) query.Add($"status={status}");
                 if (source != null) query.Add($"source={source}");
                 var url = "/api/callbacks" + (query.Count > 0 ? "?" + string.Join("&", query) : "");
-                System.Diagnostics.Debug.WriteLine($"GetCallbacksAsync: requesting {url}");
+                
                 var response = await _http.GetAsync(url);
-                var content = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"GetCallbacksAsync: response status {response.StatusCode}");
-                System.Diagnostics.Debug.WriteLine($"GetCallbacksAsync: response content length {content.Length}");
+                
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    // Не авторизован - нужно залогиниться
+                    return new();
+                }
+                
                 if (response.IsSuccessStatusCode)
                 {
+                    var content = await response.Content.ReadAsStringAsync();
                     var result = System.Text.Json.JsonSerializer.Deserialize<List<ApiCallback>>(content, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    System.Diagnostics.Debug.WriteLine($"GetCallbacksAsync: deserialized {result?.Count ?? 0} items");
                     return result ?? new();
                 }
-                System.Diagnostics.Debug.WriteLine($"GetCallbacksAsync: error response {content}");
+                
                 return new();
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"GetCallbacksAsync error: {ex.Message}");
                 return new();
             }
         }

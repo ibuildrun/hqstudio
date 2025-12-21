@@ -12,8 +12,8 @@ namespace HQStudio.Services
         private static UpdateService? _instance;
         public static UpdateService Instance => _instance ??= new UpdateService();
 
-        private readonly HttpClient _http;
-        private readonly string _baseUrl;
+        private HttpClient _http;
+        private string _baseUrl;
 
         public string CurrentVersion { get; }
         public UpdateInfo? AvailableUpdate { get; private set; }
@@ -26,13 +26,32 @@ namespace HQStudio.Services
         private UpdateService()
         {
             _baseUrl = SettingsService.Instance.ApiUrl;
-            _http = new HttpClient { BaseAddress = new Uri(_baseUrl) };
+            _http = CreateHttpClient(_baseUrl);
+            
+            // Подписываемся на изменение URL API
+            SettingsService.Instance.ApiUrlChanged += OnApiUrlChanged;
             
             // Получаем текущую версию из AssemblyInfo
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             CurrentVersion = version != null 
                 ? $"{version.Major}.{version.Minor}.{version.Build}" 
                 : "1.0.0";
+        }
+
+        private HttpClient CreateHttpClient(string baseUrl)
+        {
+            return new HttpClient 
+            { 
+                BaseAddress = new Uri(baseUrl),
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+        }
+
+        private void OnApiUrlChanged(string newUrl)
+        {
+            _baseUrl = newUrl;
+            _http.Dispose();
+            _http = CreateHttpClient(newUrl);
         }
 
         /// <summary>

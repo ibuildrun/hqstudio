@@ -9,7 +9,7 @@ namespace HQStudio.ViewModels
         private readonly SettingsService _settingsService = SettingsService.Instance;
         private readonly DataService _dataService = DataService.Instance;
         private readonly UpdateService _updateService = UpdateService.Instance;
-        
+
         private bool _isDarkTheme;
         private bool _showSplash;
         private string _updateStatus = "Нажмите для проверки обновлений";
@@ -81,7 +81,7 @@ namespace HQStudio.ViewModels
         {
             _isDarkTheme = _settingsService.IsDarkTheme;
             _showSplash = _settingsService.Settings.ShowSplash;
-            
+
             ResetDataCommand = new RelayCommand(_ => ResetData());
             ExportDataCommand = new RelayCommand(_ => ExportData());
             CheckUpdatesCommand = new RelayCommand(async _ => await CheckUpdatesAsync());
@@ -102,9 +102,9 @@ namespace HQStudio.ViewModels
         {
             IsUpdateAvailable = false;
             UpdateStatus = "Проверка обновлений...";
-            
+
             var update = await _updateService.CheckForUpdatesAsync();
-            
+
             if (update == null)
             {
                 UpdateStatus = $"У вас последняя версия ({_updateService.CurrentVersion})";
@@ -144,7 +144,7 @@ namespace HQStudio.ViewModels
         {
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var hqPath = System.IO.Path.Combine(appDataPath, "HQStudio");
-            
+
             System.Diagnostics.Process.Start("explorer.exe", hqPath);
         }
     }

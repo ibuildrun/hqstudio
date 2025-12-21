@@ -93,33 +93,60 @@ namespace HQStudio.ViewModels
         private async Task LoadDataAsync()
         {
             IsLoading = true;
+            System.Diagnostics.Debug.WriteLine("=== LoadDataAsync started ===");
             
             // Проверяем подключение к API
             if (_settings.UseApi)
             {
-                await _apiService.CheckConnectionAsync();
+                System.Diagnostics.Debug.WriteLine($"UseApi=true, checking connection to {_settings.ApiUrl}");
+                var connected = await _apiService.CheckConnectionAsync();
+                IsApiConnected = connected;
+                System.Diagnostics.Debug.WriteLine($"Connection result: {connected}");
             }
-            
-            IsApiConnected = _settings.UseApi && _apiService.IsConnected;
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("UseApi=false");
+                IsApiConnected = false;
+            }
 
             if (!IsApiConnected)
             {
                 IsLoading = false;
+                if (_settings.UseApi)
+                {
+                    MessageBox.Show("Не удалось подключиться к API.\nПроверьте что сервер запущен на " + _settings.ApiUrl, 
+                        "Ошибка подключения", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
                 return;
             }
 
             try
             {
                 // Загружаем статистику
+                System.Diagnostics.Debug.WriteLine("Loading stats...");
                 var stats = await _apiService.GetCallbackStatsAsync();
                 if (stats != null)
                 {
                     Stats = stats;
+                    System.Diagnostics.Debug.WriteLine($"Stats loaded: New={stats.TotalNew}, Processing={stats.TotalProcessing}, Completed={stats.TotalCompleted}");
                 }
 
                 // Загружаем заявки
+                System.Diagnostics.Debug.WriteLine("Loading callbacks...");
                 var callbacks = await _apiService.GetCallbacksAsync();
-                System.Diagnostics.Debug.WriteLine($"Loaded {callbacks.Count} callbacks from API");
+                System.Diagnostics.Debug.WriteLine($"Callbacks loaded: {callbacks.Count}");
+                
+                if (callbacks.Count == 0)
+                {
+                    MessageBox.Show("Заявки не найдены в базе данных.", 
+                        "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    var websiteCount = callbacks.Count(c => c.Source == 0);
+                    System.Diagnostics.Debug.WriteLine($"Website callbacks: {websiteCount}");
+                }
+                
                 _allCallbacks = callbacks.Select(c => new CallbackItem
                 {
                     Id = c.Id,
@@ -135,7 +162,6 @@ namespace HQStudio.ViewModels
                     ProcessedAt = c.ProcessedAt,
                     CompletedAt = c.CompletedAt
                 }).ToList();
-                System.Diagnostics.Debug.WriteLine($"Mapped {_allCallbacks.Count} callbacks");
 
                 FilterCallbacks();
             }

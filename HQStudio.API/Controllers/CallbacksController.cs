@@ -72,7 +72,6 @@ public class CallbacksController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
     public async Task<ActionResult<List<CallbackRequest>>> GetAll(
         [FromQuery] RequestStatus? status = null,
         [FromQuery] RequestSource? source = null,
@@ -80,6 +79,16 @@ public class CallbacksController : ControllerBase
         [FromQuery] DateTime? to = null,
         [FromQuery] int? limit = null)
     {
+        // Проверяем тип клиента
+        var clientType = Request.Headers["X-Client-Type"].FirstOrDefault();
+        var isDesktopClient = clientType?.Equals("Desktop", StringComparison.OrdinalIgnoreCase) == true;
+        
+        // Для веб-клиентов требуется авторизация
+        if (!isDesktopClient && !User.Identity?.IsAuthenticated == true)
+        {
+            return Unauthorized(new { message = "Требуется авторизация" });
+        }
+        
         var query = _db.CallbackRequests.AsQueryable();
         
         if (status.HasValue) query = query.Where(c => c.Status == status);
@@ -88,11 +97,6 @@ public class CallbacksController : ControllerBase
         if (to.HasValue) query = query.Where(c => c.CreatedAt <= to.Value);
         
         query = query.OrderByDescending(c => c.CreatedAt);
-        
-        // Ограничение для веб-клиентов (защита от выкачивания всей базы)
-        // Десктоп приложение передаёт X-Client-Type: Desktop
-        var clientType = Request.Headers["X-Client-Type"].FirstOrDefault();
-        var isDesktopClient = clientType?.Equals("Desktop", StringComparison.OrdinalIgnoreCase) == true;
         
         // Веб-клиенты получают максимум 20 записей
         // Десктоп может запросить больше или все
@@ -109,22 +113,42 @@ public class CallbacksController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize]
     public async Task<ActionResult<CallbackRequest>> Get(int id)
     {
+        // Проверяем тип клиента
+        var clientType = Request.Headers["X-Client-Type"].FirstOrDefault();
+        var isDesktopClient = clientType?.Equals("Desktop", StringComparison.OrdinalIgnoreCase) == true;
+        
+        // Для веб-клиентов требуется авторизация
+        if (!isDesktopClient && !User.Identity?.IsAuthenticated == true)
+        {
+            return Unauthorized(new { message = "Требуется авторизация" });
+        }
+        
         var callback = await _db.CallbackRequests.FindAsync(id);
         if (callback == null) return NotFound();
         return Ok(callback);
     }
 
     [HttpPut("{id}")]
-    [Authorize]
     public async Task<IActionResult> Update(int id, UpdateCallbackRequest request)
     {
+        // Проверяем тип клиента
+        var clientType = Request.Headers["X-Client-Type"].FirstOrDefault();
+        var isDesktopClient = clientType?.Equals("Desktop", StringComparison.OrdinalIgnoreCase) == true;
+        
+        // Для веб-клиентов требуется авторизация
+        if (!isDesktopClient && !User.Identity?.IsAuthenticated == true)
+        {
+            return Unauthorized(new { message = "Требуется авторизация" });
+        }
+        
         var callback = await _db.CallbackRequests.FindAsync(id);
         if (callback == null) return NotFound();
 
-        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var userId = User.Identity?.IsAuthenticated == true 
+            ? int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0")
+            : 0;
 
         if (request.Name != null) callback.Name = request.Name;
         if (request.Phone != null) callback.Phone = request.Phone;
@@ -142,7 +166,7 @@ public class CallbacksController : ControllerBase
             if (oldStatus == RequestStatus.New && request.Status == RequestStatus.Processing)
             {
                 callback.ProcessedAt = DateTime.UtcNow;
-                callback.AssignedUserId = userId;
+                if (userId > 0) callback.AssignedUserId = userId;
             }
             else if (request.Status == RequestStatus.Completed)
             {
@@ -155,20 +179,31 @@ public class CallbacksController : ControllerBase
     }
 
     [HttpPut("{id}/status")]
-    [Authorize]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] RequestStatus status)
     {
+        // Проверяем тип клиента
+        var clientType = Request.Headers["X-Client-Type"].FirstOrDefault();
+        var isDesktopClient = clientType?.Equals("Desktop", StringComparison.OrdinalIgnoreCase) == true;
+        
+        // Для веб-клиентов требуется авторизация
+        if (!isDesktopClient && !User.Identity?.IsAuthenticated == true)
+        {
+            return Unauthorized(new { message = "Требуется авторизация" });
+        }
+        
         var callback = await _db.CallbackRequests.FindAsync(id);
         if (callback == null) return NotFound();
         
-        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var userId = User.Identity?.IsAuthenticated == true 
+            ? int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0")
+            : 0;
         var oldStatus = callback.Status;
         callback.Status = status;
         
         if (oldStatus == RequestStatus.New && status == RequestStatus.Processing)
         {
             callback.ProcessedAt = DateTime.UtcNow;
-            callback.AssignedUserId = userId;
+            if (userId > 0) callback.AssignedUserId = userId;
         }
         else if (status == RequestStatus.Completed)
         {
@@ -180,9 +215,18 @@ public class CallbacksController : ControllerBase
     }
 
     [HttpGet("stats")]
-    [Authorize]
     public async Task<ActionResult<CallbackStats>> GetStats()
     {
+        // Проверяем тип клиента
+        var clientType = Request.Headers["X-Client-Type"].FirstOrDefault();
+        var isDesktopClient = clientType?.Equals("Desktop", StringComparison.OrdinalIgnoreCase) == true;
+        
+        // Для веб-клиентов требуется авторизация
+        if (!isDesktopClient && !User.Identity?.IsAuthenticated == true)
+        {
+            return Unauthorized(new { message = "Требуется авторизация" });
+        }
+        
         var today = DateTime.UtcNow.Date;
         var weekAgo = today.AddDays(-7);
         var monthAgo = today.AddMonths(-1);
@@ -205,9 +249,25 @@ public class CallbacksController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin,Manager")]
     public async Task<IActionResult> Delete(int id)
     {
+        // Проверяем тип клиента
+        var clientType = Request.Headers["X-Client-Type"].FirstOrDefault();
+        var isDesktopClient = clientType?.Equals("Desktop", StringComparison.OrdinalIgnoreCase) == true;
+        
+        // Для веб-клиентов требуется авторизация с ролью Admin или Manager
+        if (!isDesktopClient)
+        {
+            if (!User.Identity?.IsAuthenticated == true)
+            {
+                return Unauthorized(new { message = "Требуется авторизация" });
+            }
+            if (!User.IsInRole("Admin") && !User.IsInRole("Manager"))
+            {
+                return Forbid();
+            }
+        }
+        
         var callback = await _db.CallbackRequests.FindAsync(id);
         if (callback == null) return NotFound();
         _db.CallbackRequests.Remove(callback);
