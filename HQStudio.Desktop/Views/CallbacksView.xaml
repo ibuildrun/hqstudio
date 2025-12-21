@@ -155,88 +155,118 @@
 
             <!-- Details Panel -->
             <Border Grid.Column="1" Style="{DynamicResource Card}">
-                <Grid Visibility="{Binding HasSelection, Converter={StaticResource BoolToVisibility}}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Header -->
-                    <StackPanel Grid.Row="0" Margin="0,0,0,20">
-                        <TextBlock Text="ДЕТАЛИ ЗАЯВКИ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
-                        <TextBlock FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}">
-                            <Run Text="Заявка #"/><Run Text="{Binding SelectedCallback.Id}"/>
-                        </TextBlock>
+                <Grid>
+                    <!-- Placeholder when nothing selected -->
+                    <StackPanel Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVisibilityConverter}}"
+                                HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16" Opacity="0.3"/>
+                        <TextBlock Text="Выберите заявку" FontSize="16" FontWeight="SemiBold" 
+                                   Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Кликните на заявку в списке для просмотра деталей" 
+                                   Style="{DynamicResource TextSmall}" HorizontalAlignment="Center" 
+                                   TextAlignment="Center" Margin="0,8,0,0" MaxWidth="200" TextWrapping="Wrap"/>
                     </StackPanel>
+                    
+                    <!-- Details when selected -->
+                    <Grid Visibility="{Binding HasSelection, Converter={StaticResource BoolToVisibility}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                    <!-- Details -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <TextBlock Text="КОНТАКТ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
-                            <TextBlock Text="{Binding SelectedCallback.Name}" FontSize="16" FontWeight="SemiBold" 
-                                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
-                            <TextBlock Text="{Binding SelectedCallback.Phone}" FontSize="14" 
-                                       Foreground="#2196F3" Margin="0,0,0,16"/>
-
-                            <TextBlock Text="АВТОМОБИЛЬ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
-                            <TextBlock Text="{Binding SelectedCallback.CarModel, TargetNullValue='Не указан'}" 
-                                       Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
-                            <TextBlock Text="{Binding SelectedCallback.LicensePlate, TargetNullValue='-'}" 
-                                       FontFamily="Consolas" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16"/>
-
-                            <TextBlock Text="СООБЩЕНИЕ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"
-                                       Visibility="{Binding SelectedCallback.Message, Converter={StaticResource CountToVisibility}}"/>
-                            <Border Background="{DynamicResource BgInputBrush}" CornerRadius="8" Padding="12" Margin="0,0,0,16"
-                                    Visibility="{Binding SelectedCallback.Message, Converter={StaticResource CountToVisibility}}">
-                                <TextBlock Text="{Binding SelectedCallback.Message}" TextWrapping="Wrap" 
-                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
-                            </Border>
-
-                            <TextBlock Text="ИСТОЧНИК" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                <TextBlock Text="{Binding SelectedCallback.SourceIcon}" FontSize="16" Margin="0,0,8,0"/>
-                                <TextBlock Text="{Binding SelectedCallback.Source}" 
-                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
-                            </StackPanel>
-                            <TextBlock Text="{Binding SelectedCallback.SourceDetails}" 
-                                       Style="{DynamicResource TextSmall}" Margin="0,0,0,16"
-                                       Visibility="{Binding SelectedCallback.SourceDetails, Converter={StaticResource CountToVisibility}}"/>
-
-                            <TextBlock Text="ДАТЫ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
-                            <TextBlock Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4">
-                                <Run Text="Создана: "/><Run Text="{Binding SelectedCallback.FormattedDate}"/>
+                        <!-- Header -->
+                        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                            <TextBlock Text="ДЕТАЛИ ЗАЯВКИ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                            <TextBlock FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}">
+                                <Run Text="Заявка #"/><Run Text="{Binding SelectedCallback.Id}"/>
                             </TextBlock>
+                            <Border Background="{Binding SelectedCallback.StatusColor}" CornerRadius="4" 
+                                    Padding="8,4" HorizontalAlignment="Left" Margin="0,8,0,0" Opacity="0.8">
+                                <TextBlock Text="{Binding SelectedCallback.Status}" Foreground="White" 
+                                           FontWeight="SemiBold" FontSize="11"/>
+                            </Border>
                         </StackPanel>
-                    </ScrollViewer>
 
-                    <!-- Actions -->
-                    <StackPanel Grid.Row="2" Margin="0,16,0,0">
-                        <Button Content="👤 Создать клиента" Command="{Binding CreateClientCommand}" 
-                                Style="{DynamicResource BtnSuccess}" Margin="0,0,0,8"/>
-                        
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Content="⏳ В работу" Command="{Binding TakeInWorkCommand}" 
-                                    Style="{DynamicResource ButtonSecondary}" Margin="0,0,4,0"/>
-                            <Button Grid.Column="1" Content="✅ Завершить" Command="{Binding CompleteCommand}" 
-                                    Style="{DynamicResource ButtonSecondary}" Margin="4,0,0,0"/>
-                        </Grid>
-                        
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Content="❌ Отменить" Command="{Binding CancelCommand}" 
-                                    Style="{DynamicResource BtnDanger}" Margin="0,0,4,0"/>
-                            <Button Grid.Column="1" Content="🗑️ Удалить" Command="{Binding DeleteCommand}" 
-                                    Style="{DynamicResource BtnDanger}" Margin="4,0,0,0"/>
-                        </Grid>
-                    </StackPanel>
+                        <!-- Details -->
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <TextBlock Text="КОНТАКТ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                                <TextBlock Text="{Binding SelectedCallback.Name}" FontSize="16" FontWeight="SemiBold" 
+                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="{Binding SelectedCallback.Phone}" FontSize="14" 
+                                           Foreground="#2196F3" Margin="0,0,0,16" Cursor="Hand"/>
+
+                                <TextBlock Text="АВТОМОБИЛЬ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                                <TextBlock Text="{Binding SelectedCallback.CarModel, TargetNullValue='Не указан'}" 
+                                           Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="{Binding SelectedCallback.LicensePlate, TargetNullValue='-'}" 
+                                           FontFamily="Consolas" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                                <TextBlock Text="СООБЩЕНИЕ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"
+                                           Visibility="{Binding SelectedCallback.Message, Converter={StaticResource CountToVisibility}}"/>
+                                <Border Background="{DynamicResource BgInputBrush}" CornerRadius="8" Padding="12" Margin="0,0,0,16"
+                                        Visibility="{Binding SelectedCallback.Message, Converter={StaticResource CountToVisibility}}">
+                                    <TextBlock Text="{Binding SelectedCallback.Message}" TextWrapping="Wrap" 
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                </Border>
+
+                                <TextBlock Text="ИСТОЧНИК" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <TextBlock Text="{Binding SelectedCallback.SourceIcon}" FontSize="16" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{Binding SelectedCallback.Source}" 
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding SelectedCallback.SourceDetails}" 
+                                           Style="{DynamicResource TextSmall}" Margin="0,0,0,16"
+                                           Visibility="{Binding SelectedCallback.SourceDetails, Converter={StaticResource CountToVisibility}}"/>
+
+                                <TextBlock Text="ДАТЫ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                                <TextBlock Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4">
+                                    <Run Text="Создана: "/><Run Text="{Binding SelectedCallback.FormattedDate}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Actions -->
+                        <StackPanel Grid.Row="2" Margin="0,16,0,0">
+                            <TextBlock Text="ДЕЙСТВИЯ" Style="{DynamicResource TextLabel}" Margin="0,0,0,12"/>
+                            
+                            <Button Content="👤 Создать клиента" Command="{Binding CreateClientCommand}" 
+                                    Style="{DynamicResource BtnSuccess}" Margin="0,0,0,8"
+                                    ToolTip="Создать карточку клиента из данных заявки"/>
+                            
+                            <Button Content="📦 Создать заказ" Command="{Binding CreateOrderCommand}" 
+                                    Style="{DynamicResource BtnPrimary}" Margin="0,0,0,12"
+                                    ToolTip="Создать заказ для этого клиента"/>
+                            
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Content="⏳ В работу" Command="{Binding TakeInWorkCommand}" 
+                                        Style="{DynamicResource ButtonSecondary}" Margin="0,0,4,0"
+                                        ToolTip="Взять заявку в работу"/>
+                                <Button Grid.Column="1" Content="✅ Завершить" Command="{Binding CompleteCommand}" 
+                                        Style="{DynamicResource ButtonSecondary}" Margin="4,0,0,0"
+                                        ToolTip="Отметить как завершённую"/>
+                            </Grid>
+                            
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Content="❌ Отменить" Command="{Binding CancelCommand}" 
+                                        Style="{DynamicResource BtnDanger}" Margin="0,0,4,0"
+                                        ToolTip="Отменить заявку"/>
+                                <Button Grid.Column="1" Content="🗑️ Удалить" Command="{Binding DeleteCommand}" 
+                                        Style="{DynamicResource BtnDanger}" Margin="4,0,0,0"
+                                        ToolTip="Удалить заявку"/>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>
