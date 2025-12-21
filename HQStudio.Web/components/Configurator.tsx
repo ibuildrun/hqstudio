@@ -89,6 +89,8 @@ export default function Configurator() {
       setSubmitError(result.error)
     } else {
       setIsFinished(true)
+      // Отправляем событие для обновления списка заявок в админке
+      window.dispatchEvent(new CustomEvent('callbacks-updated'))
     }
   }
 

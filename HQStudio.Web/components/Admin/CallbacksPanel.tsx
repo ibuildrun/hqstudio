@@ -67,6 +67,15 @@ export default function CallbacksPanel({ onClose }: CallbacksPanelProps) {
     return () => clearInterval(interval)
   }, [loadData])
 
+  // Слушаем событие добавления новой заявки
+  useEffect(() => {
+    const handleCallbacksUpdated = () => {
+      loadData(true)
+    }
+    window.addEventListener('callbacks-updated', handleCallbacksUpdated)
+    return () => window.removeEventListener('callbacks-updated', handleCallbacksUpdated)
+  }, [loadData])
+
   const handleRefresh = () => {
     loadData(true)
   }
