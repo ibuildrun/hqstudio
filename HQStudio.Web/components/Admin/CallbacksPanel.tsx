@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Phone, Globe, User, Mail, MessageCircle, Users, MoreHorizontal,
-  Clock, CheckCircle, XCircle, AlertCircle, Filter, Plus, Search,
-  Car, Calendar, ChevronDown, Trash2, Edit2, Eye
+  Clock, CheckCircle, XCircle, AlertCircle, Plus, Search,
+  Car, Calendar, Trash2, Eye, RefreshCw
 } from 'lucide-react'
 import { api, CallbackRequest, RequestSource, RequestStatus, CallbackStats } from '@/lib/api'
 
@@ -34,35 +34,52 @@ export default function CallbacksPanel({ onClose }: CallbacksPanelProps) {
   const [callbacks, setCallbacks] = useState<CallbackRequest[]>([])
   const [stats, setStats] = useState<CallbackStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [filter, setFilter] = useState<{ status?: string; source?: string }>({})
   const [search, setSearch] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedCallback, setSelectedCallback] = useState<CallbackRequest | null>(null)
 
-  useEffect(() => {
-    loadData()
-  }, [filter])
-
-  const loadData = async () => {
-    setLoading(true)
+  const loadData = useCallback(async (showRefresh = false) => {
+    if (showRefresh) setRefreshing(true)
+    else setLoading(true)
+    
     const [callbacksRes, statsRes] = await Promise.all([
       api.callbacks.getAll(filter),
       api.callbacks.getStats()
     ])
     if (callbacksRes.data) setCallbacks(callbacksRes.data)
     if (statsRes.data) setStats(statsRes.data)
+    
     setLoading(false)
+    setRefreshing(false)
+  }, [filter])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  // Автообновление каждые 30 секунд
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadData(true)
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [loadData])
+
+  const handleRefresh = () => {
+    loadData(true)
   }
 
   const handleStatusChange = async (id: number, status: RequestStatus) => {
     await api.callbacks.updateStatus(id, status)
-    loadData()
+    loadData(true)
   }
 
   const handleDelete = async (id: number) => {
     if (confirm('Удалить заявку?')) {
       await api.callbacks.delete(id)
-      loadData()
+      loadData(true)
     }
   }
 
@@ -77,7 +94,17 @@ export default function CallbacksPanel({ onClose }: CallbacksPanelProps) {
     <div className="bg-neutral-900 rounded-2xl p-6 max-h-[80vh] overflow-hidden flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Заявки</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl font-bold">Заявки</h2>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="p-2 hover:bg-neutral-800 rounded-lg transition disabled:opacity-50"
+            title="Обновить"
+          >
+            <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+          </button>
+        </div>
         <button
           onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
@@ -161,14 +188,14 @@ export default function CallbacksPanel({ onClose }: CallbacksPanelProps) {
         {showAddModal && (
           <AddCallbackModal
             onClose={() => setShowAddModal(false)}
-            onSave={() => { setShowAddModal(false); loadData() }}
+            onSave={() => { setShowAddModal(false); loadData(true) }}
           />
         )}
         {selectedCallback && (
           <CallbackDetailModal
             callback={selectedCallback}
             onClose={() => setSelectedCallback(null)}
-            onUpdate={() => { setSelectedCallback(null); loadData() }}
+            onUpdate={() => { setSelectedCallback(null); loadData(true) }}
           />
         )}
       </AnimatePresence>
