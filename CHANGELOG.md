@@ -1,3 +1,10 @@
+## [1.4.0](https://github.com/randomu3/hqstudio/compare/v1.3.0...v1.4.0) (2025-12-21)
+
+
+### 🚀 Новые возможности
+
+* **web:** добавлена кнопка обновления и автообновление заявок ([2e98d46](https://github.com/randomu3/hqstudio/commit/2e98d469ab50d2373eb382ca4e1136ac96a6cef0))
+
 ## [1.3.0](https://github.com/randomu3/hqstudio/compare/v1.2.1...v1.3.0) (2025-12-21)
 
 
