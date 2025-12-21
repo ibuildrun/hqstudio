@@ -122,6 +122,8 @@
                                     Command="{Binding NavigateCommand}" CommandParameter="Clients"/>
                             <Button Content="📋  Заказы" Style="{DynamicResource BtnNav}"
                                     Command="{Binding NavigateCommand}" CommandParameter="Orders"/>
+                            <Button Content="🌐  Заявки" Style="{DynamicResource BtnNav}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="Callbacks"/>
                             
                             <TextBlock Text="УПРАВЛЕНИЕ" Style="{DynamicResource TextLabel}" Margin="12,30,0,12"/>
                             
@@ -167,6 +169,9 @@
                         </DataTemplate>
                         <DataTemplate DataType="{x:Type vm:OrdersViewModel}">
                             <views:OrdersView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type vm:CallbacksViewModel}">
+                            <views:CallbacksView/>
                         </DataTemplate>
                         <DataTemplate DataType="{x:Type vm:StaffViewModel}">
                             <views:StaffView/>

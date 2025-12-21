@@ -47,6 +47,7 @@ namespace HQStudio.ViewModels
                 "Services" => new ServicesViewModel(),
                 "Clients" => new ClientsViewModel(),
                 "Orders" => new OrdersViewModel(),
+                "Callbacks" => new CallbacksViewModel(),
                 "Staff" => new StaffViewModel(),
                 "ActivityLog" => new ActivityLogViewModel(),
                 "Settings" => new SettingsViewModel(),

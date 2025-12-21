@@ -1,0 +1,244 @@
+<UserControl x:Class="HQStudio.Views.CallbacksView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,24">
+            <StackPanel>
+                <TextBlock Text="🌐 ЗАЯВКИ С САЙТА" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                <TextBlock Text="Обращения клиентов с сайта и других источников" 
+                           Style="{DynamicResource TextSmall}"/>
+            </StackPanel>
+            <Button Content="🔄 Обновить" Command="{Binding RefreshCommand}" 
+                    Style="{DynamicResource ButtonPrimary}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+        </Grid>
+
+        <!-- Stats Cards -->
+        <Grid Grid.Row="1" Margin="0,0,0,24" Visibility="{Binding IsApiConnected, Converter={StaticResource BoolToVisibility}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{DynamicResource CardHoverable}" Margin="0,0,8,0">
+                <StackPanel>
+                    <TextBlock Text="🆕" FontSize="24" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding Stats.TotalNew, FallbackValue=0}" FontSize="32" FontWeight="Bold" 
+                               Foreground="#FFC107"/>
+                    <TextBlock Text="Новые" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1" Style="{DynamicResource CardHoverable}" Margin="4,0">
+                <StackPanel>
+                    <TextBlock Text="⏳" FontSize="24" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding Stats.TotalProcessing, FallbackValue=0}" FontSize="32" FontWeight="Bold" 
+                               Foreground="#2196F3"/>
+                    <TextBlock Text="В работе" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2" Style="{DynamicResource CardHoverable}" Margin="4,0">
+                <StackPanel>
+                    <TextBlock Text="📅" FontSize="24" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding Stats.TodayCount, FallbackValue=0}" FontSize="32" FontWeight="Bold" 
+                               Foreground="#4CAF50"/>
+                    <TextBlock Text="Сегодня" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="3" Style="{DynamicResource CardHoverable}" Margin="8,0,0,0">
+                <StackPanel>
+                    <TextBlock Text="📊" FontSize="24" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding Stats.MonthCount, FallbackValue=0}" FontSize="32" FontWeight="Bold" 
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="За месяц" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Filters & Search -->
+        <Border Grid.Row="2" Style="{DynamicResource Card}" Padding="16" Margin="0,0,0,16"
+                Visibility="{Binding IsApiConnected, Converter={StaticResource BoolToVisibility}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Search -->
+                <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                         Style="{DynamicResource InputText}" Margin="0,0,16,0">
+                    <TextBox.Tag>🔍 Поиск по имени, телефону, авто...</TextBox.Tag>
+                </TextBox>
+
+                <!-- Status Filter -->
+                <ComboBox Grid.Column="1" Width="140" ItemsSource="{Binding StatusFilters}" 
+                          SelectedItem="{Binding SelectedStatus}" Style="{DynamicResource ComboBoxStyle}" 
+                          Margin="0,0,8,0"/>
+
+                <!-- Source Filter -->
+                <ComboBox Grid.Column="2" Width="140" ItemsSource="{Binding SourceFilters}" 
+                          SelectedItem="{Binding SelectedSource}" Style="{DynamicResource ComboBoxStyle}" 
+                          Margin="0,0,8,0"/>
+
+                <Button Grid.Column="3" Content="Применить" Command="{Binding ApplyFiltersCommand}" 
+                        Style="{DynamicResource ButtonSecondary}"/>
+            </Grid>
+        </Border>
+
+        <!-- Not Connected Warning -->
+        <Border Grid.Row="3" Style="{DynamicResource Card}" Padding="40" 
+                Visibility="{Binding IsApiConnected, Converter={StaticResource InverseBoolToVisibilityConverter}, FallbackValue=Collapsed}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="⚠️" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                <TextBlock Text="Нет подключения к API" FontSize="18" FontWeight="SemiBold" 
+                           Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+                <TextBlock Text="Заявки с сайта доступны только при подключении к серверу" 
+                           Style="{DynamicResource TextSmall}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="3" Visibility="{Binding IsApiConnected, Converter={StaticResource BoolToVisibility}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="350"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Callbacks List -->
+            <Border Grid.Column="0" Style="{DynamicResource Card}" Margin="0,0,16,0">
+                <DataGrid ItemsSource="{Binding Callbacks}" SelectedItem="{Binding SelectedCallback}"
+                          AutoGenerateColumns="False" IsReadOnly="True"
+                          Style="{DynamicResource DataGridStyle}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding FormattedDate}" Width="120"/>
+                        <DataGridTemplateColumn Header="Источник" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding SourceIcon}" Margin="0,0,5,0"/>
+                                        <TextBlock Text="{Binding Source}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Имя" Binding="{Binding Name}" Width="140"/>
+                        <DataGridTextColumn Header="Телефон" Binding="{Binding Phone}" Width="130"/>
+                        <DataGridTextColumn Header="Авто" Binding="{Binding CarModel}" Width="100"/>
+                        <DataGridTemplateColumn Header="Статус" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding StatusColor}" CornerRadius="4" Padding="8,4" 
+                                            HorizontalAlignment="Left" Opacity="0.2">
+                                        <TextBlock Text="{Binding Status}" Foreground="{Binding StatusColor}" 
+                                                   FontWeight="SemiBold" FontSize="11"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- Details Panel -->
+            <Border Grid.Column="1" Style="{DynamicResource Card}">
+                <Grid Visibility="{Binding HasSelection, Converter={StaticResource BoolToVisibility}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                        <TextBlock Text="ДЕТАЛИ ЗАЯВКИ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                        <TextBlock FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}">
+                            <Run Text="Заявка #"/><Run Text="{Binding SelectedCallback.Id}"/>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- Details -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="КОНТАКТ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                            <TextBlock Text="{Binding SelectedCallback.Name}" FontSize="16" FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding SelectedCallback.Phone}" FontSize="14" 
+                                       Foreground="#2196F3" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="АВТОМОБИЛЬ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                            <TextBlock Text="{Binding SelectedCallback.CarModel, TargetNullValue='Не указан'}" 
+                                       Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding SelectedCallback.LicensePlate, TargetNullValue='-'}" 
+                                       FontFamily="Consolas" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="СООБЩЕНИЕ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"
+                                       Visibility="{Binding SelectedCallback.Message, Converter={StaticResource CountToVisibility}}"/>
+                            <Border Background="{DynamicResource BgInputBrush}" CornerRadius="8" Padding="12" Margin="0,0,0,16"
+                                    Visibility="{Binding SelectedCallback.Message, Converter={StaticResource CountToVisibility}}">
+                                <TextBlock Text="{Binding SelectedCallback.Message}" TextWrapping="Wrap" 
+                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </Border>
+
+                            <TextBlock Text="ИСТОЧНИК" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                <TextBlock Text="{Binding SelectedCallback.SourceIcon}" FontSize="16" Margin="0,0,8,0"/>
+                                <TextBlock Text="{Binding SelectedCallback.Source}" 
+                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding SelectedCallback.SourceDetails}" 
+                                       Style="{DynamicResource TextSmall}" Margin="0,0,0,16"
+                                       Visibility="{Binding SelectedCallback.SourceDetails, Converter={StaticResource CountToVisibility}}"/>
+
+                            <TextBlock Text="ДАТЫ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                            <TextBlock Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4">
+                                <Run Text="Создана: "/><Run Text="{Binding SelectedCallback.FormattedDate}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Actions -->
+                    <StackPanel Grid.Row="2" Margin="0,16,0,0">
+                        <Button Content="👤 Создать клиента" Command="{Binding CreateClientCommand}" 
+                                Style="{DynamicResource BtnSuccess}" Margin="0,0,0,8"/>
+                        
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="⏳ В работу" Command="{Binding TakeInWorkCommand}" 
+                                    Style="{DynamicResource ButtonSecondary}" Margin="0,0,4,0"/>
+                            <Button Grid.Column="1" Content="✅ Завершить" Command="{Binding CompleteCommand}" 
+                                    Style="{DynamicResource ButtonSecondary}" Margin="4,0,0,0"/>
+                        </Grid>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="❌ Отменить" Command="{Binding CancelCommand}" 
+                                    Style="{DynamicResource BtnDanger}" Margin="0,0,4,0"/>
+                            <Button Grid.Column="1" Content="🗑️ Удалить" Command="{Binding DeleteCommand}" 
+                                    Style="{DynamicResource BtnDanger}" Margin="4,0,0,0"/>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
