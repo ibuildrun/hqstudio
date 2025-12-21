@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/randomu3/hqstudio/compare/v1.1.2...v1.1.3) (2025-12-21)
+
+
+### 🐛 Исправления
+
+* **web:** ослаблены ESLint правила для совместимости ([baf192d](https://github.com/randomu3/hqstudio/commit/baf192db0c428e5c4c6319a90a041bdaa57bb4f7))
+
 ## [1.1.2](https://github.com/randomu3/hqstudio/compare/v1.1.1...v1.1.2) (2025-12-21)
 
 
