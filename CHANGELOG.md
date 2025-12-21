@@ -1,3 +1,10 @@
+## [1.6.0](https://github.com/randomu3/hqstudio/compare/v1.5.2...v1.6.0) (2025-12-21)
+
+
+### 🚀 Новые возможности
+
+* **desktop:** расширена UI библиотека компонентов ([eed7201](https://github.com/randomu3/hqstudio/commit/eed7201d345b6c97976384adc676ce3db2bfe3e2))
+
 ## [1.5.2](https://github.com/randomu3/hqstudio/compare/v1.5.1...v1.5.2) (2025-12-21)
 
 
