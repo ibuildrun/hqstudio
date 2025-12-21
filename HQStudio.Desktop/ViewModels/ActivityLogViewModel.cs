@@ -84,6 +84,13 @@ namespace HQStudio.ViewModels
         private async Task LoadDataAsync()
         {
             IsLoading = true;
+            
+            // Проверяем подключение к API
+            if (_settings.UseApi)
+            {
+                await _apiService.CheckConnectionAsync();
+            }
+            
             IsApiConnected = _settings.UseApi && _apiService.IsConnected;
 
             if (!IsApiConnected)
@@ -102,34 +109,48 @@ namespace HQStudio.ViewModels
 
         private async Task LoadStatsAsync()
         {
-            var stats = await _apiService.GetActivityLogStatsAsync();
-            if (stats != null)
+            try
             {
-                Stats = stats;
-
-                Users.Clear();
-                Users.Add(new ActivityUserStat { UserId = 0, UserName = "Все пользователи" });
-                foreach (var user in stats.ByUser)
+                var stats = await _apiService.GetActivityLogStatsAsync();
+                if (stats != null)
                 {
-                    Users.Add(user);
+                    Stats = stats;
+
+                    Users.Clear();
+                    Users.Add(new ActivityUserStat { UserId = 0, UserName = "Все пользователи" });
+                    foreach (var user in stats.ByUser)
+                    {
+                        Users.Add(user);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"LoadStatsAsync error: {ex.Message}");
             }
         }
 
         private async Task LoadActivityLogsAsync()
         {
-            string? source = SelectedSource != "Все" ? SelectedSource : null;
-            int? userId = SelectedUser?.UserId > 0 ? SelectedUser.UserId : null;
-
-            var result = await _apiService.GetActivityLogsAsync(CurrentPage, 50, source, userId);
-            if (result != null)
+            try
             {
-                ActivityLogs.Clear();
-                foreach (var log in result.Items)
+                string? source = SelectedSource != "Все" ? SelectedSource : null;
+                int? userId = SelectedUser?.UserId > 0 ? SelectedUser.UserId : null;
+
+                var result = await _apiService.GetActivityLogsAsync(CurrentPage, 50, source, userId);
+                if (result != null)
                 {
-                    ActivityLogs.Add(log);
+                    ActivityLogs.Clear();
+                    foreach (var log in result.Items)
+                    {
+                        ActivityLogs.Add(log);
+                    }
+                    TotalPages = result.TotalPages > 0 ? result.TotalPages : 1;
                 }
-                TotalPages = result.TotalPages > 0 ? result.TotalPages : 1;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"LoadActivityLogsAsync error: {ex.Message}");
             }
         }
 
