@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -63,7 +63,7 @@ jobs:
         working-directory: HQStudio.Web
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -101,7 +101,7 @@ jobs:
     runs-on: windows-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -126,7 +126,7 @@ jobs:
     needs: [api-test, web-test]
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Build API Docker image
         run: docker build -t hqstudio-api:test ./HQStudio.API
