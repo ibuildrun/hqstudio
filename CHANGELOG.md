@@ -1,3 +1,10 @@
+## [1.8.0](https://github.com/randomu3/hqstudio/compare/v1.7.0...v1.8.0) (2025-12-21)
+
+
+### 🚀 Новые возможности
+
+* **desktop:** добавлена вкладка 'Заявки с сайта' ([b4feb96](https://github.com/randomu3/hqstudio/commit/b4feb96462df777e2cf74b73d64eb81678266795))
+
 ## [1.7.0](https://github.com/randomu3/hqstudio/compare/v1.6.0...v1.7.0) (2025-12-21)
 
 
