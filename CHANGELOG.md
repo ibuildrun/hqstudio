@@ -1,3 +1,10 @@
+## [1.3.0](https://github.com/randomu3/hqstudio/compare/v1.2.1...v1.3.0) (2025-12-21)
+
+
+### 🚀 Новые возможности
+
+* **web:** добавлена отправка заявки в конфигураторе ([056e511](https://github.com/randomu3/hqstudio/commit/056e511e913851b02fda47e63f45f1f6b10ffbe2))
+
 ## [1.2.1](https://github.com/randomu3/hqstudio/compare/v1.2.0...v1.2.1) (2025-12-21)
 
 
