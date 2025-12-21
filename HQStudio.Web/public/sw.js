@@ -34,6 +34,11 @@ self.addEventListener('activate', (event) => {
 
 // Стратегия: Network First с fallback на кэш
 self.addEventListener('fetch', (event) => {
+  // Игнорируем chrome-extension и другие не-http запросы
+  if (!event.request.url.startsWith('http')) {
+    return;
+  }
+
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(() => {
@@ -46,8 +51,8 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Кэшируем успешные GET запросы
-        if (event.request.method === 'GET' && response.status === 200) {
+        // Кэшируем успешные GET запросы только для http/https
+        if (event.request.method === 'GET' && response.status === 200 && event.request.url.startsWith('http')) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
@@ -68,8 +73,8 @@ self.addEventListener('push', (event) => {
   const data = event.data.json();
   const options = {
     body: data.body || 'Новое уведомление',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
+    icon: '/icons/icon-192x192.svg',
+    badge: '/icons/icon-192x192.svg',
     vibrate: [100, 50, 100],
     data: {
       url: data.url || '/',
