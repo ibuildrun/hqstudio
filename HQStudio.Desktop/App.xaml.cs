@@ -12,8 +12,7 @@ namespace HQStudio
             // Initialize theme
             ThemeService.Instance.Initialize();
             
-            // Start session for online status tracking
-            _ = SessionService.Instance.StartSessionAsync();
+            // Session is started after login in LoginViewModel
         }
 
         protected override void OnExit(ExitEventArgs e)

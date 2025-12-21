@@ -8,6 +8,7 @@ namespace HQStudio.ViewModels
         private readonly DataService _dataService = DataService.Instance;
         private readonly ApiService _apiService = ApiService.Instance;
         private readonly SettingsService _settings = SettingsService.Instance;
+        private readonly SessionService _sessionService = SessionService.Instance;
         private string _username = string.Empty;
         private string _password = string.Empty;
         private string _errorMessage = string.Empty;
@@ -81,6 +82,10 @@ namespace HQStudio.ViewModels
                         DisplayName = result.User.Name,
                         Role = result.User.Role
                     };
+                    
+                    // Start session for online status tracking
+                    await _sessionService.StartSessionAsync(result.User.Id);
+                    
                     IsLoading = false;
                     LoginSuccessful?.Invoke();
                     return;
@@ -91,6 +96,11 @@ namespace HQStudio.ViewModels
             await Task.Delay(300);
             if (_dataService.Login(Username, Password))
             {
+                // Start session with local user ID
+                if (_dataService.CurrentUser != null)
+                {
+                    await _sessionService.StartSessionAsync(_dataService.CurrentUser.Id);
+                }
                 LoginSuccessful?.Invoke();
             }
             else
