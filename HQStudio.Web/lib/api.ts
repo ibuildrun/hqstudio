@@ -20,8 +20,7 @@ function isTokenExpired(token: string): boolean {
 function clearSession() {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('hq_token')
-    // Перезагрузка страницы для сброса состояния
-    window.location.reload()
+    // НЕ перезагружаем страницу - пусть пользователь сам решит
   }
 }
 
@@ -185,6 +184,20 @@ export const api = {
       request(`/users/${id}`, { method: 'PUT', body: JSON.stringify(user) }),
     delete: (id: number) => request(`/users/${id}`, { method: 'DELETE' }),
   },
+
+  activityLog: {
+    getAll: (params?: ActivityLogFilters) => {
+      const query = new URLSearchParams()
+      if (params?.page) query.append('page', params.page.toString())
+      if (params?.pageSize) query.append('pageSize', params.pageSize.toString())
+      if (params?.source) query.append('source', params.source)
+      if (params?.userId) query.append('userId', params.userId.toString())
+      return request<ActivityLogResponse>(`/activitylog?${query.toString()}`)
+    },
+    getStats: () => request<ActivityLogStats>('/activitylog/stats'),
+    create: (data: CreateActivityLogData) =>
+      request<{ id: number; createdAt: string }>('/activitylog', { method: 'POST', body: JSON.stringify(data) }),
+  },
 }
 
 // Types
@@ -331,4 +344,49 @@ export interface DashboardStats {
   newSubscribers: number
   popularServices: { name: string; count: number }[]
   recentOrders: { id: number; clientName: string; status: string; totalPrice: number; createdAt: string }[]
+}
+
+// Activity Log types
+export interface ActivityLogEntry {
+  id: number
+  userId: number
+  userName: string
+  action: string
+  entityType?: string
+  entityId?: number
+  details?: string
+  source: string
+  ipAddress?: string
+  createdAt: string
+}
+
+export interface ActivityLogResponse {
+  items: ActivityLogEntry[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface ActivityLogStats {
+  totalToday: number
+  totalWeek: number
+  totalAll: number
+  bySource: { source: string; count: number }[]
+  byUser: { userId: number; userName: string; count: number }[]
+}
+
+export interface ActivityLogFilters {
+  page?: number
+  pageSize?: number
+  source?: string
+  userId?: number
+}
+
+export interface CreateActivityLogData {
+  action: string
+  entityType?: string
+  entityId?: number
+  details?: string
+  source?: string
 }

@@ -196,3 +196,144 @@ public class TestPendingCallback
     public TestCallbackData Data { get; set; } = new();
     public DateTime CreatedAt { get; set; }
 }
+
+
+/// <summary>
+/// Tests for ActivityLog functionality
+/// </summary>
+public class ActivityLogTests
+{
+    [Fact]
+    public void ActivityLogEntry_FormattedDate_ReturnsCorrectFormat()
+    {
+        var entry = new TestActivityLogEntry
+        {
+            CreatedAt = new DateTime(2025, 12, 21, 14, 30, 0, DateTimeKind.Utc)
+        };
+
+        entry.FormattedDate.Should().Contain("21.12.2025");
+    }
+
+    [Theory]
+    [InlineData("Desktop", "🖥️")]
+    [InlineData("Web", "🌐")]
+    [InlineData("API", "⚙️")]
+    [InlineData("Unknown", "❓")]
+    [InlineData("", "❓")]
+    public void ActivityLogEntry_SourceIcon_ReturnsCorrectIcon(string source, string expectedIcon)
+    {
+        var entry = new TestActivityLogEntry { Source = source };
+
+        entry.SourceIcon.Should().Be(expectedIcon);
+    }
+
+    [Fact]
+    public void ActivityLogStats_DefaultValues_AreZero()
+    {
+        var stats = new TestActivityLogStats();
+
+        stats.TotalToday.Should().Be(0);
+        stats.TotalWeek.Should().Be(0);
+        stats.TotalAll.Should().Be(0);
+        stats.BySource.Should().NotBeNull();
+        stats.ByUser.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ActivityLogResponse_DefaultValues_AreCorrect()
+    {
+        var response = new TestActivityLogResponse();
+
+        response.Items.Should().NotBeNull();
+        response.Items.Should().BeEmpty();
+        response.Total.Should().Be(0);
+        response.Page.Should().Be(0);
+        response.PageSize.Should().Be(0);
+        response.TotalPages.Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData(1, 10, "Страница 1 из 10")]
+    [InlineData(5, 5, "Страница 5 из 5")]
+    [InlineData(1, 1, "Страница 1 из 1")]
+    public void PageInfo_ReturnsCorrectFormat(int currentPage, int totalPages, string expected)
+    {
+        var pageInfo = $"Страница {currentPage} из {totalPages}";
+        pageInfo.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(1, false)]
+    [InlineData(2, true)]
+    [InlineData(10, true)]
+    public void CanGoPrevious_ReturnsCorrectValue(int currentPage, bool expected)
+    {
+        var canGoPrevious = currentPage > 1;
+        canGoPrevious.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(1, 10, true)]
+    [InlineData(10, 10, false)]
+    [InlineData(5, 5, false)]
+    public void CanGoNext_ReturnsCorrectValue(int currentPage, int totalPages, bool expected)
+    {
+        var canGoNext = currentPage < totalPages;
+        canGoNext.Should().Be(expected);
+    }
+}
+
+// Test DTOs for ActivityLog
+public class TestActivityLogEntry
+{
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public string UserName { get; set; } = "";
+    public string Action { get; set; } = "";
+    public string? EntityType { get; set; }
+    public int? EntityId { get; set; }
+    public string? Details { get; set; }
+    public string Source { get; set; } = "";
+    public string? IpAddress { get; set; }
+    public DateTime CreatedAt { get; set; }
+
+    public string FormattedDate => CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+    public string SourceIcon => Source switch
+    {
+        "Desktop" => "🖥️",
+        "Web" => "🌐",
+        "API" => "⚙️",
+        _ => "❓"
+    };
+}
+
+public class TestActivityLogResponse
+{
+    public List<TestActivityLogEntry> Items { get; set; } = new();
+    public int Total { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages { get; set; }
+}
+
+public class TestActivityLogStats
+{
+    public int TotalToday { get; set; }
+    public int TotalWeek { get; set; }
+    public int TotalAll { get; set; }
+    public List<TestActivitySourceStat> BySource { get; set; } = new();
+    public List<TestActivityUserStat> ByUser { get; set; } = new();
+}
+
+public class TestActivitySourceStat
+{
+    public string Source { get; set; } = "";
+    public int Count { get; set; }
+}
+
+public class TestActivityUserStat
+{
+    public int UserId { get; set; }
+    public string UserName { get; set; } = "";
+    public int Count { get; set; }
+}

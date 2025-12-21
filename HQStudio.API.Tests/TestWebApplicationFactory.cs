@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using HQStudio.API.Data;
 using HQStudio.API.Models;
+using System.Net.Http.Json;
+using System.Net.Http.Headers;
 
 namespace HQStudio.API.Tests;
 
@@ -45,7 +47,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         {
             Login = "admin",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"),
-            Name = "Test Admin",
+            Name = "Администратор",
             Role = UserRole.Admin
         });
 
@@ -68,5 +70,30 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         db.FaqItems.Add(new FaqItem { Question = "Сохранится ли дилерская гарантия?", Answer = "Да", IsActive = true, SortOrder = 1 });
 
         db.SaveChanges();
+    }
+
+    /// <summary>
+    /// Creates an authenticated HTTP client with admin credentials
+    /// </summary>
+    public async Task<HttpClient> GetAuthenticatedClientAsync(string login = "admin", string password = "admin")
+    {
+        SeedDatabase();
+        var client = CreateClient();
+        
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new { login, password });
+        if (!loginResponse.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException($"Failed to authenticate: {loginResponse.StatusCode}");
+        }
+        
+        var result = await loginResponse.Content.ReadFromJsonAsync<LoginResult>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result!.Token);
+        
+        return client;
+    }
+
+    private class LoginResult
+    {
+        public string Token { get; set; } = "";
     }
 }

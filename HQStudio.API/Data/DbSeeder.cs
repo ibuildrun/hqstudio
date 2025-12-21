@@ -40,6 +40,13 @@ public static class DbSeeder
                 },
                 new User
                 {
+                    Login = "developer",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("developer"),
+                    Name = "Разработчик",
+                    Role = UserRole.Admin
+                },
+                new User
+                {
                     Login = "manager",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("manager"),
                     Name = "Менеджер Иванов",
@@ -56,26 +63,37 @@ public static class DbSeeder
         }
         else
         {
-            // Продакшн: admin с временным паролем, который нужно сменить
-            // Пароль = случайный GUID, который выводится в консоль при первом запуске
-            var tempPassword = Guid.NewGuid().ToString("N")[..12];
+            // Продакшн: admin и developer с временными паролями, которые нужно сменить
+            var adminPassword = Guid.NewGuid().ToString("N")[..12];
+            var devPassword = Guid.NewGuid().ToString("N")[..12];
+            
             Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-            Console.WriteLine("║  ПЕРВЫЙ ЗАПУСК - ВРЕМЕННЫЙ ПАРОЛЬ АДМИНИСТРАТОРА           ║");
+            Console.WriteLine("║  ПЕРВЫЙ ЗАПУСК - ВРЕМЕННЫЕ ПАРОЛИ ПОЛЬЗОВАТЕЛЕЙ            ║");
             Console.WriteLine("╠════════════════════════════════════════════════════════════╣");
-            Console.WriteLine($"║  Логин: admin                                              ║");
-            Console.WriteLine($"║  Пароль: {tempPassword}                                    ║");
+            Console.WriteLine($"║  Администратор: admin / {adminPassword}                   ║");
+            Console.WriteLine($"║  Разработчик: developer / {devPassword}                   ║");
             Console.WriteLine("║                                                            ║");
-            Console.WriteLine("║  ОБЯЗАТЕЛЬНО СМЕНИТЕ ПАРОЛЬ ПОСЛЕ ПЕРВОГО ВХОДА!           ║");
+            Console.WriteLine("║  ОБЯЗАТЕЛЬНО СМЕНИТЕ ПАРОЛИ ПОСЛЕ ПЕРВОГО ВХОДА!           ║");
             Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
             
-            context.Users.Add(new User
-            {
-                Login = "admin",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(tempPassword),
-                Name = "Администратор",
-                Role = UserRole.Admin,
-                MustChangePassword = true
-            });
+            context.Users.AddRange(
+                new User
+                {
+                    Login = "admin",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword),
+                    Name = "Администратор",
+                    Role = UserRole.Admin,
+                    MustChangePassword = true
+                },
+                new User
+                {
+                    Login = "developer",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(devPassword),
+                    Name = "Разработчик",
+                    Role = UserRole.Editor,
+                    MustChangePassword = true
+                }
+            );
         }
     }
 

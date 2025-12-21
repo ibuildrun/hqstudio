@@ -9,16 +9,17 @@ import {
   Users, Layers, Mail, Key, Home, Palette, Camera, Wrench, Monitor, Upload,
   Eye, Star, Lightbulb, HelpCircle, Gift, Phone, Settings, Volume2, ExternalLink,
   ChevronUp, ChevronDown, EyeOff, LayoutGrid, GripVertical, Minimize2, Maximize2,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Bell
 } from 'lucide-react'
 import SectionPreview from './SectionPreview'
+import NotificationSettings from './NotificationSettings'
 
 const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const {
     data, updateData, logout, isAuthenticated, isLoading, login, currentUser,
     deleteRequest, updateService, addService, deleteService,
     deleteSubscription, toggleBlock, moveBlockUp, moveBlockDown, reorderBlocks,
-    mustChangePassword, changePassword, loadUsers, deleteUser, addUser
+    mustChangePassword, changePassword, loadUsers, deleteUser, addUser, loadActivityLog
   } = useAdmin()
 
   const [loginInput, setLoginInput] = useState('')
@@ -327,7 +328,8 @@ const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           {isAdmin && (
             <button onClick={() => { setActiveTab('users'); loadUsers(); }} className={`flex items-center gap-1 md:gap-2 text-[8px] md:text-[10px] uppercase font-bold px-2 md:px-4 py-1.5 md:py-2 rounded-full whitespace-nowrap transition-all ${activeTab === 'users' ? 'bg-white text-black' : 'text-neutral-500'}`}><Users size={12} className="hidden md:block" /> Команда</button>
           )}
-          <button onClick={() => setActiveTab('history')} className={`flex items-center gap-1 md:gap-2 text-[8px] md:text-[10px] uppercase font-bold px-2 md:px-4 py-1.5 md:py-2 rounded-full whitespace-nowrap transition-all ${activeTab === 'history' ? 'bg-white text-black' : 'text-neutral-500'}`}><History size={12} className="hidden md:block" /> Аудит</button>
+          <button onClick={() => { setActiveTab('history'); loadActivityLog(); }} className={`flex items-center gap-1 md:gap-2 text-[8px] md:text-[10px] uppercase font-bold px-2 md:px-4 py-1.5 md:py-2 rounded-full whitespace-nowrap transition-all ${activeTab === 'history' ? 'bg-white text-black' : 'text-neutral-500'}`}><History size={12} className="hidden md:block" /> Аудит</button>
+          <button onClick={() => setActiveTab('notifications')} className={`flex items-center gap-1 md:gap-2 text-[8px] md:text-[10px] uppercase font-bold px-2 md:px-4 py-1.5 md:py-2 rounded-full whitespace-nowrap transition-all ${activeTab === 'notifications' ? 'bg-white text-black' : 'text-neutral-500'}`}><Bell size={12} className="hidden md:block" /> Уведомления</button>
         </div>
 
         <div className="hidden md:flex gap-2">
@@ -1219,6 +1221,16 @@ const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               </div>
               )
             })()}
+
+            {/* Notifications Tab */}
+            {activeTab === 'notifications' && (
+              <div className="space-y-6 pb-12">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-black uppercase text-white">Настройки уведомлений</h2>
+                </div>
+                <NotificationSettings />
+              </div>
+            )}
           </div>
         </div>
       </div>

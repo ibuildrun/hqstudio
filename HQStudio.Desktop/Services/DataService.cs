@@ -27,14 +27,30 @@ namespace HQStudio.Services
 
         private void InitializeDefaultData()
         {
+            // Проверяем и добавляем отсутствующих пользователей
+            var defaultUsers = new List<User>
+            {
+                new() { Id = 1, Username = "admin", PasswordHash = "admin", DisplayName = "Павел Игонин", Role = "Admin" },
+                new() { Id = 2, Username = "developer", PasswordHash = "developer", DisplayName = "Разработчик", Role = "Admin" },
+                new() { Id = 3, Username = "worker", PasswordHash = "worker", DisplayName = "Алексей Смирнов", Role = "Worker" },
+                new() { Id = 4, Username = "ivan", PasswordHash = "ivan", DisplayName = "Иван Петров", Role = "Worker" }
+            };
+
             if (!Users.Any())
             {
-                Users = new List<User>
+                Users = defaultUsers;
+            }
+            else
+            {
+                // Добавляем отсутствующих пользователей (например, developer)
+                foreach (var defaultUser in defaultUsers)
                 {
-                    new() { Id = 1, Username = "admin", PasswordHash = "admin", DisplayName = "Павел Игонин", Role = "Admin" },
-                    new() { Id = 2, Username = "worker", PasswordHash = "worker", DisplayName = "Алексей Смирнов", Role = "Worker" },
-                    new() { Id = 3, Username = "ivan", PasswordHash = "ivan", DisplayName = "Иван Петров", Role = "Worker" }
-                };
+                    if (!Users.Any(u => u.Username == defaultUser.Username))
+                    {
+                        defaultUser.Id = GetNextId(Users);
+                        Users.Add(defaultUser);
+                    }
+                }
             }
 
             if (!Services.Any())

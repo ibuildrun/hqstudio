@@ -127,6 +127,8 @@
                             
                             <Button Content="👤  Сотрудники" Style="{DynamicResource BtnNav}"
                                     Command="{Binding NavigateCommand}" CommandParameter="Staff"/>
+                            <Button Content="📋  Журнал" Style="{DynamicResource BtnNav}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="ActivityLog"/>
                             <Button Content="⚙️  Настройки" Style="{DynamicResource BtnNav}"
                                     Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
                         </StackPanel>
@@ -168,6 +170,9 @@
                         </DataTemplate>
                         <DataTemplate DataType="{x:Type vm:StaffViewModel}">
                             <views:StaffView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type vm:ActivityLogViewModel}">
+                            <views:ActivityLogView/>
                         </DataTemplate>
                         <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
                             <views:SettingsView/>

@@ -344,6 +344,46 @@ namespace HQStudio.Services
             catch { return new(); }
         }
 
+        // Activity Log
+        public async Task<ActivityLogResponse?> GetActivityLogsAsync(int page = 1, int pageSize = 50, string? source = null, int? userId = null)
+        {
+            try
+            {
+                var query = new List<string> { $"page={page}", $"pageSize={pageSize}" };
+                if (!string.IsNullOrEmpty(source)) query.Add($"source={source}");
+                if (userId.HasValue) query.Add($"userId={userId}");
+                var url = "/api/activitylog?" + string.Join("&", query);
+                return await _http.GetFromJsonAsync<ActivityLogResponse>(url);
+            }
+            catch { return null; }
+        }
+
+        public async Task<ActivityLogStats?> GetActivityLogStatsAsync()
+        {
+            try
+            {
+                return await _http.GetFromJsonAsync<ActivityLogStats>("/api/activitylog/stats");
+            }
+            catch { return null; }
+        }
+
+        public async Task<bool> LogActivityAsync(string action, string? entityType = null, int? entityId = null, string? details = null)
+        {
+            try
+            {
+                var response = await _http.PostAsJsonAsync("/api/activitylog", new
+                {
+                    action,
+                    entityType,
+                    entityId,
+                    details,
+                    source = "Desktop"
+                });
+                return response.IsSuccessStatusCode;
+            }
+            catch { return false; }
+        }
+
         // Callback with CallbackData (for offline sync)
         public async Task<ApiCallback?> CreateCallbackAsync(CallbackData callback)
         {
@@ -558,5 +598,60 @@ namespace HQStudio.Services
         public string Status { get; set; } = "";
         public decimal TotalPrice { get; set; }
         public DateTime CreatedAt { get; set; }
+    }
+
+    // Activity Log DTOs
+    public class ActivityLogResponse
+    {
+        public List<ActivityLogEntry> Items { get; set; } = new();
+        public int Total { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int TotalPages { get; set; }
+    }
+
+    public class ActivityLogEntry
+    {
+        public int Id { get; set; }
+        public int UserId { get; set; }
+        public string UserName { get; set; } = "";
+        public string Action { get; set; } = "";
+        public string? EntityType { get; set; }
+        public int? EntityId { get; set; }
+        public string? Details { get; set; }
+        public string Source { get; set; } = "";
+        public string? IpAddress { get; set; }
+        public DateTime CreatedAt { get; set; }
+
+        public string FormattedDate => CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+        public string SourceIcon => Source switch
+        {
+            "Desktop" => "🖥️",
+            "Web" => "🌐",
+            "API" => "⚙️",
+            _ => "❓"
+        };
+    }
+
+    public class ActivityLogStats
+    {
+        public int TotalToday { get; set; }
+        public int TotalWeek { get; set; }
+        public int TotalAll { get; set; }
+        public List<ActivitySourceStat> BySource { get; set; } = new();
+        public List<ActivityUserStat> ByUser { get; set; } = new();
+    }
+
+    public class ActivitySourceStat
+    {
+        public string Source { get; set; } = "";
+        public int Count { get; set; }
+    }
+
+    public class ActivityUserStat
+    {
+        public int UserId { get; set; }
+        public string UserName { get; set; } = "";
+        public int Count { get; set; }
     }
 }

@@ -21,6 +21,7 @@ public class AppDbContext : DbContext
     public DbSet<ShowcaseItem> ShowcaseItems => Set<ShowcaseItem>();
     public DbSet<AppUpdate> AppUpdates => Set<AppUpdate>();
     public DbSet<UserSession> UserSessions => Set<UserSession>();
+    public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

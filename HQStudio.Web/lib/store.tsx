@@ -19,6 +19,9 @@ export interface ActivityEntry {
   user: string
   action: string
   timestamp: number
+  source?: string
+  entityType?: string
+  entityId?: number
 }
 
 export interface Subscription {
@@ -51,7 +54,8 @@ interface AdminContextType {
   logout: () => void
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>
   updateData: (newData: Partial<ExtendedSiteData>) => void
-  logActivity: (action: string) => void
+  logActivity: (action: string, entityType?: string, entityId?: number) => void
+  loadActivityLog: () => Promise<void>
   addRequest: (request: Omit<CallbackRequest, 'id' | 'timestamp' | 'status'>) => void
   deleteRequest: (id: string) => void
   addSubscription: (email: string) => void
@@ -167,17 +171,47 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [data, isHydrated])
 
-  const logActivity = (action: string) => {
+  const logActivity = async (action: string, entityType?: string, entityId?: number) => {
     const newEntry: ActivityEntry = {
       id: Date.now().toString(),
       user: currentUser?.name || 'Система',
       action,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      source: 'Web',
+      entityType,
+      entityId
     }
     setData(prev => ({
       ...prev,
       activityLog: [newEntry, ...prev.activityLog].slice(0, 100)
     }))
+    
+    // Отправляем на сервер в фоне (не блокируем и не обрабатываем ошибки)
+    api.activityLog.create({ action, entityType, entityId, source: 'Web' }).catch(() => {
+      // Игнорируем ошибки логирования
+    })
+  }
+
+  const loadActivityLog = async () => {
+    try {
+      const result = await api.activityLog.getAll({ page: 1, pageSize: 100 })
+      if (result.data) {
+        setData(prev => ({
+          ...prev,
+          activityLog: result.data!.items.map(item => ({
+            id: item.id.toString(),
+            user: item.userName,
+            action: item.action,
+            timestamp: new Date(item.createdAt).getTime(),
+            source: item.source,
+            entityType: item.entityType,
+            entityId: item.entityId
+          }))
+        }))
+      }
+    } catch (e) {
+      console.error('Failed to load activity log:', e)
+    }
   }
 
   const login = async (loginStr: string, pass: string): Promise<boolean> => {
@@ -362,7 +396,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <AdminContext.Provider value={{
       data, currentUser, isAuthenticated: !!currentUser, isLoading, mustChangePassword, login, logout, changePassword,
-      updateData, logActivity, addRequest, deleteRequest, toggleBlock, moveBlockUp, moveBlockDown, reorderBlocks,
+      updateData, logActivity, loadActivityLog, addRequest, deleteRequest, toggleBlock, moveBlockUp, moveBlockDown, reorderBlocks,
       updateService, addService, deleteService, addSubscription, deleteSubscription, loadUsers, deleteUser, addUser
     }}>
       {children}
