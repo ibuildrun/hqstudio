@@ -1,6 +1,13 @@
 # HQ Studio
 
+[![CI](https://github.com/randomu3/hqstudio/actions/workflows/ci.yml/badge.svg)](https://github.com/randomu3/hqstudio/actions/workflows/ci.yml)
+[![Release](https://github.com/randomu3/hqstudio/actions/workflows/release.yml/badge.svg)](https://github.com/randomu3/hqstudio/actions/workflows/release.yml)
+[![GitHub release](https://img.shields.io/github/v/release/randomu3/hqstudio)](https://github.com/randomu3/hqstudio/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Комплексное решение для автотюнинг студии: веб-сайт, API и десктопное CRM приложение.
+
+🌐 **[Демо сайт](https://randomu3.github.io/hqstudio/)** | 📦 **[Релизы](https://github.com/randomu3/hqstudio/releases)** | 📖 **[Документация](CONTRIBUTING.md)**
 
 ## 🏗️ Структура проекта
 
@@ -96,4 +103,12 @@ dotnet test HQStudio.Desktop.Tests
 
 ## 📝 Лицензия
 
-MIT License
+MIT License — см. [LICENSE](LICENSE)
+
+## 🤝 Вклад в проект
+
+См. [CONTRIBUTING.md](CONTRIBUTING.md) для информации о том, как внести вклад.
+
+## 🔒 Безопасность
+
+См. [SECURITY.md](SECURITY.md) для политики безопасности.
