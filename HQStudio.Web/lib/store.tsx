@@ -207,7 +207,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const loadActivityLog = async () => {
     try {
-      const result = await api.activityLog.getAll({ page: 1, pageSize: 100 })
+      // На сайте показываем только записи с источником Web
+      const result = await api.activityLog.getAll({ page: 1, pageSize: 100, source: 'Web' })
       if (result.data) {
         setData(prev => ({
           ...prev,

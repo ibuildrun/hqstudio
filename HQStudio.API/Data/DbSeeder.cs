@@ -150,6 +150,7 @@ public static class DbSeeder
         SeedTestCallbacks(context);
         SeedTestOrders(context);
         SeedTestSubscriptions(context);
+        SeedTestActivityLog(context);
     }
 
     private static void SeedTestClients(AppDbContext context)
@@ -281,6 +282,63 @@ public static class DbSeeder
             {
                 Email = $"subscriber{i + 1}@{domains[random.Next(domains.Length)]}",
                 CreatedAt = DateTime.UtcNow.AddDays(-random.Next(0, 365))
+            });
+        }
+    }
+
+    private static void SeedTestActivityLog(AppDbContext context)
+    {
+        if (context.ActivityLogs.Any()) return;
+
+        context.SaveChanges(); // Сохраняем пользователей
+
+        var users = context.Users.ToList();
+        if (!users.Any()) return;
+
+        var random = new Random(42);
+        var sources = new[] { "Web", "Desktop", "API" };
+        var actions = new[]
+        {
+            "Вход в систему",
+            "Выход из системы",
+            "Просмотр заявок",
+            "Создание заявки",
+            "Обновление статуса заявки",
+            "Удаление заявки",
+            "Просмотр клиентов",
+            "Создание клиента",
+            "Редактирование клиента",
+            "Создание заказа",
+            "Обновление статуса заказа",
+            "Редактирование услуги",
+            "Изменение настроек сайта",
+            "Просмотр статистики",
+            "Экспорт данных",
+            "Добавление пользователя",
+            "Изменение прав пользователя"
+        };
+        var entityTypes = new[] { "Callback", "Client", "Order", "Service", "User", null };
+
+        // Создаём 150 записей журнала
+        for (int i = 0; i < 150; i++)
+        {
+            var user = users[random.Next(users.Count)];
+            var createdAt = DateTime.UtcNow.AddDays(-random.Next(0, 60)).AddHours(-random.Next(0, 24)).AddMinutes(-random.Next(0, 60));
+            var source = sources[random.Next(sources.Length)];
+            var action = actions[random.Next(actions.Length)];
+            var entityType = entityTypes[random.Next(entityTypes.Length)];
+
+            context.ActivityLogs.Add(new ActivityLog
+            {
+                UserId = user.Id,
+                UserName = user.Name,
+                Action = action,
+                EntityType = entityType,
+                EntityId = entityType != null ? random.Next(1, 100) : null,
+                Details = random.Next(4) == 0 ? $"Дополнительная информация #{i + 1}" : null,
+                Source = source,
+                IpAddress = $"192.168.1.{random.Next(1, 255)}",
+                CreatedAt = createdAt
             });
         }
     }
