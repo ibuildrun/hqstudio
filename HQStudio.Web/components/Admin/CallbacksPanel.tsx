@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Phone, Globe, User, Mail, MessageCircle, Users, MoreHorizontal,
   Clock, CheckCircle, XCircle, AlertCircle, Plus, Search,
-  Car, Calendar, Trash2, Eye, RefreshCw
+  Car, Calendar, Trash2, Eye, RefreshCw, LogIn
 } from 'lucide-react'
-import { api, CallbackRequest, RequestSource, RequestStatus, CallbackStats } from '@/lib/api'
+import { api, getToken, CallbackRequest, RequestSource, RequestStatus, CallbackStats } from '@/lib/api'
 
 const SOURCE_LABELS: Record<RequestSource, { label: string; icon: React.ReactNode; color: string }> = {
   Website: { label: 'Сайт', icon: <Globe size={14} />, color: 'bg-blue-500/20 text-blue-400' },
@@ -39,28 +39,86 @@ export default function CallbacksPanel({ onClose }: CallbacksPanelProps) {
   const [search, setSearch] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedCallback, setSelectedCallback] = useState<CallbackRequest | null>(null)
+  const [authError, setAuthError] = useState(false)
 
   const loadData = useCallback(async (showRefresh = false) => {
+    // Проверяем наличие токена перед запросом (из localStorage)
+    const token = getToken()
+    if (!token) {
+      console.log('CallbacksPanel: No token, skipping load')
+      setAuthError(true)
+      setLoading(false)
+      setRefreshing(false)
+      return
+    }
+    
     if (showRefresh) setRefreshing(true)
     else setLoading(true)
     
-    const [callbacksRes, statsRes] = await Promise.all([
-      api.callbacks.getAll(filter),
-      api.callbacks.getStats()
-    ])
-    if (callbacksRes.data) setCallbacks(callbacksRes.data)
-    if (statsRes.data) setStats(statsRes.data)
+    setAuthError(false)
+    
+    try {
+      const [callbacksRes, statsRes] = await Promise.all([
+        api.callbacks.getAll(filter),
+        api.callbacks.getStats()
+      ])
+      
+      if (callbacksRes.unauthorized || statsRes.unauthorized) {
+        console.log('CallbacksPanel: Unauthorized response')
+        setAuthError(true)
+      } else {
+        if (callbacksRes.data) {
+          setCallbacks(callbacksRes.data)
+        }
+        if (statsRes.data) setStats(statsRes.data)
+      }
+    } catch (e) {
+      console.error('CallbacksPanel: Error loading data', e)
+    }
     
     setLoading(false)
     setRefreshing(false)
   }, [filter])
 
+  // Загружаем данные только если токен уже есть
   useEffect(() => {
-    loadData()
+    const token = getToken()
+    if (token) {
+      loadData()
+    }
+  }, [loadData])
+
+  // Слушаем событие авторизации
+  useEffect(() => {
+    const handleAuthChange = () => {
+      // Даём время на сохранение токена в localStorage
+      setTimeout(() => {
+        const token = getToken()
+        if (token) {
+          setAuthError(false)
+          loadData()
+        }
+      }, 50)
+    }
+    window.addEventListener('auth-changed', handleAuthChange)
+    
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'hq_token' && e.newValue) {
+        loadData()
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+    
+    return () => {
+      window.removeEventListener('auth-changed', handleAuthChange)
+      window.removeEventListener('storage', handleStorage)
+    }
   }, [loadData])
 
   // Автообновление каждые 30 секунд
   useEffect(() => {
+    const token = localStorage.getItem('hq_token')
+    if (!token) return
     const interval = setInterval(() => {
       loadData(true)
     }, 30000)
@@ -175,7 +233,18 @@ export default function CallbacksPanel({ onClose }: CallbacksPanelProps) {
 
       {/* List */}
       <div className="flex-1 overflow-y-auto space-y-2">
-        {loading ? (
+        {authError ? (
+          <div className="text-center py-8">
+            <LogIn size={48} className="mx-auto text-neutral-600 mb-4" />
+            <p className="text-neutral-500 mb-4">Требуется авторизация для просмотра заявок</p>
+            <button
+              onClick={() => loadData()}
+              className="px-4 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-gray-200 transition"
+            >
+              Повторить загрузку
+            </button>
+          </div>
+        ) : loading ? (
           <div className="text-center py-8 text-neutral-500">Загрузка...</div>
         ) : filteredCallbacks.length === 0 ? (
           <div className="text-center py-8 text-neutral-500">Заявок не найдено</div>

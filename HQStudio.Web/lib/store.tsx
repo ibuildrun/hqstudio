@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { SiteData, CallbackRequest, ServiceItem } from './types'
 import { DEFAULT_SITE_DATA } from './constants'
-import { api } from './api'
+import { api, setToken } from './api'
 
 export type UserRole = 'ADMIN' | 'EDITOR' | 'MANAGER'
 
@@ -104,10 +104,17 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [mustChangePassword, setMustChangePassword] = useState(false)
   const [data, setData] = useState<ExtendedSiteData>(getDefaultData)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
 
   // Загружаем данные из localStorage и проверяем токен
   useEffect(() => {
     const initAuth = async () => {
+      // Если идёт процесс логина - не трогаем токен
+      if (isLoggingIn) {
+        setIsHydrated(true)
+        return
+      }
+
       try {
         const saved = localStorage.getItem('hq_studio_data_v10')
         if (saved) {
@@ -123,15 +130,24 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (token) {
           // Проверяем срок действия токена локально
           try {
-            const payload = JSON.parse(atob(token.split('.')[1]))
+            // JWT использует Base64Url, конвертируем в обычный Base64
+            let payloadStr = token.split('.')[1]
+            payloadStr = payloadStr.replace(/-/g, '+').replace(/_/g, '/')
+            const pad = payloadStr.length % 4
+            if (pad) {
+              payloadStr += '='.repeat(4 - pad)
+            }
+            const payload = JSON.parse(atob(payloadStr))
             if (payload.exp * 1000 < Date.now()) {
               // Токен истёк
+              console.log('[initAuth] Token expired, removing')
               localStorage.removeItem('hq_token')
               setIsHydrated(true)
               return
             }
-          } catch {
+          } catch (e) {
             // Невалидный токен
+            console.log('[initAuth] Invalid token, removing:', e)
             localStorage.removeItem('hq_token')
             setIsHydrated(true)
             return
@@ -143,22 +159,19 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               id: result.data.id,
               login: result.data.login,
               name: result.data.name,
-              role: mapApiRole(result.data.role)
+              role: mapApiRole(result.data.role),
             })
-          } else {
-            // Токен невалидный — удаляем
-            localStorage.removeItem('hq_token')
           }
+          // НЕ удаляем токен если /auth/me вернул ошибку
         }
       } catch (e) {
         console.error('Failed to initialize auth:', e)
-        localStorage.removeItem('hq_token')
       }
       setIsHydrated(true)
     }
 
     initAuth()
-  }, [])
+  }, [isLoggingIn])
 
   // Сохраняем в localStorage только после гидратации
   useEffect(() => {
@@ -216,33 +229,43 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const login = async (loginStr: string, pass: string): Promise<boolean> => {
     setIsLoading(true)
+    setIsLoggingIn(true)
     try {
       const result = await api.auth.login(loginStr, pass)
-      if (result.data) {
-        // Сохраняем токен
-        localStorage.setItem('hq_token', result.data.token)
-        
+
+      if (result.error) {
+        return false
+      }
+
+      if (result.data && result.data.token) {
+        // Сохраняем токен СИНХРОННО
+        setToken(result.data.token)
+
+        if (result.data.mustChangePassword) {
+          setMustChangePassword(true)
+        }
+
+        // Уведомляем компоненты об авторизации ПЕРЕД установкой пользователя
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('auth-changed'))
+        }
+
+        // Устанавливаем пользователя ПОСЛЕ сохранения токена
         setCurrentUser({
           id: result.data.user.id,
           login: result.data.user.login,
           name: result.data.user.name,
-          role: mapApiRole(result.data.user.role)
+          role: mapApiRole(result.data.user.role),
         })
-        
-        // Проверяем нужно ли сменить пароль
-        if (result.data.mustChangePassword) {
-          setMustChangePassword(true)
-        }
-        
-        logActivity('Вошёл в систему')
+
         return true
       }
       return false
-    } catch (e) {
-      console.error('Login failed:', e)
+    } catch {
       return false
     } finally {
       setIsLoading(false)
+      setIsLoggingIn(false)
     }
   }
 
@@ -261,8 +284,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }
 
   const logout = () => {
-    logActivity('Вышел из системы')
-    localStorage.removeItem('hq_token')
+    setToken(null)
     setCurrentUser(null)
     setMustChangePassword(false)
   }

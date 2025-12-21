@@ -57,24 +57,52 @@ interface RawCallbackRequest {
 // Функция для проверки истечения токена
 function isTokenExpired(token: string): boolean {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.exp * 1000 < Date.now()
+    // JWT использует Base64Url, нужно конвертировать в обычный Base64
+    let payload = token.split('.')[1]
+    payload = payload.replace(/-/g, '+').replace(/_/g, '/')
+    // Добавляем padding если нужно
+    const pad = payload.length % 4
+    if (pad) {
+      payload += '='.repeat(4 - pad)
+    }
+    
+    const decoded = JSON.parse(atob(payload))
+    return decoded.exp * 1000 < Date.now()
   } catch {
     return true
+  }
+}
+
+// Функция для получения токена - ВСЕГДА читаем из localStorage
+export function getToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('hq_token')
+}
+
+// Функция для сохранения токена
+export function setToken(token: string | null) {
+  if (typeof window === 'undefined') return
+  if (token) {
+    localStorage.setItem('hq_token', token)
+  } else {
+    localStorage.removeItem('hq_token')
   }
 }
 
 // Функция для очистки сессии
 function clearSession() {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem('hq_token')
-    // НЕ перезагружаем страницу - пусть пользователь сам решит
+    try {
+      localStorage.removeItem('hq_token')
+    } catch {
+      // ignore
+    }
   }
 }
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
   try {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('hq_token') : null
+    const token = getToken()
     
     // Проверяем токен перед запросом
     if (token && isTokenExpired(token)) {
@@ -82,19 +110,23 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<ApiR
       return { error: 'Сессия истекла. Войдите снова.', unauthorized: true }
     }
     
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...options?.headers as Record<string, string>,
+    }
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
     const res = await fetch(`${API_URL}${endpoint}`, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...options?.headers,
-      },
+      headers,
     })
 
     // Обработка 401 - невалидный токен
     if (res.status === 401) {
-      clearSession()
-      return { error: 'Сессия истекла. Войдите снова.', unauthorized: true }
+      return { error: 'Требуется авторизация', unauthorized: true }
     }
 
     // Обработка 429 - слишком много запросов
