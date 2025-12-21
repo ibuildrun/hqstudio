@@ -136,17 +136,6 @@ namespace HQStudio.ViewModels
                 var callbacks = await _apiService.GetCallbacksAsync();
                 System.Diagnostics.Debug.WriteLine($"Callbacks loaded: {callbacks.Count}");
                 
-                if (callbacks.Count == 0)
-                {
-                    MessageBox.Show("Заявки не найдены в базе данных.", 
-                        "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    var websiteCount = callbacks.Count(c => c.Source == 0);
-                    System.Diagnostics.Debug.WriteLine($"Website callbacks: {websiteCount}");
-                }
-                
                 _allCallbacks = callbacks.Select(c => new CallbackItem
                 {
                     Id = c.Id,
