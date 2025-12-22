@@ -59,6 +59,7 @@ interface AdminContextType {
   addRequest: (request: Omit<CallbackRequest, 'id' | 'timestamp' | 'status'>) => void
   deleteRequest: (id: string) => void
   addSubscription: (email: string) => void
+  loadSubscriptions: () => Promise<void>
   deleteSubscription: (id: string) => void
   toggleBlock: (blockId: string) => void
   moveBlockUp: (blockId: string) => void
@@ -294,15 +295,49 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setData(prev => ({ ...prev, ...newData }))
   }
 
-  const addSubscription = (email: string) => {
-    if (data.subscriptions.some(s => s.email === email)) return
-    const newSub: Subscription = { id: Date.now().toString(), email, timestamp: Date.now() }
-    setData(prev => ({ ...prev, subscriptions: [newSub, ...prev.subscriptions] }))
+  const addSubscription = async (email: string) => {
+    // Отправляем на сервер
+    try {
+      const result = await api.subscriptions.create(email)
+      if (result.data) {
+        // Перезагружаем список с сервера
+        await loadSubscriptions()
+      }
+    } catch (e) {
+      console.error('Failed to add subscription:', e)
+      // Fallback на локальное добавление
+      if (data.subscriptions.some(s => s.email === email)) return
+      const newSub: Subscription = { id: Date.now().toString(), email, timestamp: Date.now() }
+      setData(prev => ({ ...prev, subscriptions: [newSub, ...prev.subscriptions] }))
+    }
   }
 
-  const deleteSubscription = (id: string) => {
-    setData(prev => ({ ...prev, subscriptions: prev.subscriptions.filter(s => s.id !== id) }))
-    logActivity(`Удален подписчик: ${id}`)
+  const loadSubscriptions = async () => {
+    try {
+      const result = await api.subscriptions.getAll()
+      if (result.data) {
+        setData(prev => ({
+          ...prev,
+          subscriptions: result.data!.map(s => ({
+            id: s.id.toString(),
+            email: s.email,
+            timestamp: new Date(s.createdAt).getTime()
+          }))
+        }))
+      }
+    } catch (e) {
+      console.error('Failed to load subscriptions:', e)
+    }
+  }
+
+  const deleteSubscription = async (id: string) => {
+    try {
+      await api.subscriptions.delete(parseInt(id))
+      setData(prev => ({ ...prev, subscriptions: prev.subscriptions.filter(s => s.id !== id) }))
+      logActivity(`Удален подписчик: ${id}`)
+    } catch (e) {
+      console.error('Failed to delete subscription:', e)
+    }
   }
 
   const addRequest = (req: Omit<CallbackRequest, 'id' | 'timestamp' | 'status'>) => {
@@ -420,7 +455,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <AdminContext.Provider value={{
       data, currentUser, isAuthenticated: !!currentUser, isLoading, mustChangePassword, login, logout, changePassword,
       updateData, logActivity, loadActivityLog, addRequest, deleteRequest, toggleBlock, moveBlockUp, moveBlockDown, reorderBlocks,
-      updateService, addService, deleteService, addSubscription, deleteSubscription, loadUsers, deleteUser, addUser
+      updateService, addService, deleteService, addSubscription, loadSubscriptions, deleteSubscription, loadUsers, deleteUser, addUser
     }}>
       {children}
     </AdminContext.Provider>

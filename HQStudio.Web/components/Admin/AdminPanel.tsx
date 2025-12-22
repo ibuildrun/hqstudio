@@ -19,7 +19,7 @@ const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const {
     data, updateData, logout, isAuthenticated, isLoading, login, currentUser,
     deleteRequest, updateService, addService, deleteService,
-    deleteSubscription, toggleBlock, moveBlockUp, moveBlockDown, reorderBlocks,
+    deleteSubscription, loadSubscriptions, toggleBlock, moveBlockUp, moveBlockDown, reorderBlocks,
     mustChangePassword, changePassword, loadUsers, deleteUser, addUser, loadActivityLog
   } = useAdmin()
 
@@ -325,7 +325,7 @@ const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           )}
           <button onClick={() => setActiveTab('services')} className={`flex items-center gap-1 md:gap-2 text-[8px] md:text-[10px] uppercase font-bold px-2 md:px-4 py-1.5 md:py-2 rounded-full whitespace-nowrap transition-all ${activeTab === 'services' ? 'bg-white text-black' : 'text-neutral-500'}`}><Layers size={12} className="hidden md:block" /> Услуги</button>
           <button onClick={() => setActiveTab('requests')} className={`flex items-center gap-1 md:gap-2 text-[8px] md:text-[10px] uppercase font-bold px-2 md:px-4 py-1.5 md:py-2 rounded-full whitespace-nowrap transition-all ${activeTab === 'requests' ? 'bg-white text-black' : 'text-neutral-500'}`}><Inbox size={12} className="hidden md:block" /> Заявки</button>
-          <button onClick={() => setActiveTab('subscriptions')} className={`flex items-center gap-1 md:gap-2 text-[8px] md:text-[10px] uppercase font-bold px-2 md:px-4 py-1.5 md:py-2 rounded-full whitespace-nowrap transition-all ${activeTab === 'subscriptions' ? 'bg-white text-black' : 'text-neutral-500'}`}><Mail size={12} className="hidden md:block" /> Почты</button>
+          <button onClick={() => { setActiveTab('subscriptions'); loadSubscriptions(); }} className={`flex items-center gap-1 md:gap-2 text-[8px] md:text-[10px] uppercase font-bold px-2 md:px-4 py-1.5 md:py-2 rounded-full whitespace-nowrap transition-all ${activeTab === 'subscriptions' ? 'bg-white text-black' : 'text-neutral-500'}`}><Mail size={12} className="hidden md:block" /> Почты</button>
           {isAdmin && (
             <button onClick={() => { setActiveTab('users'); loadUsers(); }} className={`flex items-center gap-1 md:gap-2 text-[8px] md:text-[10px] uppercase font-bold px-2 md:px-4 py-1.5 md:py-2 rounded-full whitespace-nowrap transition-all ${activeTab === 'users' ? 'bg-white text-black' : 'text-neutral-500'}`}><Users size={12} className="hidden md:block" /> Команда</button>
           )}
