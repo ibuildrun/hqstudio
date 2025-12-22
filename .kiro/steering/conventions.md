@@ -116,7 +116,26 @@ ci: добавлен CodeQL анализ
 ### Правила
 - Коммиты на русском или английском (консистентно в рамках PR)
 - Один коммит = одно логическое изменение
-- Не коммитить `.env`, `node_modules`, `bin/`, `obj/`
+- Не коммитить `.env`, `node_modules`, `bin/`, `obj/`, `publish/`
+
+### Проверка CI/CD
+После пуша в main ОБЯЗАТЕЛЬНО проверять статус GitHub Actions:
+```powershell
+# Проверка статуса последних workflow runs
+Invoke-RestMethod -Uri "https://api.github.com/repos/randomu3/hqstudio/actions/runs?per_page=5" -Headers @{Accept="application/vnd.github.v3+json"} | Select-Object -ExpandProperty workflow_runs | ForEach-Object { "$($_.name) | $($_.status) | $($_.conclusion)" }
+```
+
+Все 4 workflow должны быть `success`:
+- **CI** - тесты API, Web, Desktop
+- **Release** - semantic-release, CHANGELOG, GitHub Release
+- **CodeQL** - анализ безопасности
+- **Deploy to GitHub Pages** - деплой веб-приложения
+
+Если CI падает - исправить тесты локально перед повторным пушем:
+```bash
+dotnet test HQStudio.API.Tests  # API тесты
+npm test --prefix HQStudio.Web  # Web тесты
+```
 
 ---
 
