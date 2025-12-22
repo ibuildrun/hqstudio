@@ -6,7 +6,9 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -22,31 +24,112 @@
         </StackPanel>
 
         <!-- Toolbar -->
-        <Grid Grid.Row="1" Margin="0,0,0,24">
+        <Grid Grid.Row="1" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <Border Style="{DynamicResource Badge}" Margin="0,0,12,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Всего: " FontSize="12" Foreground="#707070"/>
-                        <TextBlock Text="{Binding Orders.Count}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Background="#1E1E1E" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Всего: " FontSize="13" Foreground="#707070" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding TotalOrders}" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
+                <Button Content="🔄" Style="{DynamicResource SecondaryButton}" Padding="8" MinWidth="36" Height="36"
+                        Command="{Binding RefreshCommand}" ToolTip="Обновить"/>
+                <Button Content="🔍 Фильтр" Style="{DynamicResource SecondaryButton}" Margin="12,0,0,0"
+                        Command="{Binding ToggleFilterCommand}"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="📊 Excel" Style="{DynamicResource SecondaryButton}" Margin="0,0,12,0"
+                        Command="{Binding ExportToExcelCommand}" ToolTip="Экспорт в Excel"/>
+                <Button Content="🖨️ Печать" Style="{DynamicResource SecondaryButton}" Margin="0,0,12,0"
+                        Command="{Binding PrintOrderCommand}" ToolTip="Печать заказа"/>
                 <Button Content="✓ Завершить" Style="{DynamicResource BtnSuccess}" Margin="0,0,12,0"
                         Command="{Binding CompleteOrderCommand}"/>
                 <Button Content="+ Новый заказ" Style="{DynamicResource BtnPrimary}"
                         Command="{Binding AddOrderCommand}"/>
             </StackPanel>
         </Grid>
+        
+        <!-- Filter Panel -->
+        <Border Grid.Row="2" Style="{DynamicResource Card}" Padding="20" Margin="0,0,0,16"
+                Visibility="{Binding IsFilterVisible, Converter={StaticResource BoolToVisibility}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Статус -->
+                <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                    <TextBlock Text="СТАТУС" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <ComboBox ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding SelectedStatus}"
+                              Style="{DynamicResource ComboBoxStyle}" Height="40"/>
+                </StackPanel>
+                
+                <!-- Дата -->
+                <StackPanel Grid.Column="1" Margin="0,0,20,0">
+                    <TextBlock Text="ПЕРИОД" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <StackPanel Orientation="Horizontal">
+                        <DatePicker SelectedDate="{Binding FilterDateFrom}" 
+                                    Style="{DynamicResource DatePickerStyle}" Width="140"/>
+                        <TextBlock Text="—" VerticalAlignment="Center" Margin="12,0" 
+                                   Foreground="{DynamicResource TextMutedBrush}" FontSize="16"/>
+                        <DatePicker SelectedDate="{Binding FilterDateTo}" 
+                                    Style="{DynamicResource DatePickerStyle}" Width="140"/>
+                    </StackPanel>
+                </StackPanel>
+                
+                <!-- Клиент -->
+                <StackPanel Grid.Column="2" Margin="0,0,20,0">
+                    <TextBlock Text="КЛИЕНТ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <TextBox Text="{Binding FilterClientName, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{DynamicResource InputText}" Height="40"/>
+                </StackPanel>
+                
+                <!-- Кнопки -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Bottom">
+                    <Button Content="Применить" Style="{DynamicResource BtnPrimary}" 
+                            Command="{Binding ApplyFilterCommand}" Margin="0,0,10,0" Padding="20,10"/>
+                    <Button Content="Сбросить" Style="{DynamicResource BtnSecondary}"
+                            Command="{Binding ClearFilterCommand}" Padding="20,10"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Loading Overlay -->
+        <Border Grid.Row="3" Background="#80000000" CornerRadius="16" Panel.ZIndex="100"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Border Width="60" Height="60" CornerRadius="30" Background="#1A1A1A" Margin="0,0,0,16">
+                    <TextBlock Text="⏳" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock.RenderTransform>
+                            <RotateTransform x:Name="LoadingRotate" CenterX="14" CenterY="14"/>
+                        </TextBlock.RenderTransform>
+                        <TextBlock.Triggers>
+                            <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation Storyboard.TargetProperty="(TextBlock.RenderTransform).(RotateTransform.Angle)"
+                                                         From="0" To="360" Duration="0:0:1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </TextBlock.Triggers>
+                    </TextBlock>
+                </Border>
+                <TextBlock Text="Загрузка заказов..." FontSize="14" Foreground="{DynamicResource TextSecondaryBrush}"/>
+            </StackPanel>
+        </Border>
 
         <!-- Orders List -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,16,0,0">
             <ItemsControl ItemsSource="{Binding Orders}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -134,13 +217,26 @@
         </ScrollViewer>
 
         <!-- Empty State -->
-        <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
+        <StackPanel Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center"
                     Visibility="{Binding Orders.Count, Converter={StaticResource CountToVisibility}}">
             <Border Width="80" Height="80" CornerRadius="40" Background="#141414" Margin="0,0,0,20">
                 <TextBlock Text="📋" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
             <TextBlock Text="Заказов пока нет" Style="{DynamicResource TextH3}" HorizontalAlignment="Center"/>
             <TextBlock Text="Создайте первый заказ" Style="{DynamicResource TextSmall}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+        </StackPanel>
+
+        <!-- Pagination -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0"
+                    Visibility="{Binding TotalPages, Converter={StaticResource GreaterThanOneToVisibility}, FallbackValue=Collapsed}">
+            <Button Content="◀ Назад" Command="{Binding PreviousPageCommand}" 
+                    Style="{DynamicResource SecondaryButton}" Margin="0,0,10,0"/>
+            
+            <TextBlock Text="{Binding PageInfo}" VerticalAlignment="Center" 
+                       Margin="10,0,10,0" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+            
+            <Button Content="Вперёд ▶" Command="{Binding NextPageCommand}" 
+                    Style="{DynamicResource SecondaryButton}" Margin="10,0,0,0"/>
         </StackPanel>
     </Grid>
 </UserControl>
