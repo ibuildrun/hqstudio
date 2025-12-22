@@ -1,3 +1,46 @@
+## [1.9.0](https://github.com/randomu3/hqstudio/compare/v1.8.0...v1.9.0) (2025-12-22)
+
+
+### 🚀 Новые возможности
+
+* **api,desktop:** бесшовный доступ Desktop к API без авторизации ([c663ed3](https://github.com/randomu3/hqstudio/commit/c663ed314b2e6d3db5519652c499b68639de4522))
+* **api,desktop:** управление сотрудниками из API с онлайн-статусом ([15695b6](https://github.com/randomu3/hqstudio/commit/15695b6511c4d883ed2deafa75537130dc77ea0f))
+* **api:** добавлен endpoint очистки заказов без клиентов ([d4ec25d](https://github.com/randomu3/hqstudio/commit/d4ec25d3dc6c0ac81bb7b551e1dc1b3465b13d53))
+* **api:** добавлена команда очистки базы данных ([0706bb7](https://github.com/randomu3/hqstudio/commit/0706bb7ae3d39f0688d1d74c018876aa4a716f55))
+* **api:** добавлены тестовые данные журнала ответственности, фильтр по источнику Web на сайте ([72c9645](https://github.com/randomu3/hqstudio/commit/72c96451917667e614c7281a610a7e7769b08ca2))
+* **api:** улучшены контроллеры заявок и клиентов ([00dddd7](https://github.com/randomu3/hqstudio/commit/00dddd7b6ce321d7bf037e79c535007ce1a583c4))
+* **desktop:** автоматическое создание сессии для онлайн-статуса ([92e0dca](https://github.com/randomu3/hqstudio/commit/92e0dca056a2e55eb9b871ef1545e8458b4e7ccd))
+* **desktop:** добавлен кастомный диалог подтверждения ([10221e6](https://github.com/randomu3/hqstudio/commit/10221e63629ee8ee4e7d39423beeef13b42b33bc))
+* **desktop:** добавлен конвертер видимости для пагинации ([d4245a6](https://github.com/randomu3/hqstudio/commit/d4245a6f8889b0301dd90d0056f0eb0b6883eaf3))
+* **desktop:** добавлен пакет System.Drawing.Common для печати ([63b644c](https://github.com/randomu3/hqstudio/commit/63b644c27f458788e509a83f8f5c79800ad37d4d))
+* **desktop:** добавлен сервис синхронизации данных ([41f8abf](https://github.com/randomu3/hqstudio/commit/41f8abf201b3c32cd48a682455b8794f3783189b))
+* **desktop:** добавлена фильтрация, печать и экспорт заказов ([8f66974](https://github.com/randomu3/hqstudio/commit/8f669748c089e4226546d817d0d57b972e3a0d10))
+* **desktop:** добавлены диалоги деталей заявки и создания клиента ([485840e](https://github.com/randomu3/hqstudio/commit/485840e381d060e6cf14436a5e0f0ca53e13c1ec))
+* **desktop:** добавлены сервисы печати и экспорта в Excel ([c7b5d4c](https://github.com/randomu3/hqstudio/commit/c7b5d4ccf297b7b5ae2311ce97e4a9b3a5e66712))
+* **desktop:** добавлены тёмные стили DatePicker и Calendar ([7a39433](https://github.com/randomu3/hqstudio/commit/7a394336aab83d43500a2a3cf071591b45d1aed1))
+* **desktop:** улучшена панель детализации заявок ([685d67e](https://github.com/randomu3/hqstudio/commit/685d67e814bc4ab7f0c99856bc47507e039914a0))
+* **desktop:** улучшена работа с заявками и создание заказов из заявок ([8e5fc02](https://github.com/randomu3/hqstudio/commit/8e5fc024a3373e2412dfe16bd0ded48f58799ea1))
+* **desktop:** улучшены диалоги редактирования заказов и клиентов ([b1b5c22](https://github.com/randomu3/hqstudio/commit/b1b5c221d5717a9296e986c0e2bdf7c6c10b4765))
+* автоматическая версионность из semantic-release ([0870b24](https://github.com/randomu3/hqstudio/commit/0870b247bdc830c0fea17c56886ed83190df3d8e))
+* добавлено форматирование телефонных номеров ([a3b4443](https://github.com/randomu3/hqstudio/commit/a3b44439cbf79a50325c88cc8b337e0908539b7a))
+
+
+### 🐛 Исправления
+
+* **api:** исправлены падающие тесты UsersController и ActivityLogController ([49cfa87](https://github.com/randomu3/hqstudio/commit/49cfa872e726ea746d2377893a00aa0b6557446b))
+* **desktop:** исправлено отображение версии 1.8.0 ([9c56790](https://github.com/randomu3/hqstudio/commit/9c56790822f3224b4724c0b9cdb43907b49cfff4))
+* **desktop:** сессия создаётся после входа, а не при запуске ([bdf25ed](https://github.com/randomu3/hqstudio/commit/bdf25ed6e9b13c664ac47089294e26d2891a3741))
+* **desktop:** убрано лишнее сообщение о пустых заявках ([6879e81](https://github.com/randomu3/hqstudio/commit/6879e81cb995b275365f1d43db85a75253c35590))
+* **desktop:** улучшена отладка загрузки заявок в десктоп приложении ([ee92e00](https://github.com/randomu3/hqstudio/commit/ee92e00c0d4cdfe52936c1a301abc9cac6194937))
+* **web:** исправлена авторизация - корректное декодирование JWT Base64Url токенов ([1a3659b](https://github.com/randomu3/hqstudio/commit/1a3659bfded8d8186dd7c338017f4f6f87c53631))
+
+
+### ♻️ Рефакторинг
+
+* **api:** улучшена авторизация и управление пользователями ([40cb539](https://github.com/randomu3/hqstudio/commit/40cb53968efebb84007383afe9ae64ed0acc5ae1))
+* **desktop:** обновлён запуск приложения и views ([9e0f576](https://github.com/randomu3/hqstudio/commit/9e0f576c42862a57d1ff0bd42e58c35edd45eed0))
+* **desktop:** улучшены view models ([25ed803](https://github.com/randomu3/hqstudio/commit/25ed803308ce11c1addfb261ab235e117325e5da))
+
 ## [1.8.0](https://github.com/randomu3/hqstudio/compare/v1.7.0...v1.8.0) (2025-12-21)
 
 
