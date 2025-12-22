@@ -6,6 +6,7 @@ import { WORK_HOURS } from '@/lib/constants'
 import { useAdmin } from '@/lib/store'
 import { motion, AnimatePresence } from 'framer-motion'
 import { api } from '@/lib/api'
+import { formatPhoneAsYouType, formatPhone } from '@/lib/phoneFormatter'
 
 const ContactItem: React.FC<{ icon: React.ReactNode; label: string; value: string; href?: string }> = ({ 
   icon, label, value, href 
@@ -128,7 +129,8 @@ export default function Contact({ onLogoClick }: ContactProps) {
                     placeholder="Ваш телефон *" 
                     required
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, phone: formatPhoneAsYouType(e.target.value) })}
+                    onBlur={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })}
                     className="w-full bg-neutral-900 border border-white/10 p-4 rounded-xl text-white outline-none focus:border-white/30 transition-all"
                   />
                   
