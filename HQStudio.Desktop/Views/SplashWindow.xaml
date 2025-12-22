@@ -63,8 +63,8 @@
 
             <!-- Version & Copyright -->
             <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,30">
-                <TextBlock Text="v1.0.0" FontSize="11" Foreground="#303030" HorizontalAlignment="Center"/>
-                <TextBlock Text="© 2024 HQ Studio • Сургут" FontSize="10" Foreground="#252525" 
+                <TextBlock x:Name="VersionText" FontSize="11" Foreground="#303030" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="CopyrightText" FontSize="10" Foreground="#252525" 
                            HorizontalAlignment="Center" Margin="0,4,0,0"/>
             </StackPanel>
         </Grid>

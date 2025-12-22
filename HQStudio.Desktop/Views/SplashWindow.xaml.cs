@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Windows;
 using System.Windows.Media.Animation;
 using System.Windows.Media;
@@ -10,7 +11,16 @@ namespace HQStudio.Views
         public SplashWindow()
         {
             InitializeComponent();
+            SetVersionInfo();
             Loaded += SplashWindow_Loaded;
+        }
+
+        private void SetVersionInfo()
+        {
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            var versionStr = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.0.0";
+            VersionText.Text = versionStr;
+            CopyrightText.Text = $"© {DateTime.Now.Year} HQ Studio • Сургут";
         }
 
         private async void SplashWindow_Loaded(object sender, RoutedEventArgs e)

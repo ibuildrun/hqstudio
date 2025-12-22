@@ -44,7 +44,7 @@
                         <TextBlock Text=" STUDIO" FontSize="22" FontWeight="Light" Foreground="#505050"
                                    VerticalAlignment="Center"/>
                         <Border Background="{DynamicResource BgAvatarBrush}" CornerRadius="4" Padding="8,3" Margin="15,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="v1.0" FontSize="10" Foreground="#505050"/>
+                            <TextBlock Text="{Binding AppVersion}" FontSize="10" Foreground="#505050"/>
                         </Border>
                     </StackPanel>
 
