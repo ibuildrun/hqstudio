@@ -1,3 +1,10 @@
+## [1.11.0](https://github.com/randomu3/hqstudio/compare/v1.10.0...v1.11.0) (2025-12-22)
+
+
+### 🚀 Новые возможности
+
+* **api:** добавлены команды экспорта/импорта данных для миграции SQLite->PostgreSQL ([0c69a2c](https://github.com/randomu3/hqstudio/commit/0c69a2ce8b62e1f91b1c034b167ef0bbbd659e9b))
+
 ## [1.10.0](https://github.com/randomu3/hqstudio/compare/v1.9.1...v1.10.0) (2025-12-22)
 
 
