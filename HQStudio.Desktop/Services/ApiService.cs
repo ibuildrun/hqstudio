@@ -110,16 +110,28 @@ namespace HQStudio.Services
             catch { return new(); }
         }
 
-        public async Task<ApiClient?> CreateClientAsync(ApiClient client)
+        public async Task<(ApiClient? Client, string? Error)> CreateClientAsync(ApiClient client)
         {
             try
             {
                 var response = await _http.PostAsJsonAsync("/api/clients", client);
                 if (response.IsSuccessStatusCode)
-                    return await response.Content.ReadFromJsonAsync<ApiClient>();
+                {
+                    var created = await response.Content.ReadFromJsonAsync<ApiClient>();
+                    return (created, null);
+                }
+                
+                if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+                {
+                    return (null, "Клиент с таким номером телефона уже существует");
+                }
+                
+                return (null, $"Ошибка сервера: {response.StatusCode}");
             }
-            catch { }
-            return null;
+            catch (Exception ex)
+            {
+                return (null, $"Ошибка подключения: {ex.Message}");
+            }
         }
 
         public async Task<bool> UpdateClientAsync(int id, ApiClient client)
@@ -186,15 +198,16 @@ namespace HQStudio.Services
         }
 
         // Orders
-        public async Task<List<ApiOrder>> GetOrdersAsync(string? status = null)
+        public async Task<OrdersResponse?> GetOrdersAsync(int page = 1, int pageSize = 20, string? status = null)
         {
             try
             {
-                var url = "/api/orders" + (status != null ? $"?status={status}" : "");
-                var result = await _http.GetFromJsonAsync<List<ApiOrder>>(url);
-                return result ?? new();
+                var query = new List<string> { $"page={page}", $"pageSize={pageSize}" };
+                if (!string.IsNullOrEmpty(status)) query.Add($"status={status}");
+                var url = "/api/orders?" + string.Join("&", query);
+                return await _http.GetFromJsonAsync<OrdersResponse>(url);
             }
-            catch { return new(); }
+            catch { return null; }
         }
 
         public async Task<ApiOrder?> CreateOrderAsync(CreateOrderRequest order)
@@ -595,11 +608,20 @@ namespace HQStudio.Services
         public int Id { get; set; }
         public int ClientId { get; set; }
         public ApiClient? Client { get; set; }
-        public string Status { get; set; } = "";
+        public int Status { get; set; }
         public decimal TotalPrice { get; set; }
         public string? Notes { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
+    }
+
+    public class OrdersResponse
+    {
+        public List<ApiOrder> Items { get; set; } = new();
+        public int Total { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int TotalPages { get; set; }
     }
 
     public class CreateOrderRequest
@@ -741,24 +763,43 @@ namespace HQStudio.Services
 
     public class ActivityLogStats
     {
+        [System.Text.Json.Serialization.JsonPropertyName("totalToday")]
         public int TotalToday { get; set; }
+        
+        [System.Text.Json.Serialization.JsonPropertyName("totalWeek")]
         public int TotalWeek { get; set; }
+        
+        [System.Text.Json.Serialization.JsonPropertyName("totalAll")]
         public int TotalAll { get; set; }
+        
+        [System.Text.Json.Serialization.JsonPropertyName("bySource")]
         public List<ActivitySourceStat> BySource { get; set; } = new();
+        
+        [System.Text.Json.Serialization.JsonPropertyName("byUser")]
         public List<ActivityUserStat> ByUser { get; set; } = new();
     }
 
     public class ActivitySourceStat
     {
+        [System.Text.Json.Serialization.JsonPropertyName("source")]
         public string Source { get; set; } = "";
+        
+        [System.Text.Json.Serialization.JsonPropertyName("count")]
         public int Count { get; set; }
     }
 
     public class ActivityUserStat
     {
+        [System.Text.Json.Serialization.JsonPropertyName("userId")]
         public int UserId { get; set; }
+        
+        [System.Text.Json.Serialization.JsonPropertyName("userName")]
         public string UserName { get; set; } = "";
+        
+        [System.Text.Json.Serialization.JsonPropertyName("count")]
         public int Count { get; set; }
+        
+        public override string ToString() => UserName;
     }
 
     // User DTOs
@@ -771,6 +812,10 @@ namespace HQStudio.Services
         public bool IsActive { get; set; }
         public bool IsOnline { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool CanAccessWeb { get; set; } = true;
+        public bool CanAccessDesktop { get; set; } = true;
+        public string? WebRole { get; set; }
+        public string? DesktopRole { get; set; }
     }
 
     public class CreateApiUserRequest
@@ -779,6 +824,10 @@ namespace HQStudio.Services
         public string Name { get; set; } = "";
         public string Password { get; set; } = "";
         public string Role { get; set; } = "Manager";
+        public bool CanAccessWeb { get; set; } = true;
+        public bool CanAccessDesktop { get; set; } = true;
+        public string? WebRole { get; set; }
+        public string? DesktopRole { get; set; }
     }
 
     public class UpdateApiUserRequest
@@ -786,5 +835,9 @@ namespace HQStudio.Services
         public string Name { get; set; } = "";
         public string Role { get; set; } = "";
         public string? Password { get; set; }
+        public bool? CanAccessWeb { get; set; }
+        public bool? CanAccessDesktop { get; set; }
+        public string? WebRole { get; set; }
+        public string? DesktopRole { get; set; }
     }
 }
