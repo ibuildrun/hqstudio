@@ -81,32 +81,6 @@
                     <Button Content="ВОЙТИ" Command="{Binding LoginCommand}"
                             Style="{DynamicResource BtnPrimary}" Height="48" TabIndex="2"
                             IsDefault="True"/>
-
-                    <!-- Credentials Hint -->
-                    <Border Background="#141414" CornerRadius="10" Padding="16,12" Margin="0,20,0,0">
-                        <StackPanel>
-                            <TextBlock Text="ТЕСТОВЫЕ ДАННЫЕ" Style="{DynamicResource TextLabel}" 
-                                       HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                                    <TextBlock Text="Админ" FontSize="11" Foreground="#505050" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="admin / admin" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" 
-                                               FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,3,0,0"/>
-                                </StackPanel>
-                                
-                                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                                    <TextBlock Text="Работник" FontSize="11" Foreground="#505050" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="worker / worker" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" 
-                                               FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,3,0,0"/>
-                                </StackPanel>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
                 </StackPanel>
             </ScrollViewer>
 
