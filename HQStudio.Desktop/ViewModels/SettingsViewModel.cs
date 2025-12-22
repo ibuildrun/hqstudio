@@ -1,4 +1,5 @@
 using HQStudio.Services;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 
@@ -16,6 +17,15 @@ namespace HQStudio.ViewModels
         private bool _isUpdateAvailable;
         private string _newVersion = "";
         private string _updateReleaseNotes = "";
+
+        public string AppVersion
+        {
+            get
+            {
+                var version = Assembly.GetExecutingAssembly().GetName().Version;
+                return version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.0.0";
+            }
+        }
 
         public bool IsDarkTheme
         {
