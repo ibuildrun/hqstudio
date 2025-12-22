@@ -2,8 +2,6 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
-using HQStudio.API.DTOs;
-using HQStudio.API.Models;
 using Xunit;
 
 namespace HQStudio.API.Tests;
@@ -43,7 +41,7 @@ public class UsersControllerTests : IClassFixture<TestWebApplicationFactory>
         var response = await _client.GetAsync("/api/users");
         
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var users = await response.Content.ReadFromJsonAsync<List<UserDto>>();
+        var users = await response.Content.ReadFromJsonAsync<List<UserDetailDto>>();
         users.Should().NotBeNull();
         users.Should().HaveCountGreaterThan(0);
     }
@@ -57,7 +55,7 @@ public class UsersControllerTests : IClassFixture<TestWebApplicationFactory>
         var response = await _client.GetAsync("/api/users/1");
         
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var user = await response.Content.ReadFromJsonAsync<UserDto>();
+        var user = await response.Content.ReadFromJsonAsync<UserDetailDto>();
         user.Should().NotBeNull();
         user!.Login.Should().Be("admin");
     }
@@ -79,7 +77,7 @@ public class UsersControllerTests : IClassFixture<TestWebApplicationFactory>
         var token = await GetAdminTokenAsync();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var updateRequest = new { Name = "Updated Admin", Role = UserRole.Admin, Password = (string?)null };
+        var updateRequest = new { Name = "Updated Admin", Role = "Admin", Password = (string?)null };
         var response = await _client.PutAsJsonAsync("/api/users/1", updateRequest);
         
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
@@ -91,7 +89,7 @@ public class UsersControllerTests : IClassFixture<TestWebApplicationFactory>
         var token = await GetAdminTokenAsync();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var updateRequest = new { Name = "Test", Role = UserRole.Editor, Password = (string?)null };
+        var updateRequest = new { Name = "Test", Role = "Editor", Password = (string?)null };
         var response = await _client.PutAsJsonAsync("/api/users/999", updateRequest);
         
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -117,5 +115,26 @@ public class UsersControllerTests : IClassFixture<TestWebApplicationFactory>
         var response = await _client.DeleteAsync("/api/users/999");
         
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    // DTO for deserialization
+    private class UserDetailDto
+    {
+        public int Id { get; set; }
+        public string Login { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Role { get; set; } = "";
+        public bool IsActive { get; set; }
+        public bool IsOnline { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public bool CanAccessWeb { get; set; }
+        public bool CanAccessDesktop { get; set; }
+        public string? WebRole { get; set; }
+        public string? DesktopRole { get; set; }
+    }
+
+    private class LoginResponse
+    {
+        public string Token { get; set; } = "";
     }
 }
