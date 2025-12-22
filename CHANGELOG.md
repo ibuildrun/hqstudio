@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/randomu3/hqstudio/compare/v1.9.0...v1.9.1) (2025-12-22)
+
+
+### 🐛 Исправления
+
+* **desktop:** убраны тестовые данные со страницы входа ([7ce4d61](https://github.com/randomu3/hqstudio/commit/7ce4d613dbecda9798d65166cc1bb75129940014))
+
 ## [1.9.0](https://github.com/randomu3/hqstudio/compare/v1.8.0...v1.9.0) (2025-12-22)
 
 
