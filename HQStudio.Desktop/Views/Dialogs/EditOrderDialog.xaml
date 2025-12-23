@@ -213,7 +213,8 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="PriceBox" Grid.Column="0" Style="{DynamicResource InputText}"/>
+                        <TextBox x:Name="PriceBox" Grid.Column="0" Style="{DynamicResource InputText}"
+                                 PreviewTextInput="PriceBox_PreviewTextInput"/>
                         <Button Grid.Column="1" Content="Авто" Style="{DynamicResource BtnSecondary}" 
                                 Padding="12,10" Margin="8,0,0,0" Click="AutoPrice_Click"
                                 ToolTip="Рассчитать сумму по выбранным услугам"/>

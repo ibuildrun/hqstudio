@@ -122,7 +122,8 @@
                     <TextBox x:Name="CategoryBox" Style="{DynamicResource InputText}" Margin="0,0,0,16"/>
 
                     <TextBlock Text="ЦЕНА ОТ (₽)" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
-                    <TextBox x:Name="PriceBox" Style="{DynamicResource InputText}" Margin="0,0,0,16"/>
+                    <TextBox x:Name="PriceBox" Style="{DynamicResource InputText}" Margin="0,0,0,16"
+                             PreviewTextInput="PriceBox_PreviewTextInput"/>
 
                     <TextBlock Text="ОПИСАНИЕ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
                     <TextBox x:Name="DescriptionBox" Style="{DynamicResource InputText}" 
