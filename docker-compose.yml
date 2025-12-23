@@ -47,7 +47,7 @@ services:
     networks:
       - hqstudio-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/services || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -72,6 +72,9 @@ services:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    depends_on:
+      api:
+        condition: service_healthy
     networks:
       - hqstudio-network
     healthcheck:
