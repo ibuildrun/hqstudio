@@ -1,3 +1,10 @@
+## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
+
+
+### 🚀 Новые возможности
+
+* **desktop:** add input validation for price, phone, and license plate fields ([a9534a6](https://github.com/randomu3/hqstudio/commit/a9534a6c514a11eb8cbf344795e7e3bffb473e31))
+
 ## [1.13.1](https://github.com/randomu3/hqstudio/compare/v1.13.0...v1.13.1) (2025-12-23)
 
 
