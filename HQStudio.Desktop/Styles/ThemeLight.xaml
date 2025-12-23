@@ -97,13 +97,13 @@
 
     <!-- Secondary Button -->
     <Style x:Key="BtnSecondary" TargetType="Button">
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="#FFFFFF"/>
         <Setter Property="Foreground" Value="#1A1A1A"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Padding" Value="24,14"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="BorderBrush" Value="#D0D0D0"/>
+        <Setter Property="BorderBrush" Value="#C0C0C0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -111,10 +111,12 @@
                     <Border x:Name="border" Background="{TemplateBinding Background}" 
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="10" Padding="{TemplateBinding Padding}"
-                            TextElement.Foreground="{TemplateBinding Foreground}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                          TextElement.Foreground="{TemplateBinding Foreground}"/>
+                            CornerRadius="10" Padding="{TemplateBinding Padding}">
+                        <TextBlock x:Name="contentText" 
+                                   Text="{TemplateBinding Content}"
+                                   Foreground="#1A1A1A"
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -637,14 +639,14 @@
     
     <!-- SecondaryButton - full style for light theme -->
     <Style x:Key="SecondaryButton" TargetType="Button">
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="#FFFFFF"/>
         <Setter Property="Foreground" Value="#1A1A1A"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Padding" Value="24,12"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="BorderBrush" Value="#D0D0D0"/>
+        <Setter Property="BorderBrush" Value="#C0C0C0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -654,10 +656,12 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="8"
-                            Padding="{TemplateBinding Padding}"
-                            TextElement.Foreground="#1A1A1A">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                          TextElement.Foreground="#1A1A1A"/>
+                            Padding="{TemplateBinding Padding}">
+                        <TextBlock x:Name="contentText" 
+                                   Text="{TemplateBinding Content}"
+                                   Foreground="#1A1A1A"
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
