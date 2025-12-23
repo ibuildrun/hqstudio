@@ -16,6 +16,34 @@
 * **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
 * **desktop:** восстановлен оригинальный UI заказов с CardHoverable стилем ([51f1776](https://github.com/randomu3/hqstudio/commit/51f177660097301dfaf7b3a019e02dd24e0538a9))
 * **desktop:** добавлены алиасы SecondaryButton и ButtonPrimary для светлой темы ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
+* **desktop:** исправлен индикатор выбранного заказа через code-behind ([c8bbd36](https://github.com/randomu3/hqstudio/commit/c8bbd367ef4d984a87f6ecb6909435065b394890))
+* **desktop:** исправлен контраст кнопок SecondaryButton - белый фон и TextBlock с явным цветом ([df97456](https://github.com/randomu3/hqstudio/commit/df97456a924b5ac405ef7bb4a939d0080dbdc1e6))
+* **desktop:** исправлен контраст текста в кнопках светлой темы через TextElement.Foreground ([2126a87](https://github.com/randomu3/hqstudio/commit/2126a878d266b9cd94a76a0e77fcd664dd5a3acc))
+* **desktop:** исправлены стили кнопок в Buttons.xaml - используют DynamicResource для поддержки тем ([1228141](https://github.com/randomu3/hqstudio/commit/1228141e179468426f20e4291d58b103ea924507))
+* **desktop:** разделительные линии между заказами, исправлено обновление статуса на API ([541453e](https://github.com/randomu3/hqstudio/commit/541453e876b49c259fcf6d4f08c260cbb68a1d80))
+* **desktop:** создан полноценный стиль SecondaryButton для светлой темы с явным цветом текста ([6ca6437](https://github.com/randomu3/hqstudio/commit/6ca64370c761a76eb8510613ad86b972a89e5a12))
+* **desktop:** улучшен контраст кнопок и иконок в светлой теме ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
+* **desktop:** улучшены кнопки Печать и Завершить - добавлены сообщения и подтверждения ([12f9eda](https://github.com/randomu3/hqstudio/commit/12f9eda3c9f284ee677e602e22a6c5b25d672c83))
+* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+
+## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
+
+
+### 🚀 Новые возможности
+
+* **desktop:** выбор заказа кликом, кастомные диалоги вместо MessageBox ([10309a4](https://github.com/randomu3/hqstudio/commit/10309a4c9fea3f697f8580848dd54205213d437f))
+* **desktop:** добавлен зелёный индикатор выбранного заказа слева ([e34d60d](https://github.com/randomu3/hqstudio/commit/e34d60d3ee17250387505837425113759c077aee))
+* **desktop:** добавлена валидация ввода для полей цены, телефона и гос. номера ([6fd17d8](https://github.com/randomu3/hqstudio/commit/6fd17d8d565ce790843a2a92bb7dc0a4538c9304))
+
+
+### 🐛 Исправления
+
+* **api:** возвращён PostgreSQL как БД по умолчанию для разработки ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
+* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** восстановлен оригинальный UI заказов с CardHoverable стилем ([51f1776](https://github.com/randomu3/hqstudio/commit/51f177660097301dfaf7b3a019e02dd24e0538a9))
+* **desktop:** добавлены алиасы SecondaryButton и ButtonPrimary для светлой темы ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
 * **desktop:** исправлен контраст кнопок SecondaryButton - белый фон и TextBlock с явным цветом ([df97456](https://github.com/randomu3/hqstudio/commit/df97456a924b5ac405ef7bb4a939d0080dbdc1e6))
 * **desktop:** исправлен контраст текста в кнопках светлой темы через TextElement.Foreground ([2126a87](https://github.com/randomu3/hqstudio/commit/2126a878d266b9cd94a76a0e77fcd664dd5a3acc))
 * **desktop:** исправлены стили кнопок в Buttons.xaml - используют DynamicResource для поддержки тем ([1228141](https://github.com/randomu3/hqstudio/commit/1228141e179468426f20e4291d58b103ea924507))
