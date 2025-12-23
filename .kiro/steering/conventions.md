@@ -102,7 +102,7 @@ export default function ExampleComponent({ title, onAction }: Props) {
 
 ## Git & Commits
 
-### Conventional Commits
+### Conventional Commits (на русском языке!)
 ```
 feat(api): добавлен endpoint для статистики
 fix(web): исправлена навигация на мобильных
@@ -114,7 +114,8 @@ ci: добавлен CodeQL анализ
 ```
 
 ### Правила
-- Коммиты на русском или английском (консистентно в рамках PR)
+- **ВАЖНО: Все коммиты должны быть на русском языке!**
+- Формат: `тип(область): описание на русском`
 - Один коммит = одно логическое изменение
 - Не коммитить `.env`, `node_modules`, `bin/`, `obj/`, `publish/`
 
