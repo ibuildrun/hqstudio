@@ -124,12 +124,12 @@ namespace HQStudio.ViewModels
         {
             AddOrderCommand = new RelayCommand(_ => AddOrder());
             EditOrderCommand = new RelayCommand(_ => EditOrder(), _ => SelectedOrder != null);
-            CompleteOrderCommand = new RelayCommand(_ => CompleteOrder(), _ => SelectedOrder != null && SelectedOrder.Status != "Завершен");
+            CompleteOrderCommand = new RelayCommand(_ => CompleteOrder());
             DeleteOrderCommand = new RelayCommand(_ => DeleteOrderAsync(), _ => SelectedOrder != null);
             RefreshCommand = new RelayCommand(async _ => await ForceRefreshAsync());
             PreviousPageCommand = new RelayCommand(async _ => await PreviousPageAsync(), _ => CanGoPrevious);
             NextPageCommand = new RelayCommand(async _ => await NextPageAsync(), _ => CanGoNext);
-            PrintOrderCommand = new RelayCommand(_ => PrintOrder(), _ => SelectedOrder != null);
+            PrintOrderCommand = new RelayCommand(_ => PrintOrder());
             ExportToExcelCommand = new RelayCommand(async _ => await ExportToExcelAsync(), _ => Orders.Any());
             ToggleFilterCommand = new RelayCommand(_ => IsFilterVisible = !IsFilterVisible);
             ApplyFilterCommand = new RelayCommand(async _ => await ApplyFilterAsync());
@@ -436,7 +436,25 @@ namespace HQStudio.ViewModels
 
         private async void CompleteOrder()
         {
-            if (SelectedOrder == null) return;
+            if (SelectedOrder == null)
+            {
+                MessageBox.Show("Выберите заказ для завершения", "Завершение заказа", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            
+            if (SelectedOrder.Status == "Завершен")
+            {
+                MessageBox.Show("Заказ уже завершён", "Завершение заказа", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            
+            var result = MessageBox.Show(
+                $"Завершить заказ #{SelectedOrder.Id}?\n\nСтатус будет изменён на \"Завершен\".",
+                "Подтверждение",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            
+            if (result != MessageBoxResult.Yes) return;
             
             if (_settings.UseApi && _apiService.IsConnected)
             {
@@ -450,6 +468,7 @@ namespace HQStudio.ViewModels
             }
             
             await LoadOrdersAsync();
+            MessageBox.Show($"Заказ #{SelectedOrder?.Id ?? 0} успешно завершён!", "Готово", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private async void DeleteOrderAsync()
@@ -622,7 +641,11 @@ namespace HQStudio.ViewModels
         
         private void PrintOrder()
         {
-            if (SelectedOrder == null) return;
+            if (SelectedOrder == null)
+            {
+                MessageBox.Show("Выберите заказ для печати", "Печать", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
             
             try
             {
