@@ -1,3 +1,10 @@
+## [1.13.1](https://github.com/randomu3/hqstudio/compare/v1.13.0...v1.13.1) (2025-12-23)
+
+
+### 🐛 Исправления
+
+* **desktop:** route service edit through ViewModel API instead of local DataService ([e6087de](https://github.com/randomu3/hqstudio/commit/e6087de441d548afd94dd8555fc20626c041cb44))
+
 ## [1.13.0](https://github.com/randomu3/hqstudio/compare/v1.12.0...v1.13.0) (2025-12-23)
 
 
