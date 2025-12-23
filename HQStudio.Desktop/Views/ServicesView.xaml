@@ -124,7 +124,7 @@
 
         <!-- Empty State -->
         <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
-                    Visibility="{Binding Services.Count, Converter={StaticResource CountToVisibility}}">
+                    Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibility}}">
             <Border Width="80" Height="80" CornerRadius="40" Background="{DynamicResource BgIconBrush}" Margin="0,0,0,20">
                 <TextBlock Text="🔧" FontSize="36" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>

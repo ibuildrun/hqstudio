@@ -40,8 +40,14 @@ namespace HQStudio.ViewModels
         public bool IsLoading
         {
             get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
+            set
+            {
+                SetProperty(ref _isLoading, value);
+                OnPropertyChanged(nameof(ShowEmptyState));
+            }
         }
+
+        public bool ShowEmptyState => !IsLoading && Services.Count == 0;
 
         public int TotalServices
         {
@@ -139,6 +145,8 @@ namespace HQStudio.ViewModels
             {
                 Services.Add(service);
             }
+            
+            OnPropertyChanged(nameof(ShowEmptyState));
         }
 
         private async void AddServiceAsync()

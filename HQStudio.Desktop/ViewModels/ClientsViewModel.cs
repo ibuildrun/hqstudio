@@ -44,8 +44,14 @@ namespace HQStudio.ViewModels
         public bool IsLoading
         {
             get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
+            set
+            {
+                SetProperty(ref _isLoading, value);
+                OnPropertyChanged(nameof(ShowEmptyState));
+            }
         }
+
+        public bool ShowEmptyState => !IsLoading && Clients.Count == 0;
 
         public int CurrentPage
         {
@@ -179,6 +185,7 @@ namespace HQStudio.ViewModels
             
             OnPropertyChanged(nameof(CanGoPrevious));
             OnPropertyChanged(nameof(CanGoNext));
+            OnPropertyChanged(nameof(ShowEmptyState));
         }
 
         private async void AddClientAsync()
