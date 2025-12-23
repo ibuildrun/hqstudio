@@ -16,6 +16,11 @@ namespace HQStudio.ViewModels
         private Client? _selectedClient;
         private string _searchText = string.Empty;
         private List<Client> _allClients = new();
+        private bool _isLoading;
+        private int _currentPage = 1;
+        private int _totalPages = 1;
+        private int _totalClients;
+        private const int PageSize = 20;
 
         public ObservableCollection<Client> Clients { get; } = new();
 
@@ -31,14 +36,46 @@ namespace HQStudio.ViewModels
             set
             {
                 SetProperty(ref _searchText, value);
+                CurrentPage = 1;
                 FilterClients();
             }
         }
+
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set { SetProperty(ref _currentPage, value); OnPropertyChanged(nameof(PageInfo)); }
+        }
+
+        public int TotalPages
+        {
+            get => _totalPages;
+            set { SetProperty(ref _totalPages, value); OnPropertyChanged(nameof(PageInfo)); }
+        }
+
+        public int TotalClients
+        {
+            get => _totalClients;
+            set => SetProperty(ref _totalClients, value);
+        }
+
+        public string PageInfo => $"Страница {CurrentPage} из {TotalPages}";
+        public bool CanGoPrevious => CurrentPage > 1 && !IsLoading;
+        public bool CanGoNext => CurrentPage < TotalPages && !IsLoading;
 
         public ICommand AddClientCommand { get; }
         public ICommand EditClientCommand { get; }
         public ICommand DeleteClientCommand { get; }
         public ICommand RefreshCommand { get; }
+        public ICommand PreviousPageCommand { get; }
+        public ICommand NextPageCommand { get; }
+        public ICommand ExportToExcelCommand { get; }
 
         public ClientsViewModel()
         {
@@ -46,33 +83,75 @@ namespace HQStudio.ViewModels
             EditClientCommand = new RelayCommand(_ => EditClient(), _ => SelectedClient != null);
             DeleteClientCommand = new RelayCommand(_ => DeleteClient(), _ => SelectedClient != null);
             RefreshCommand = new RelayCommand(async _ => await LoadClientsAsync());
+            PreviousPageCommand = new RelayCommand(async _ => await PreviousPageAsync(), _ => CanGoPrevious);
+            NextPageCommand = new RelayCommand(async _ => await NextPageAsync(), _ => CanGoNext);
+            ExportToExcelCommand = new RelayCommand(async _ => await ExportToExcelAsync(), _ => _allClients.Any());
             _ = LoadClientsAsync();
+        }
+
+        private async Task PreviousPageAsync()
+        {
+            if (CanGoPrevious)
+            {
+                CurrentPage--;
+                FilterClients();
+            }
+            await Task.CompletedTask;
+        }
+
+        private async Task NextPageAsync()
+        {
+            if (CanGoNext)
+            {
+                CurrentPage++;
+                FilterClients();
+            }
+            await Task.CompletedTask;
         }
 
         private async Task LoadClientsAsync()
         {
-            _allClients.Clear();
+            if (IsLoading) return;
+            IsLoading = true;
+            OnPropertyChanged(nameof(CanGoPrevious));
+            OnPropertyChanged(nameof(CanGoNext));
             
-            if (_settings.UseApi && _apiService.IsConnected)
+            try
             {
-                var apiClients = await _apiService.GetClientsAsync();
-                _allClients = apiClients.Select(c => new Client
+                _allClients.Clear();
+                
+                if (_settings.UseApi && !_apiService.IsConnected)
                 {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Phone = c.Phone,
-                    Car = c.CarModel ?? "",
-                    CarNumber = c.LicensePlate ?? "",
-                    Notes = c.Notes ?? "",
-                    CreatedAt = c.CreatedAt
-                }).ToList();
+                    await _apiService.CheckConnectionAsync();
+                }
+                
+                if (_settings.UseApi && _apiService.IsConnected)
+                {
+                    var apiClients = await _apiService.GetClientsAsync();
+                    _allClients = apiClients.Select(c => new Client
+                    {
+                        Id = c.Id,
+                        Name = c.Name,
+                        Phone = c.Phone,
+                        Car = c.CarModel ?? "",
+                        CarNumber = c.LicensePlate ?? "",
+                        Notes = c.Notes ?? "",
+                        CreatedAt = c.CreatedAt
+                    }).ToList();
+                }
+                else
+                {
+                    _allClients = _dataService.Clients.ToList();
+                }
+                
+                FilterClients();
             }
-            else
+            finally
             {
-                _allClients = _dataService.Clients.ToList();
+                IsLoading = false;
+                OnPropertyChanged(nameof(CanGoPrevious));
+                OnPropertyChanged(nameof(CanGoNext));
             }
-            
-            FilterClients();
         }
 
         private void FilterClients()
@@ -87,10 +166,19 @@ namespace HQStudio.ViewModels
                     c.Car.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                     c.CarNumber.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
 
-            foreach (var client in filtered.OrderByDescending(c => c.CreatedAt))
+            var orderedList = filtered.OrderByDescending(c => c.CreatedAt).ToList();
+            TotalClients = orderedList.Count;
+            TotalPages = Math.Max(1, (int)Math.Ceiling(orderedList.Count / (double)PageSize));
+            
+            if (CurrentPage > TotalPages) CurrentPage = TotalPages;
+
+            foreach (var client in orderedList.Skip((CurrentPage - 1) * PageSize).Take(PageSize))
             {
                 Clients.Add(client);
             }
+            
+            OnPropertyChanged(nameof(CanGoPrevious));
+            OnPropertyChanged(nameof(CanGoNext));
         }
 
         private async void AddClientAsync()
@@ -100,7 +188,6 @@ namespace HQStudio.ViewModels
             
             if (dialog.ShowDialog() == true)
             {
-                // Проверка на дубликат локально
                 var normalizedPhone = dialog.Client.Phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Replace("+", "");
                 var existingClient = _allClients.FirstOrDefault(c => 
                     c.Phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Replace("+", "") == normalizedPhone);
@@ -108,7 +195,7 @@ namespace HQStudio.ViewModels
                 if (existingClient != null)
                 {
                     MessageBox.Show(
-                        $"Клиент с таким номером телефона уже существует:\n{existingClient.Name}\n\nИспользуйте существующего клиента для создания заказа.",
+                        $"Клиент с таким номером телефона уже существует:\n{existingClient.Name}",
                         "Дубликат клиента",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -141,6 +228,7 @@ namespace HQStudio.ViewModels
                     _dataService.SaveData();
                 }
                 
+                CurrentPage = 1;
                 await LoadClientsAsync();
             }
         }
@@ -175,6 +263,33 @@ namespace HQStudio.ViewModels
                 _dataService.SaveData();
                 _ = LoadClientsAsync();
             }
+        }
+
+        private async Task ExportToExcelAsync()
+        {
+            if (!_allClients.Any())
+            {
+                MessageBox.Show("Нет клиентов для экспорта", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            
+            try
+            {
+                IsLoading = true;
+                
+                var exportService = new ExcelExportService();
+                exportService.ExportClientsToExcel(_allClients.OrderByDescending(c => c.CreatedAt));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при экспорте: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+            
+            await Task.CompletedTask;
         }
     }
 }

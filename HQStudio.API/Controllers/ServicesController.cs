@@ -14,6 +14,12 @@ public class ServicesController : ControllerBase
 
     public ServicesController(AppDbContext db) => _db = db;
 
+    private bool IsDesktopClient()
+    {
+        var clientType = Request.Headers["X-Client-Type"].FirstOrDefault();
+        return clientType?.Equals("Desktop", StringComparison.OrdinalIgnoreCase) == true;
+    }
+
     [HttpGet]
     public async Task<ActionResult<List<Service>>> GetAll([FromQuery] bool activeOnly = false)
     {
@@ -30,28 +36,71 @@ public class ServicesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Editor")]
     public async Task<ActionResult<Service>> Create(Service service)
     {
+        // Для веб-клиентов требуется авторизация
+        if (!IsDesktopClient() && !User.Identity?.IsAuthenticated == true)
+        {
+            return Unauthorized(new { message = "Требуется авторизация" });
+        }
+        
+        if (!IsDesktopClient() && !User.IsInRole("Admin") && !User.IsInRole("Editor"))
+        {
+            return Forbid();
+        }
+
         _db.Services.Add(service);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Get), new { id = service.Id }, service);
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin,Editor")]
     public async Task<IActionResult> Update(int id, Service service)
     {
+        // Для веб-клиентов требуется авторизация
+        if (!IsDesktopClient() && !User.Identity?.IsAuthenticated == true)
+        {
+            return Unauthorized(new { message = "Требуется авторизация" });
+        }
+        
+        if (!IsDesktopClient() && !User.IsInRole("Admin") && !User.IsInRole("Editor"))
+        {
+            return Forbid();
+        }
+
         if (id != service.Id) return BadRequest();
-        _db.Entry(service).State = EntityState.Modified;
+        
+        var existing = await _db.Services.FindAsync(id);
+        if (existing == null) return NotFound();
+        
+        existing.Title = service.Title;
+        existing.Category = service.Category;
+        existing.Description = service.Description;
+        existing.Price = service.Price;
+        existing.Image = service.Image;
+        existing.IsActive = service.IsActive;
+        existing.SortOrder = service.SortOrder;
+        
         await _db.SaveChangesAsync();
         return NoContent();
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
+        // Для веб-клиентов требуется авторизация Admin
+        if (!IsDesktopClient())
+        {
+            if (!User.Identity?.IsAuthenticated == true)
+            {
+                return Unauthorized(new { message = "Требуется авторизация" });
+            }
+            if (!User.IsInRole("Admin"))
+            {
+                return Forbid();
+            }
+        }
+
         var service = await _db.Services.FindAsync(id);
         if (service == null) return NotFound();
         _db.Services.Remove(service);

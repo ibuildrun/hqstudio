@@ -22,16 +22,28 @@
         </StackPanel>
 
         <!-- Toolbar -->
-        <Grid Grid.Row="1" Margin="0,0,0,24">
+        <Grid Grid.Row="1" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                     Style="{DynamicResource InputSearch}" HorizontalAlignment="Left"/>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Background="#1E1E1E" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Всего: " FontSize="13" Foreground="#707070" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding TotalServices}" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                <Button Content="🔄" Style="{DynamicResource SecondaryButton}" Padding="8" MinWidth="36" Height="36"
+                        Command="{Binding RefreshCommand}" ToolTip="Обновить"/>
+            </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{DynamicResource InputSearch}" HorizontalAlignment="Left" Margin="12,0,0,0"/>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
                 <Button Content="🗑️ Удалить" Style="{DynamicResource BtnDanger}" Margin="0,0,12,0"
                         Command="{Binding DeleteServiceCommand}"/>
                 <Button Content="+ Добавить услугу" Style="{DynamicResource BtnPrimary}"
@@ -39,8 +51,33 @@
             </StackPanel>
         </Grid>
 
+        <!-- Loading Overlay -->
+        <Border Grid.Row="2" Background="#80000000" CornerRadius="16" Panel.ZIndex="100"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Border Width="60" Height="60" CornerRadius="30" Background="#1A1A1A" Margin="0,0,0,16">
+                    <TextBlock Text="⏳" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock.RenderTransform>
+                            <RotateTransform x:Name="LoadingRotate" CenterX="14" CenterY="14"/>
+                        </TextBlock.RenderTransform>
+                        <TextBlock.Triggers>
+                            <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation Storyboard.TargetProperty="(TextBlock.RenderTransform).(RotateTransform.Angle)"
+                                                         From="0" To="360" Duration="0:0:1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </TextBlock.Triggers>
+                    </TextBlock>
+                </Border>
+                <TextBlock Text="Загрузка услуг..." FontSize="14" Foreground="{DynamicResource TextSecondaryBrush}"/>
+            </StackPanel>
+        </Border>
+
         <!-- Services List -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,16,0,0">
             <ItemsControl ItemsSource="{Binding Services}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -84,5 +121,15 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+
+        <!-- Empty State -->
+        <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Visibility="{Binding Services.Count, Converter={StaticResource CountToVisibility}}">
+            <Border Width="80" Height="80" CornerRadius="40" Background="#141414" Margin="0,0,0,20">
+                <TextBlock Text="🔧" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="Услуг пока нет" Style="{DynamicResource TextH3}" HorizontalAlignment="Center"/>
+            <TextBlock Text="Добавьте первую услугу" Style="{DynamicResource TextSmall}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+        </StackPanel>
     </Grid>
 </UserControl>

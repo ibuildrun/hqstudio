@@ -259,11 +259,21 @@ namespace HQStudio.ViewModels
                         
                         foreach (var apiOrder in response.Items)
                         {
+                            var clientName = apiOrder.Client?.Name ?? string.Empty;
+                            
                             Orders.Add(new Order
                             {
                                 Id = apiOrder.Id,
                                 ClientId = apiOrder.ClientId,
-                                ClientName = apiOrder.Client?.Name ?? string.Empty,
+                                ClientName = clientName,
+                                Client = apiOrder.Client != null ? new Client
+                                {
+                                    Id = apiOrder.Client.Id,
+                                    Name = apiOrder.Client.Name,
+                                    Phone = apiOrder.Client.Phone,
+                                    Car = apiOrder.Client.CarModel ?? string.Empty,
+                                    CarNumber = apiOrder.Client.LicensePlate ?? string.Empty
+                                } : null,
                                 Status = MapStatus(apiOrder.Status),
                                 TotalPrice = apiOrder.TotalPrice,
                                 Notes = apiOrder.Notes ?? string.Empty,
@@ -517,7 +527,14 @@ namespace HQStudio.ViewModels
                                 Id = apiOrder.Id,
                                 ClientId = apiOrder.ClientId,
                                 ClientName = apiOrder.Client?.Name ?? string.Empty,
-                                Client = new Client { Name = apiOrder.Client?.Name ?? "" },
+                                Client = apiOrder.Client != null ? new Client
+                                {
+                                    Id = apiOrder.Client.Id,
+                                    Name = apiOrder.Client.Name,
+                                    Phone = apiOrder.Client.Phone,
+                                    Car = apiOrder.Client.CarModel ?? string.Empty,
+                                    CarNumber = apiOrder.Client.LicensePlate ?? string.Empty
+                                } : null,
                                 Status = MapStatus(apiOrder.Status),
                                 TotalPrice = apiOrder.TotalPrice,
                                 Notes = apiOrder.Notes ?? string.Empty,

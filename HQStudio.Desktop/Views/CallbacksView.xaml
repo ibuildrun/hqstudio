@@ -148,8 +148,8 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="{Binding StatusColor}" CornerRadius="4" Padding="8,4" 
-                                            HorizontalAlignment="Left" Opacity="0.2">
-                                        <TextBlock Text="{Binding Status}" Foreground="{Binding StatusColor}" 
+                                            HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding Status}" Foreground="White" 
                                                    FontWeight="SemiBold" FontSize="11"/>
                                     </Border>
                                 </DataTemplate>

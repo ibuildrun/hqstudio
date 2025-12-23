@@ -15,6 +15,11 @@ namespace HQStudio.Services
         private HttpClient _http;
         private string? _token;
         private string _baseUrl;
+        
+        private static readonly JsonSerializerOptions _jsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
 
         public bool IsConnected { get; private set; }
         public bool IsAuthenticated => !string.IsNullOrEmpty(_token);
@@ -205,9 +210,25 @@ namespace HQStudio.Services
                 var query = new List<string> { $"page={page}", $"pageSize={pageSize}" };
                 if (!string.IsNullOrEmpty(status)) query.Add($"status={status}");
                 var url = "/api/orders?" + string.Join("&", query);
-                return await _http.GetFromJsonAsync<OrdersResponse>(url);
+                var response = await _http.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine($"[API] Orders JSON: {json.Substring(0, Math.Min(500, json.Length))}...");
+                    var result = JsonSerializer.Deserialize<OrdersResponse>(json, _jsonOptions);
+                    if (result?.Items?.Any() == true)
+                    {
+                        var first = result.Items.First();
+                        System.Diagnostics.Debug.WriteLine($"[API] First order: Id={first.Id}, ClientId={first.ClientId}, Client={first.Client?.Name ?? "NULL"}");
+                    }
+                    return result;
+                }
             }
-            catch { return null; }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[API] GetOrdersAsync error: {ex.Message}");
+            }
+            return null;
         }
 
         public async Task<ApiOrder?> CreateOrderAsync(CreateOrderRequest order)

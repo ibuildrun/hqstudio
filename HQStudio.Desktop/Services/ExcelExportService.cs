@@ -19,7 +19,7 @@ namespace HQStudio.Services
 
             if (saveDialog.ShowDialog() == true)
             {
-                ExportToCsv(orders, saveDialog.FileName);
+                ExportOrdersToCsv(orders, saveDialog.FileName);
                 
                 var openFile = ConfirmDialog.Show(
                     "Экспорт завершён",
@@ -29,16 +29,47 @@ namespace HQStudio.Services
                 
                 if (openFile)
                 {
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = saveDialog.FileName,
-                        UseShellExecute = true
-                    });
+                    OpenFile(saveDialog.FileName);
                 }
             }
         }
 
-        private void ExportToCsv(IEnumerable<Order> orders, string filePath)
+        public void ExportClientsToExcel(IEnumerable<Client> clients)
+        {
+            var saveDialog = new SaveFileDialog
+            {
+                Filter = "CSV файлы (*.csv)|*.csv|Все файлы (*.*)|*.*",
+                DefaultExt = "csv",
+                FileName = $"Клиенты_{DateTime.Now:yyyy-MM-dd_HH-mm}.csv"
+            };
+
+            if (saveDialog.ShowDialog() == true)
+            {
+                ExportClientsToCsv(clients, saveDialog.FileName);
+                
+                var openFile = ConfirmDialog.Show(
+                    "Экспорт завершён",
+                    "Клиенты успешно экспортированы!\n\nОткрыть файл?",
+                    ConfirmDialog.DialogType.Success,
+                    "Открыть", "Закрыть");
+                
+                if (openFile)
+                {
+                    OpenFile(saveDialog.FileName);
+                }
+            }
+        }
+
+        private void OpenFile(string filePath)
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = filePath,
+                UseShellExecute = true
+            });
+        }
+
+        private void ExportOrdersToCsv(IEnumerable<Order> orders, string filePath)
         {
             var csv = new StringBuilder();
             
@@ -65,6 +96,34 @@ namespace HQStudio.Services
                     Escape(order.CreatedAt.ToString("dd.MM.yyyy HH:mm")),
                     Escape(order.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? ""),
                     Escape(order.Notes ?? "")
+                );
+                
+                csv.AppendLine(line);
+            }
+            
+            File.WriteAllText(filePath, csv.ToString(), Encoding.UTF8);
+        }
+
+        private void ExportClientsToCsv(IEnumerable<Client> clients, string filePath)
+        {
+            var csv = new StringBuilder();
+            
+            // BOM для корректного отображения в Excel
+            csv.Append('\uFEFF');
+            
+            // Заголовки
+            csv.AppendLine("ID;Имя;Телефон;Автомобиль;Гос. номер;Дата добавления;Примечания");
+            
+            foreach (var client in clients)
+            {
+                var line = string.Join(";",
+                    Escape(client.Id.ToString()),
+                    Escape(client.Name),
+                    Escape(client.Phone),
+                    Escape(client.Car),
+                    Escape(client.CarNumber),
+                    Escape(client.CreatedAt.ToString("dd.MM.yyyy HH:mm")),
+                    Escape(client.Notes)
                 );
                 
                 csv.AppendLine(line);

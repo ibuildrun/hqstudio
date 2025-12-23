@@ -155,7 +155,7 @@
 
                                 <!-- Order Info -->
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Client.Name, FallbackValue='Клиент не указан'}" 
+                                    <TextBlock Text="{Binding ClientDisplay}" 
                                                FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
                                     <TextBlock Text="{Binding ServicesDisplay}" Style="{DynamicResource TextBody}"
                                                TextTrimming="CharacterEllipsis" MaxWidth="350" Margin="0,0,0,4"/>

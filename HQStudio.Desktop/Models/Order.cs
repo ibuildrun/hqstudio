@@ -75,7 +75,7 @@ namespace HQStudio.Models
 
         public string ClientDisplay => !string.IsNullOrEmpty(ClientName)
             ? ClientName
-            : Client?.Name ?? "Неизвестный";
+            : Client?.Name ?? "Клиент не указан";
 
         public string StatusColor => Status switch
         {
