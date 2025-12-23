@@ -65,7 +65,7 @@
                                                         <ColumnDefinition Width="30"/>
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="👤" FontSize="16" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="0" Text="👤" FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                                     <StackPanel Grid.Column="1">
                                                         <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
                                                                    Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -100,7 +100,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="👤" FontSize="16" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="👤" FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <TextBlock x:Name="SelectedClientName" FontSize="13" FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>

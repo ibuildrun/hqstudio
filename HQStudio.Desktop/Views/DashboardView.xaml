@@ -54,7 +54,8 @@
                     <StackPanel>
                         <Border Width="48" Height="48" CornerRadius="12" Background="{DynamicResource BgIconBrush}" 
                                 HorizontalAlignment="Left" Margin="0,0,0,16">
-                            <TextBlock Text="👥" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Text="👥" FontSize="22" Foreground="{DynamicResource TextPrimaryBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock Text="{Binding TotalClients}" FontSize="36" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
                         <TextBlock Text="Клиентов" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
@@ -65,7 +66,8 @@
                     <StackPanel>
                         <Border Width="48" Height="48" CornerRadius="12" Background="{DynamicResource BgIconBrush}" 
                                 HorizontalAlignment="Left" Margin="0,0,0,16">
-                            <TextBlock Text="📋" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Text="📋" FontSize="22" Foreground="{DynamicResource TextPrimaryBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock Text="{Binding TotalOrders}" FontSize="36" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
                         <TextBlock Text="Всего заказов" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
@@ -76,7 +78,8 @@
                     <StackPanel>
                         <Border Width="48" Height="48" CornerRadius="12" Background="#2A2A1A" 
                                 HorizontalAlignment="Left" Margin="0,0,0,16">
-                            <TextBlock Text="⚡" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Text="⚡" FontSize="22" Foreground="#FFC107"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock Text="{Binding ActiveOrders}" FontSize="36" FontWeight="Bold" Foreground="#FFC107"/>
                         <TextBlock Text="В работе" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
@@ -87,7 +90,8 @@
                     <StackPanel>
                         <Border Width="48" Height="48" CornerRadius="12" Background="#1A2A1A" 
                                 HorizontalAlignment="Left" Margin="0,0,0,16">
-                            <TextBlock Text="💰" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Text="💰" FontSize="22" Foreground="#4CAF50"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock Text="{Binding TotalRevenue, StringFormat={}{0:N0} ₽}" 
                                    FontSize="28" FontWeight="Bold" Foreground="#4CAF50"/>
@@ -115,7 +119,7 @@
                             <StackPanel>
                                 <Border Width="56" Height="56" CornerRadius="14" Background="{DynamicResource BgIconBrush}" 
                                         HorizontalAlignment="Left" Margin="0,0,0,16">
-                                    <TextBlock Text="{Binding Icon}" FontSize="26" 
+                                    <TextBlock Text="{Binding Icon}" FontSize="26" Foreground="{DynamicResource TextPrimaryBrush}"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" 
@@ -155,7 +159,7 @@
                                 </Grid.ColumnDefinitions>
                                 
                                 <TextBlock Grid.Column="0" Text="{Binding Service.Icon}" FontSize="20" 
-                                           VerticalAlignment="Center"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="1" Text="{Binding Service.Name}" FontSize="14" 
                                            Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                 <Border Grid.Column="2" Background="{DynamicResource BgHoverBrush}" 

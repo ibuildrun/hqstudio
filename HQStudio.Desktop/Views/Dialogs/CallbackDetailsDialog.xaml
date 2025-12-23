@@ -25,7 +25,7 @@
                     CornerRadius="16,16,0,0" Padding="24,18">
                 <Grid>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="📋" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="📋" FontSize="20" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
@@ -69,12 +69,12 @@
                             Padding="18" Margin="0,0,0,24">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                <TextBlock Text="👤" FontSize="18" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="👤" FontSize="18" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="📞" FontSize="18" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="📞" FontSize="18" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding Phone}" FontSize="15" Foreground="#2196F3" 
                                            VerticalAlignment="Center"/>
                             </StackPanel>
@@ -88,7 +88,7 @@
                             Padding="18" Margin="0,0,0,24">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                <TextBlock Text="🚗" FontSize="18" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="🚗" FontSize="18" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding CarModel, TargetNullValue='Не указан'}" FontSize="15"
                                            Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                             </StackPanel>

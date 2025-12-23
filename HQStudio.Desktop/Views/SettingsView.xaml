@@ -98,9 +98,9 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         
-                        <Border Grid.Column="0" Width="64" Height="64" CornerRadius="32" 
+                            <Border Grid.Column="0" Width="64" Height="64" CornerRadius="32" 
                                 Background="{DynamicResource BgIconBrush}" Margin="0,0,20,0">
-                            <TextBlock Text="👤" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Text="👤" FontSize="28" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">

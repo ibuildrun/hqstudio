@@ -33,7 +33,7 @@
 
             <Border Grid.Column="0" Style="{DynamicResource CardHoverable}" Margin="0,0,8,0">
                 <StackPanel>
-                    <TextBlock Text="🆕" FontSize="24" Margin="0,0,0,8"/>
+                    <TextBlock Text="🆕" FontSize="24" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8"/>
                     <TextBlock Text="{Binding Stats.TotalNew, FallbackValue=0}" FontSize="32" FontWeight="Bold" 
                                Foreground="#FFC107"/>
                     <TextBlock Text="Новые" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
@@ -42,7 +42,7 @@
 
             <Border Grid.Column="1" Style="{DynamicResource CardHoverable}" Margin="4,0">
                 <StackPanel>
-                    <TextBlock Text="⏳" FontSize="24" Margin="0,0,0,8"/>
+                    <TextBlock Text="⏳" FontSize="24" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8"/>
                     <TextBlock Text="{Binding Stats.TotalProcessing, FallbackValue=0}" FontSize="32" FontWeight="Bold" 
                                Foreground="#2196F3"/>
                     <TextBlock Text="В работе" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
@@ -51,7 +51,7 @@
 
             <Border Grid.Column="2" Style="{DynamicResource CardHoverable}" Margin="4,0">
                 <StackPanel>
-                    <TextBlock Text="📅" FontSize="24" Margin="0,0,0,8"/>
+                    <TextBlock Text="📅" FontSize="24" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8"/>
                     <TextBlock Text="{Binding Stats.TodayCount, FallbackValue=0}" FontSize="32" FontWeight="Bold" 
                                Foreground="#4CAF50"/>
                     <TextBlock Text="Сегодня" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
@@ -60,7 +60,7 @@
 
             <Border Grid.Column="3" Style="{DynamicResource CardHoverable}" Margin="8,0,0,0">
                 <StackPanel>
-                    <TextBlock Text="📊" FontSize="24" Margin="0,0,0,8"/>
+                    <TextBlock Text="📊" FontSize="24" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8"/>
                     <TextBlock Text="{Binding Stats.MonthCount, FallbackValue=0}" FontSize="32" FontWeight="Bold" 
                                Foreground="{DynamicResource TextPrimaryBrush}"/>
                     <TextBlock Text="За месяц" Style="{DynamicResource TextSmall}" Margin="0,4,0,0"/>
@@ -104,7 +104,7 @@
         <Border Grid.Row="3" Style="{DynamicResource Card}" Padding="40" 
                 Visibility="{Binding IsApiConnected, Converter={StaticResource InverseBoolToVisibilityConverter}, FallbackValue=Collapsed}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="⚠️" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                                <TextBlock Text="⚠️" FontSize="48" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,16"/>
                 <TextBlock Text="Нет подключения к API" FontSize="18" FontWeight="SemiBold" 
                            Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
                 <TextBlock Text="Заявки с сайта доступны только при подключении к серверу" 
@@ -165,7 +165,7 @@
                     <!-- Placeholder when nothing selected -->
                     <StackPanel Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVisibilityConverter}}"
                                 HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16" Opacity="0.3"/>
+                        <TextBlock Text="📋" FontSize="48" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,16" Opacity="0.3"/>
                         <TextBlock Text="Выберите заявку" FontSize="16" FontWeight="SemiBold" 
                                    Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"/>
                         <TextBlock Text="Кликните на заявку в списке для просмотра деталей" 

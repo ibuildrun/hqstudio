@@ -108,7 +108,7 @@
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Border Width="60" Height="60" CornerRadius="30" Background="#1A1A1A" Margin="0,0,0,16">
-                    <TextBlock Text="⏳" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="⏳" FontSize="28" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock.RenderTransform>
                             <RotateTransform x:Name="LoadingRotate" CenterX="14" CenterY="14"/>
                         </TextBlock.RenderTransform>
@@ -160,7 +160,7 @@
                                     <TextBlock Text="{Binding ServicesDisplay}" Style="{DynamicResource TextBody}"
                                                TextTrimming="CharacterEllipsis" MaxWidth="350" Margin="0,0,0,4"/>
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="📅" FontSize="12" Margin="0,0,6,0"/>
+                                        <TextBlock Text="📅" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0"/>
                                         <TextBlock Text="{Binding CreatedAt, StringFormat=dd.MM.yyyy в HH:mm}" 
                                                    Style="{DynamicResource TextSmall}"/>
                                     </StackPanel>
@@ -220,7 +220,7 @@
         <StackPanel Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center"
                     Visibility="{Binding Orders.Count, Converter={StaticResource CountToVisibility}}">
             <Border Width="80" Height="80" CornerRadius="40" Background="#141414" Margin="0,0,0,20">
-                <TextBlock Text="📋" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <TextBlock Text="📋" FontSize="36" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
             <TextBlock Text="Заказов пока нет" Style="{DynamicResource TextH3}" HorizontalAlignment="Center"/>
             <TextBlock Text="Создайте первый заказ" Style="{DynamicResource TextSmall}" HorizontalAlignment="Center" Margin="0,8,0,0"/>

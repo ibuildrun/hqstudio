@@ -95,7 +95,7 @@
                             
                             <Border Grid.Column="0" Width="48" Height="48" CornerRadius="24" 
                                     Background="{DynamicResource BgAvatarBrush}" Margin="0,0,14,0">
-                                <TextBlock Text="👤" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Text="👤" FontSize="20" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -140,11 +140,11 @@
                     <Border Grid.Row="2" Padding="20" BorderBrush="#1A1A1A" BorderThickness="0,1,0,0">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                <TextBlock Text="📍" FontSize="12" Margin="0,0,6,0"/>
+                                <TextBlock Text="📍" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0"/>
                                 <TextBlock Text="Сургут, ХМАО-Югра" Style="{DynamicResource TextSmall}"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                <TextBlock Text="📞" FontSize="12" Margin="0,0,6,0"/>
+                                <TextBlock Text="📞" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0"/>
                                 <TextBlock Text="+7-929-293-52-22" Style="{DynamicResource TextSmall}"/>
                             </StackPanel>
                             <Button Content="Выйти" Style="{DynamicResource BtnSecondary}" 

@@ -27,7 +27,7 @@
                     MouseLeftButtonDown="Header_MouseLeftButtonDown">
                 <Grid>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="👤" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="👤" FontSize="20" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Создание клиента из заявки" FontSize="16" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>

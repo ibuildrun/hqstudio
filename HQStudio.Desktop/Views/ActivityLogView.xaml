@@ -33,7 +33,7 @@
                 <StackPanel>
                     <Border Width="48" Height="48" CornerRadius="12" Background="{DynamicResource BgIconBrush}" 
                             HorizontalAlignment="Left" Margin="0,0,0,16">
-                        <TextBlock Text="📅" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="📅" FontSize="22" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <TextBlock Text="{Binding Stats.TotalToday, FallbackValue=0}" FontSize="36" FontWeight="Bold" 
                                Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -45,7 +45,7 @@
                 <StackPanel>
                     <Border Width="48" Height="48" CornerRadius="12" Background="{DynamicResource BgIconBrush}" 
                             HorizontalAlignment="Left" Margin="0,0,0,16">
-                        <TextBlock Text="📆" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="📆" FontSize="22" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <TextBlock Text="{Binding Stats.TotalWeek, FallbackValue=0}" FontSize="36" FontWeight="Bold" 
                                Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -57,7 +57,7 @@
                 <StackPanel>
                     <Border Width="48" Height="48" CornerRadius="12" Background="{DynamicResource BgIconBrush}" 
                             HorizontalAlignment="Left" Margin="0,0,0,16">
-                        <TextBlock Text="📊" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="📊" FontSize="22" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <TextBlock Text="{Binding Stats.TotalAll, FallbackValue=0}" FontSize="36" FontWeight="Bold" 
                                Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -70,7 +70,7 @@
         <Border Grid.Row="2" Style="{DynamicResource Card}" Padding="40" 
                 Visibility="{Binding IsApiConnected, Converter={StaticResource InverseBoolToVisibilityConverter}, FallbackValue=Collapsed}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="⚠️" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                <TextBlock Text="⚠️" FontSize="48" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,16"/>
                 <TextBlock Text="Нет подключения к API" FontSize="18" FontWeight="SemiBold" 
                            Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
                 <TextBlock Text="Журнал ответственности доступен только при подключении к серверу" 
