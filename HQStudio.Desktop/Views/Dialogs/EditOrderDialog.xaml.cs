@@ -1,5 +1,6 @@
 using HQStudio.Models;
 using HQStudio.Services;
+using HQStudio.Utils;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -266,6 +267,11 @@ namespace HQStudio.Views.Dialogs
             UpdateAutoPrice();
         }
 
+        private void PriceBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            InputValidation.AllowDecimalNumbers(sender, e);
+        }
+
         private void UpdateAutoPrice()
         {
             var total = _selectedServices.Sum(s => s.PriceFrom);
@@ -276,15 +282,19 @@ namespace HQStudio.Views.Dialogs
         {
             if (_selectedClient == null)
             {
-                MessageBox.Show("Выберите клиента. Это обязательное поле.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                ClientSearchBox.Focus();
+                InputValidation.ShowValidationError("Выберите клиента. Это обязательное поле.", ClientSearchBox);
                 return;
             }
 
             if (_selectedServices.Count == 0)
             {
-                MessageBox.Show("Добавьте хотя бы одну услугу.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                ServiceSearchBox.Focus();
+                InputValidation.ShowValidationError("Добавьте хотя бы одну услугу.", ServiceSearchBox);
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(PriceBox.Text) && !InputValidation.IsValidPrice(PriceBox.Text))
+            {
+                InputValidation.ShowValidationError("Введите корректную сумму (только цифры)", PriceBox);
                 return;
             }
 

@@ -1,4 +1,5 @@
 using HQStudio.Models;
+using HQStudio.Utils;
 using System.Windows;
 using System.Windows.Input;
 
@@ -30,12 +31,29 @@ namespace HQStudio.Views.Dialogs
             NotesBox.Text = Client.Notes;
         }
 
+        private void PhoneBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            InputValidation.AllowPhoneCharacters(sender, e);
+        }
+
+        private void CarNumberBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            InputValidation.AllowLicensePlateCharacters(sender, e);
+        }
+
         private void Save_Click(object sender, RoutedEventArgs e)
         {
+            // Валидация имени
             if (string.IsNullOrWhiteSpace(NameBox.Text))
             {
-                MessageBox.Show("Введите имя клиента", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                NameBox.Focus();
+                InputValidation.ShowValidationError("Введите имя клиента", NameBox);
+                return;
+            }
+
+            // Валидация телефона
+            if (!string.IsNullOrWhiteSpace(PhoneBox.Text) && !InputValidation.IsValidPhone(PhoneBox.Text))
+            {
+                InputValidation.ShowValidationError("Введите корректный номер телефона (минимум 10 цифр)", PhoneBox);
                 return;
             }
 

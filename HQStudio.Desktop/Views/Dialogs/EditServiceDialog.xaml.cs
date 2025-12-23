@@ -1,4 +1,5 @@
 using HQStudio.Models;
+using HQStudio.Utils;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -74,12 +75,24 @@ namespace HQStudio.Views.Dialogs
             }
         }
 
+        private void PriceBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            InputValidation.AllowDecimalNumbers(sender, e);
+        }
+
         private void Save_Click(object sender, RoutedEventArgs e)
         {
+            // Валидация названия
             if (string.IsNullOrWhiteSpace(NameBox.Text))
             {
-                MessageBox.Show("Введите название услуги", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                NameBox.Focus();
+                InputValidation.ShowValidationError("Введите название услуги", NameBox);
+                return;
+            }
+
+            // Валидация цены
+            if (!string.IsNullOrWhiteSpace(PriceBox.Text) && !InputValidation.IsValidPrice(PriceBox.Text))
+            {
+                InputValidation.ShowValidationError("Введите корректную цену (только цифры)", PriceBox);
                 return;
             }
 
@@ -88,8 +101,12 @@ namespace HQStudio.Views.Dialogs
             Service.Category = CategoryBox.Text.Trim();
             Service.Description = DescriptionBox.Text.Trim();
             
-            if (decimal.TryParse(PriceBox.Text.Replace(" ", ""), out var price))
+            if (decimal.TryParse(PriceBox.Text.Replace(" ", "").Replace(",", "."), 
+                System.Globalization.NumberStyles.Any, 
+                System.Globalization.CultureInfo.InvariantCulture, out var price))
+            {
                 Service.PriceFrom = price;
+            }
 
             DialogResult = true;
             Close();
