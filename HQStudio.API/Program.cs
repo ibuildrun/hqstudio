@@ -231,6 +231,11 @@ using (var scope = app.Services.CreateScope())
         }
         
         Console.WriteLine($"Импорт данных из {inputPath}...");
+        
+        // Сначала создаём все таблицы если их нет
+        Console.WriteLine("Создание недостающих таблиц...");
+        db.Database.EnsureCreated();
+        
         var json = File.ReadAllText(inputPath);
         var importData = System.Text.Json.JsonSerializer.Deserialize<ImportData>(json);
         
@@ -241,8 +246,9 @@ using (var scope = app.Services.CreateScope())
         }
         
         // Очищаем таблицы в правильном порядке (из-за FK)
-        db.ActivityLogs.RemoveRange(db.ActivityLogs);
-        db.UserSessions.RemoveRange(db.UserSessions);
+        Console.WriteLine("Очистка существующих данных...");
+        try { db.ActivityLogs.RemoveRange(db.ActivityLogs); } catch { }
+        try { db.UserSessions.RemoveRange(db.UserSessions); } catch { }
         db.OrderServices.RemoveRange(db.OrderServices);
         db.Orders.RemoveRange(db.Orders);
         db.CallbackRequests.RemoveRange(db.CallbackRequests);
@@ -255,27 +261,157 @@ using (var scope = app.Services.CreateScope())
         db.Testimonials.RemoveRange(db.Testimonials);
         db.FaqItems.RemoveRange(db.FaqItems);
         db.ShowcaseItems.RemoveRange(db.ShowcaseItems);
-        db.AppUpdates.RemoveRange(db.AppUpdates);
+        try { db.AppUpdates.RemoveRange(db.AppUpdates); } catch { }
         db.SaveChanges();
         
-        // Импортируем данные
-        if (importData.Users?.Any() == true) db.Users.AddRange(importData.Users);
-        if (importData.Clients?.Any() == true) db.Clients.AddRange(importData.Clients);
-        if (importData.Services?.Any() == true) db.Services.AddRange(importData.Services);
-        if (importData.Orders?.Any() == true) db.Orders.AddRange(importData.Orders);
-        if (importData.OrderServices?.Any() == true) db.OrderServices.AddRange(importData.OrderServices);
-        if (importData.CallbackRequests?.Any() == true) db.CallbackRequests.AddRange(importData.CallbackRequests);
-        if (importData.Subscriptions?.Any() == true) db.Subscriptions.AddRange(importData.Subscriptions);
-        if (importData.SiteContents?.Any() == true) db.SiteContents.AddRange(importData.SiteContents);
-        if (importData.SiteBlocks?.Any() == true) db.SiteBlocks.AddRange(importData.SiteBlocks);
-        if (importData.Testimonials?.Any() == true) db.Testimonials.AddRange(importData.Testimonials);
-        if (importData.FaqItems?.Any() == true) db.FaqItems.AddRange(importData.FaqItems);
-        if (importData.ShowcaseItems?.Any() == true) db.ShowcaseItems.AddRange(importData.ShowcaseItems);
-        if (importData.AppUpdates?.Any() == true) db.AppUpdates.AddRange(importData.AppUpdates);
-        if (importData.UserSessions?.Any() == true) db.UserSessions.AddRange(importData.UserSessions);
-        if (importData.ActivityLogs?.Any() == true) db.ActivityLogs.AddRange(importData.ActivityLogs);
+        // Импортируем данные (отключаем tracking для избежания конфликтов)
+        Console.WriteLine("Импорт данных...");
         
-        db.SaveChanges();
+        // Отключаем Identity Insert для PostgreSQL и вставляем с явными ID
+        if (connectionString.Contains("Host="))
+        {
+            // Для PostgreSQL используем OVERRIDING SYSTEM VALUE
+            if (importData.Users?.Any() == true)
+            {
+                foreach (var user in importData.Users)
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "INSERT INTO \"Users\" (\"Id\", \"Login\", \"PasswordHash\", \"Name\", \"Role\", \"IsActive\", \"MustChangePassword\", \"CreatedAt\", \"CanAccessWeb\", \"CanAccessDesktop\", \"WebRole\", \"DesktopRole\") OVERRIDING SYSTEM VALUE VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11})",
+                        user.Id, user.Login, user.PasswordHash, user.Name, (int)user.Role, user.IsActive, user.MustChangePassword, user.CreatedAt, user.CanAccessWeb, user.CanAccessDesktop, user.WebRole.HasValue ? (int?)user.WebRole : null, user.DesktopRole.HasValue ? (int?)user.DesktopRole : null);
+                }
+                Console.WriteLine($"  Users: {importData.Users.Count}");
+            }
+            
+            if (importData.Clients?.Any() == true)
+            {
+                foreach (var client in importData.Clients)
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "INSERT INTO \"Clients\" (\"Id\", \"Name\", \"Phone\", \"Email\", \"CarModel\", \"LicensePlate\", \"Notes\", \"CreatedAt\") OVERRIDING SYSTEM VALUE VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7})",
+                        client.Id, client.Name, client.Phone, client.Email, client.CarModel, client.LicensePlate, client.Notes, client.CreatedAt);
+                }
+                Console.WriteLine($"  Clients: {importData.Clients.Count}");
+            }
+            
+            if (importData.Services?.Any() == true)
+            {
+                foreach (var service in importData.Services)
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "INSERT INTO \"Services\" (\"Id\", \"Title\", \"Category\", \"Description\", \"Price\", \"Image\", \"IsActive\", \"SortOrder\") OVERRIDING SYSTEM VALUE VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7})",
+                        service.Id, service.Title, service.Category, service.Description, service.Price, service.Image, service.IsActive, service.SortOrder);
+                }
+                Console.WriteLine($"  Services: {importData.Services.Count}");
+            }
+            
+            if (importData.Orders?.Any() == true)
+            {
+                foreach (var order in importData.Orders)
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "INSERT INTO \"Orders\" (\"Id\", \"ClientId\", \"Status\", \"TotalPrice\", \"Notes\", \"CreatedAt\", \"CompletedAt\", \"IsDeleted\", \"DeletedAt\", \"DeletedByUserId\") OVERRIDING SYSTEM VALUE VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9})",
+                        order.Id, order.ClientId, (int)order.Status, order.TotalPrice, order.Notes, order.CreatedAt, order.CompletedAt, order.IsDeleted, order.DeletedAt, order.DeletedByUserId);
+                }
+                Console.WriteLine($"  Orders: {importData.Orders.Count}");
+            }
+            
+            if (importData.OrderServices?.Any() == true)
+            {
+                foreach (var os in importData.OrderServices)
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "INSERT INTO \"OrderServices\" (\"OrderId\", \"ServiceId\", \"Price\") VALUES ({0}, {1}, {2})",
+                        os.OrderId, os.ServiceId, os.Price);
+                }
+                Console.WriteLine($"  OrderServices: {importData.OrderServices.Count}");
+            }
+            
+            if (importData.CallbackRequests?.Any() == true)
+            {
+                foreach (var cb in importData.CallbackRequests)
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "INSERT INTO \"CallbackRequests\" (\"Id\", \"Name\", \"Phone\", \"CarModel\", \"LicensePlate\", \"Message\", \"Status\", \"Source\", \"SourceDetails\", \"AssignedUserId\", \"CreatedAt\", \"ProcessedAt\", \"CompletedAt\") OVERRIDING SYSTEM VALUE VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12})",
+                        cb.Id, cb.Name, cb.Phone, cb.CarModel, cb.LicensePlate, cb.Message, (int)cb.Status, (int)cb.Source, cb.SourceDetails, cb.AssignedUserId, cb.CreatedAt, cb.ProcessedAt, cb.CompletedAt);
+                }
+                Console.WriteLine($"  CallbackRequests: {importData.CallbackRequests.Count}");
+            }
+            
+            if (importData.Subscriptions?.Any() == true)
+            {
+                foreach (var sub in importData.Subscriptions)
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "INSERT INTO \"Subscriptions\" (\"Id\", \"Email\", \"CreatedAt\") OVERRIDING SYSTEM VALUE VALUES ({0}, {1}, {2})",
+                        sub.Id, sub.Email, sub.CreatedAt);
+                }
+                Console.WriteLine($"  Subscriptions: {importData.Subscriptions.Count}");
+            }
+            
+            if (importData.SiteBlocks?.Any() == true)
+            {
+                foreach (var block in importData.SiteBlocks)
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "INSERT INTO \"SiteBlocks\" (\"Id\", \"BlockId\", \"Name\", \"Enabled\", \"SortOrder\") OVERRIDING SYSTEM VALUE VALUES ({0}, {1}, {2}, {3}, {4})",
+                        block.Id, block.BlockId, block.Name, block.Enabled, block.SortOrder);
+                }
+                Console.WriteLine($"  SiteBlocks: {importData.SiteBlocks.Count}");
+            }
+            
+            if (importData.Testimonials?.Any() == true)
+            {
+                foreach (var t in importData.Testimonials)
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "INSERT INTO \"Testimonials\" (\"Id\", \"Name\", \"Car\", \"Text\", \"IsActive\", \"SortOrder\") OVERRIDING SYSTEM VALUE VALUES ({0}, {1}, {2}, {3}, {4}, {5})",
+                        t.Id, t.Name, t.Car, t.Text, t.IsActive, t.SortOrder);
+                }
+                Console.WriteLine($"  Testimonials: {importData.Testimonials.Count}");
+            }
+            
+            if (importData.FaqItems?.Any() == true)
+            {
+                foreach (var f in importData.FaqItems)
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "INSERT INTO \"FaqItems\" (\"Id\", \"Question\", \"Answer\", \"IsActive\", \"SortOrder\") OVERRIDING SYSTEM VALUE VALUES ({0}, {1}, {2}, {3}, {4})",
+                        f.Id, f.Question, f.Answer, f.IsActive, f.SortOrder);
+                }
+                Console.WriteLine($"  FaqItems: {importData.FaqItems.Count}");
+            }
+            
+            if (importData.ActivityLogs?.Any() == true)
+            {
+                foreach (var log in importData.ActivityLogs)
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "INSERT INTO \"ActivityLogs\" (\"Id\", \"UserId\", \"UserName\", \"Action\", \"EntityType\", \"EntityId\", \"Details\", \"IpAddress\", \"Source\", \"CreatedAt\") OVERRIDING SYSTEM VALUE VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9})",
+                        log.Id, log.UserId, log.UserName, log.Action, log.EntityType, log.EntityId, log.Details, log.IpAddress, log.Source, log.CreatedAt);
+                }
+                Console.WriteLine($"  ActivityLogs: {importData.ActivityLogs.Count}");
+            }
+        }
+        else
+        {
+            // Для SQLite используем обычный AddRange
+            if (importData.Users?.Any() == true) db.Users.AddRange(importData.Users);
+            if (importData.Clients?.Any() == true) db.Clients.AddRange(importData.Clients);
+            if (importData.Services?.Any() == true) db.Services.AddRange(importData.Services);
+            if (importData.Orders?.Any() == true) db.Orders.AddRange(importData.Orders);
+            if (importData.OrderServices?.Any() == true) db.OrderServices.AddRange(importData.OrderServices);
+            if (importData.CallbackRequests?.Any() == true) db.CallbackRequests.AddRange(importData.CallbackRequests);
+            if (importData.Subscriptions?.Any() == true) db.Subscriptions.AddRange(importData.Subscriptions);
+            if (importData.SiteContents?.Any() == true) db.SiteContents.AddRange(importData.SiteContents);
+            if (importData.SiteBlocks?.Any() == true) db.SiteBlocks.AddRange(importData.SiteBlocks);
+            if (importData.Testimonials?.Any() == true) db.Testimonials.AddRange(importData.Testimonials);
+            if (importData.FaqItems?.Any() == true) db.FaqItems.AddRange(importData.FaqItems);
+            if (importData.ShowcaseItems?.Any() == true) db.ShowcaseItems.AddRange(importData.ShowcaseItems);
+            if (importData.AppUpdates?.Any() == true) db.AppUpdates.AddRange(importData.AppUpdates);
+            if (importData.UserSessions?.Any() == true) db.UserSessions.AddRange(importData.UserSessions);
+            if (importData.ActivityLogs?.Any() == true) db.ActivityLogs.AddRange(importData.ActivityLogs);
+            db.SaveChanges();
+        }
         
         // Сбрасываем sequences для PostgreSQL
         if (connectionString.Contains("Host="))

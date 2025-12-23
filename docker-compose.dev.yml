@@ -8,6 +8,8 @@ services:
       - POSTGRES_USER=hqstudio
       - POSTGRES_PASSWORD=${DB_PASSWORD:-HQStudio2024!}
       - POSTGRES_DB=hqstudio
+    ports:
+      - "5432:5432"
     volumes:
       - postgres-data-dev:/var/lib/postgresql/data
     networks:
