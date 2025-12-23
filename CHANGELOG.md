@@ -1,3 +1,10 @@
+## [1.12.0](https://github.com/randomu3/hqstudio/compare/v1.11.0...v1.12.0) (2025-12-23)
+
+
+### 🚀 Новые возможности
+
+* **api:** улучшен скрипт миграции SQLite->PostgreSQL с поддержкой IDENTITY ([a5773ea](https://github.com/randomu3/hqstudio/commit/a5773ea27c68aa777f989b184c661f9742e75043))
+
 ## [1.11.0](https://github.com/randomu3/hqstudio/compare/v1.10.0...v1.11.0) (2025-12-22)
 
 
