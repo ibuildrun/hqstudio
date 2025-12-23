@@ -457,16 +457,23 @@ namespace HQStudio.ViewModels
             if (!confirmed) return;
             
             var orderId = SelectedOrder.Id;
+            bool success = false;
             
             if (_settings.UseApi && _apiService.IsConnected)
             {
-                await _apiService.UpdateOrderStatusAsync(SelectedOrder.Id, "Completed");
+                success = await _apiService.UpdateOrderStatusAsync(SelectedOrder.Id, "Completed");
+                if (!success)
+                {
+                    ConfirmDialog.ShowInfo("Ошибка", "Не удалось обновить статус заказа на сервере.\nПопробуйте позже.", ConfirmDialog.DialogType.Error);
+                    return;
+                }
             }
             else
             {
                 SelectedOrder.Status = "Завершен";
                 SelectedOrder.CompletedAt = DateTime.Now;
                 _dataService.SaveData();
+                success = true;
             }
             
             await LoadOrdersAsync();

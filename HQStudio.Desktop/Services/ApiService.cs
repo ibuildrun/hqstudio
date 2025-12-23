@@ -275,7 +275,17 @@ namespace HQStudio.Services
         {
             try
             {
-                var response = await _http.PutAsJsonAsync($"/api/orders/{id}/status", status);
+                // Конвертируем строку статуса в число для API
+                int statusValue = status switch
+                {
+                    "New" => 0,
+                    "InProgress" => 1,
+                    "Completed" => 2,
+                    "Cancelled" => 3,
+                    _ => 2 // По умолчанию Completed
+                };
+                
+                var response = await _http.PutAsJsonAsync($"/api/orders/{id}/status", statusValue);
                 return response.IsSuccessStatusCode;
             }
             catch { return false; }

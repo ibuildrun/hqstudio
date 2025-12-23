@@ -133,31 +133,32 @@
             <ItemsControl ItemsSource="{Binding Orders}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border x:Name="OrderCard" Margin="0,0,0,12"
-                                MouseLeftButtonDown="Order_MouseLeftButtonDown"
-                                Cursor="Hand"
-                                Style="{DynamicResource CardHoverable}"
-                                BorderThickness="2"
-                                BorderBrush="Transparent">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <Border x:Name="OrderCard" Padding="20"
+                                    MouseLeftButtonDown="Order_MouseLeftButtonDown"
+                                    Cursor="Hand"
+                                    Background="Transparent"
+                                    BorderThickness="0,0,0,1"
+                                    BorderBrush="{DynamicResource BorderDefaultBrush}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <!-- Order Number -->
-                                <Border Grid.Column="0" Width="64" Height="64" CornerRadius="14" 
-                                        Background="{DynamicResource BgIconBrush}" Margin="0,0,20,0">
-                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                        <TextBlock Text="#" FontSize="12" Foreground="#505050" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{Binding Id}" FontSize="20" FontWeight="Bold"
-                                                   Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
+                                    <!-- Order Number -->
+                                    <Border Grid.Column="0" Width="64" Height="64" CornerRadius="14" 
+                                            Background="{DynamicResource BgIconBrush}" Margin="0,0,20,0">
+                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Text="#" FontSize="12" Foreground="#505050" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Id}" FontSize="20" FontWeight="Bold"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
 
-                                <!-- Order Info -->
+                                    <!-- Order Info -->
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding ClientDisplay}" 
                                                FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
@@ -215,6 +216,7 @@
                                 </StackPanel>
                             </Grid>
                         </Border>
+                        </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
