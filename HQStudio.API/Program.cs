@@ -206,6 +206,22 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"Миграция Icon: {ex.Message}");
     }
     
+    // Команда сброса паролей пользователей (для разработки)
+    if (args.Contains("--reset-passwords"))
+    {
+        Console.WriteLine("Сброс паролей пользователей...");
+        var users = db.Users.ToList();
+        foreach (var user in users)
+        {
+            // Устанавливаем пароль равный логину
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Login);
+            Console.WriteLine($"  {user.Login} -> пароль: {user.Login}");
+        }
+        db.SaveChanges();
+        Console.WriteLine("Пароли сброшены!");
+        return;
+    }
+    
     // Команда очистки заказов без клиентов
     if (args.Contains("--cleanup-orders"))
     {
