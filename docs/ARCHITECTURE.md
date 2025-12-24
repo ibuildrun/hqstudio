@@ -155,19 +155,60 @@ docker-compose up -d
 ```
 
 ### CI/CD Pipeline
+
 ```
-Push to main
-    │
-    ├── CI: Tests (API, Web, Desktop)
-    │
-    ├── Release: Semantic versioning
-    │   └── CHANGELOG update
-    │
-    └── Deploy: GitHub Pages (Web)
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Git Push to main                            │
+└─────────────────────────────────────────────────────────────────────┘
+                                   │
+         ┌─────────────────────────┼─────────────────────────┐
+         │                         │                         │
+         ▼                         ▼                         ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   CI Workflow   │    │ Release Workflow│    │ Pages Workflow  │
+│                 │    │                 │    │                 │
+│ • API Tests     │    │ • Semantic Ver  │    │ • Build Next.js │
+│ • Web Tests     │    │ • CHANGELOG     │    │ • Deploy Pages  │
+│ • Desktop Build │    │ • GitHub Release│    │                 │
+│ • Docker Build  │    │ • Docker Push   │    │                 │
+│ • Codecov       │    │ • Desktop ZIP   │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                   │
+                    ┌──────────────▼──────────────┐
+                    │   CodeQL Security Analysis  │
+                    │   (Weekly + Push/PR)        │
+                    └─────────────────────────────┘
 ```
+
+### GitHub Actions Workflows
+
+| Workflow | Файл | Триггер | Назначение |
+|----------|------|---------|------------|
+| CI | `ci.yml` | Push/PR to main, develop | Тесты API, Web, Desktop + Codecov |
+| Release | `release.yml` | Push to main | Semantic versioning, CHANGELOG, GitHub Release, Docker images |
+| Pages | `pages.yml` | Push to main | Deploy Web на GitHub Pages |
+| CodeQL | `codeql.yml` | Push/PR + Weekly | Анализ безопасности C# и JS/TS |
+| Dependabot Auto-merge | `dependabot-automerge.yml` | Dependabot PR | Auto-merge patch/minor updates |
+
+### Артефакты релиза
+
+При каждом релизе автоматически создаются:
+- **Docker images** в GitHub Container Registry:
+  - `ghcr.io/randomu3/hqstudio/api:X.Y.Z`
+  - `ghcr.io/randomu3/hqstudio/web:X.Y.Z`
+- **Desktop ZIP** с self-contained exe
+- **CHANGELOG.md** с описанием изменений
+- **GitHub Release** с release notes
 
 ## Мониторинг
 
 - `/api/health` — health check endpoint
-- Swagger UI — API документация
+- Swagger UI — API документация (`/swagger`)
 - GitHub Actions — CI/CD статус
+- Codecov — покрытие кода тестами
+- CodeQL — security alerts
+
+## Дополнительная документация
+
+- [Git-интеграция и CI/CD](GIT-INTEGRATION.md) — полная документация по автоматизации
+- [API документация](API.md) — описание REST endpoints

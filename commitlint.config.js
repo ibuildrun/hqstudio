@@ -32,6 +32,7 @@ module.exports = {
         'docker',   // Docker конфигурация
         'ci',       // CI/CD
         'deps',     // Зависимости
+        'release',  // Автоматические релизы
       ],
     ],
     'subject-case': [0],

@@ -103,6 +103,9 @@ export default function ExampleComponent({ title, onAction }: Props) {
 ## Git & Commits
 
 ### Conventional Commits (на русском языке!)
+
+**ВАЖНО:** Все сообщения коммитов должны быть на русском языке!
+
 ```
 feat(api): добавлен endpoint для статистики
 fix(web): исправлена навигация на мобильных
@@ -113,30 +116,91 @@ chore(deps): обновлены зависимости
 ci: добавлен CodeQL анализ
 ```
 
-### Правила
-- **ВАЖНО: Все коммиты должны быть на русском языке!**
+### Типы коммитов и влияние на версию
+
+| Тип | Описание | Релиз |
+|-----|----------|-------|
+| `feat` | Новая функциональность | **minor** (1.x.0) |
+| `fix` | Исправление бага | **patch** (1.0.x) |
+| `perf` | Улучшение производительности | **patch** |
+| `refactor` | Рефакторинг кода | **patch** |
+| `docs` | Документация | Без релиза |
+| `style` | Форматирование | Без релиза |
+| `test` | Тесты | Без релиза |
+| `build` | Сборка/зависимости | Без релиза |
+| `ci` | CI/CD конфигурация | Без релиза |
+| `chore` | Прочие изменения | Без релиза |
+| `revert` | Откат изменений | Зависит от типа |
+
+### Области (Scopes)
+
+| Scope | Описание |
+|-------|----------|
+| `api` | HQStudio.API (ASP.NET Core) |
+| `web` | HQStudio.Web (Next.js) |
+| `desktop` | HQStudio.Desktop (WPF) |
+| `tests` | Тесты любого компонента |
+| `docker` | Docker конфигурация |
+| `ci` | CI/CD пайплайны |
+| `deps` | Зависимости |
+| `release` | Автоматические релизы |
+
+### Правила коммитов
+
 - Формат: `тип(область): описание на русском`
 - Один коммит = одно логическое изменение
-- Не коммитить `.env`, `node_modules`, `bin/`, `obj/`, `publish/`
+- Не коммитить: `.env`, `node_modules`, `bin/`, `obj/`, `publish/`
+- Breaking changes: добавить `!` после типа и `BREAKING CHANGE:` в footer
+
+### Интерактивный коммит
+
+```bash
+npm run commit  # Запуск Commitizen
+```
+
+### Git Hooks (Husky)
+
+Автоматическая проверка коммитов через Commitlint:
+```
+.husky/
+└── commit-msg    # npx --no -- commitlint --edit $1
+```
 
 ### Проверка CI/CD
+
 После пуша в main ОБЯЗАТЕЛЬНО проверять статус GitHub Actions:
+
 ```powershell
-# Проверка статуса последних workflow runs
-Invoke-RestMethod -Uri "https://api.github.com/repos/randomu3/hqstudio/actions/runs?per_page=5" -Headers @{Accept="application/vnd.github.v3+json"} | Select-Object -ExpandProperty workflow_runs | ForEach-Object { "$($_.name) | $($_.status) | $($_.conclusion)" }
+# PowerShell - проверка статуса последних workflow runs
+Invoke-RestMethod -Uri "https://api.github.com/repos/randomu3/hqstudio/actions/runs?per_page=5" `
+  -Headers @{Accept="application/vnd.github.v3+json"} | `
+  Select-Object -ExpandProperty workflow_runs | `
+  ForEach-Object { "$($_.name) | $($_.status) | $($_.conclusion)" }
 ```
 
-Все 4 workflow должны быть `success`:
-- **CI** - тесты API, Web, Desktop
-- **Release** - semantic-release, CHANGELOG, GitHub Release
-- **CodeQL** - анализ безопасности
-- **Deploy to GitHub Pages** - деплой веб-приложения
-
-Если CI падает - исправить тесты локально перед повторным пушем:
 ```bash
-dotnet test HQStudio.API.Tests  # API тесты
-npm test --prefix HQStudio.Web  # Web тесты
+# GitHub CLI
+gh run list --limit 5
+gh run view <run-id> --log-failed  # просмотр ошибок
 ```
+
+Все 5 workflows должны быть `success`:
+- **CI** - тесты API, Web, Desktop + Codecov
+- **Release** - semantic-release, CHANGELOG, GitHub Release, Docker, Desktop
+- **CodeQL** - анализ безопасности C# и JS/TS
+- **Deploy to GitHub Pages** - деплой веб-приложения
+- **Dependabot Auto-merge** - автомерж patch/minor updates
+
+### Если CI падает
+
+1. Проверить логи: `gh run view <run-id> --log-failed`
+2. Исправить тесты локально:
+   ```bash
+   dotnet test HQStudio.API.Tests  # API тесты
+   npm test --prefix HQStudio.Web  # Web тесты
+   dotnet test HQStudio.Desktop.Tests --filter "Category!=Integration"  # Desktop
+   ```
+3. Сделать fix коммит и push
 
 ---
 

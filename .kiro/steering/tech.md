@@ -135,40 +135,139 @@ dotnet publish -c Release
 ## CI/CD & Automation
 
 ### GitHub Actions Workflows
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| `ci.yml` | Push/PR to main | Run tests for API, Web, Desktop + Codecov upload |
-| `release.yml` | Push to main | Semantic versioning, CHANGELOG, GitHub Release |
-| `pages.yml` | Push to main | Deploy Web to GitHub Pages |
-| `codeql.yml` | Push/PR/Weekly | Security analysis |
-| `dependabot-automerge.yml` | Dependabot PR | Auto-merge patch/minor updates |
+
+| Workflow | Файл | Триггер | Назначение |
+|----------|------|---------|------------|
+| CI | `ci.yml` | Push/PR to main, develop | Тесты API, Web, Desktop + Codecov upload |
+| Release | `release.yml` | Push to main | Semantic versioning, CHANGELOG, GitHub Release, Docker images, Desktop ZIP |
+| Pages | `pages.yml` | Push to main | Deploy Web на GitHub Pages |
+| CodeQL | `codeql.yml` | Push/PR + Weekly (Mon 6:00 UTC) | Security analysis для C# и JS/TS |
+| Dependabot Auto-merge | `dependabot-automerge.yml` | Dependabot PR | Auto-merge patch/minor updates |
+
+### CI Workflow Jobs
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   api-test      │    │   web-test      │    │ desktop-build   │
+│   (Ubuntu)      │    │   (Ubuntu)      │    │   (Windows)     │
+│                 │    │                 │    │                 │
+│ • .NET 8.0      │    │ • Node 20       │    │ • .NET 8.0      │
+│ • xUnit tests   │    │ • ESLint        │    │ • Build Release │
+│ • Codecov (api) │    │ • TypeScript    │    │ • Unit tests    │
+│                 │    │ • Vitest        │    │                 │
+│                 │    │ • Codecov (web) │    │                 │
+└────────┬────────┘    └────────┬────────┘    └─────────────────┘
+         │                      │
+         └──────────┬───────────┘
+                    ▼
+         ┌─────────────────┐
+         │  docker-build   │
+         │   (Ubuntu)      │
+         │                 │
+         │ • Build API img │
+         │ • Build Web img │
+         └─────────────────┘
+```
+
+### Release Workflow Jobs
+
+```
+test → release → docker (if new release) → desktop (if new release)
+```
+
+**Артефакты релиза:**
+- Docker images в GHCR: `ghcr.io/randomu3/hqstudio/api:X.Y.Z`, `ghcr.io/randomu3/hqstudio/web:X.Y.Z`
+- Desktop ZIP: `HQStudio-Desktop-vX.Y.Z.zip` (self-contained, single-file)
+- CHANGELOG.md с release notes
+- GitHub Release с описанием изменений
 
 ### Semantic Release
+
+Конфигурация в `.releaserc.json`:
 - Conventional Commits format required
-- Auto-versioning: `feat:` → minor, `fix:` → patch
-- Auto-generates CHANGELOG.md
+- Auto-versioning: `feat:` → minor, `fix:` → patch, `perf:` → patch, `refactor:` → patch
+- Auto-generates CHANGELOG.md с секциями:
+  - 🚀 Новые возможности (feat)
+  - 🐛 Исправления (fix)
+  - ⚡ Производительность (perf)
+  - ♻️ Рефакторинг (refactor)
 - Creates GitHub Releases with artifacts
 
+### Git Hooks (Husky)
+
+```
+.husky/
+└── commit-msg    # Валидация через Commitlint
+```
+
+**Commitlint конфигурация** (`commitlint.config.js`):
+- Разрешённые типы: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+- Рекомендуемые scopes: api, web, desktop, tests, docker, ci, deps, release
+- Без ограничений на регистр subject и длину body
+
 ### Dependabot
-- Weekly updates for npm (Web)
-- Weekly updates for NuGet (API, Desktop)
-- Monthly updates for GitHub Actions
-- **Auto-merge enabled** for patch/minor updates
-- Major updates ignored (Next.js, ESLint, Vitest)
+
+Конфигурация в `.github/dependabot.yml`:
+
+| Ecosystem | Directory | Schedule | Limit | Labels |
+|-----------|-----------|----------|-------|--------|
+| npm | `/HQStudio.Web` | Weekly (Mon) | 5 PRs | dependencies, web |
+| npm | `/` (root) | Monthly | 3 PRs | dependencies, ci |
+| nuget | `/HQStudio.API` | Weekly (Mon) | 5 PRs | dependencies, api |
+| nuget | `/HQStudio.Desktop` | Weekly (Mon) | 5 PRs | dependencies, desktop |
+| github-actions | `/` | Monthly | - | dependencies, ci |
+
+**Auto-merge:** patch/minor updates и GitHub Actions updates автоматически мержатся после прохождения CI.
+
+**Игнорируемые major updates:** Next.js, ESLint, Vitest (требуют ручного review).
 
 ### Codecov
+
+Конфигурация в `codecov.yml`:
 - Coverage reports uploaded from CI
-- Flags: `api`, `web`
-- Badge in README shows coverage %
-- Config in `codecov.yml`
+- Flags: `api` (HQStudio.API/), `web` (HQStudio.Web/lib/)
+- Target: auto с threshold 5%
+- Carryforward enabled для обоих flags
+- Badge в README показывает общий coverage %
 
 ### Commit Message Format
-```
-type(scope): description
 
-Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore
-Scopes: api, web, desktop, ci, deps
 ```
+type(scope): описание на русском языке
+
+[optional body]
+
+[optional footer]
+```
+
+**ВАЖНО:** Все коммиты должны быть на русском языке!
+
+Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+Scopes: api, web, desktop, tests, docker, ci, deps, release
+
+### Проверка CI статуса
+
+После push в main обязательно проверять статус:
+
+```powershell
+# PowerShell
+Invoke-RestMethod -Uri "https://api.github.com/repos/randomu3/hqstudio/actions/runs?per_page=5" `
+  -Headers @{Accept="application/vnd.github.v3+json"} | `
+  Select-Object -ExpandProperty workflow_runs | `
+  ForEach-Object { "$($_.name) | $($_.status) | $($_.conclusion)" }
+```
+
+```bash
+# GitHub CLI
+gh run list --limit 5
+gh run view <run-id> --log-failed  # для просмотра ошибок
+```
+
+Все workflows должны быть `success`:
+- ✅ CI
+- ✅ Release
+- ✅ Deploy to GitHub Pages
+- ✅ CodeQL Security Analysis
 
 ---
 

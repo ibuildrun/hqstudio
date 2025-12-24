@@ -8,7 +8,7 @@
 
 Комплексное решение для автотюнинг студии: веб-сайт, API и десктопное CRM приложение.
 
-🌐 **[Демо сайт](https://randomu3.github.io/hqstudio/)** | 📦 **[Релизы](https://github.com/randomu3/hqstudio/releases)** | 📖 **[API Docs](docs/API.md)** | 🏛️ **[Архитектура](docs/ARCHITECTURE.md)**
+🌐 **[Демо сайт](https://randomu3.github.io/hqstudio/)** | 📦 **[Релизы](https://github.com/randomu3/hqstudio/releases)** | 📖 **[API Docs](docs/API.md)** | 🏛️ **[Архитектура](docs/ARCHITECTURE.md)** | 🔧 **[Git & CI/CD](docs/GIT-INTEGRATION.md)**
 
 ## 🏗️ Структура проекта
 
@@ -76,6 +76,29 @@ cd HQStudio.Web && npm test
 # Desktop тесты
 dotnet test HQStudio.Desktop.Tests
 ```
+
+## 🔄 CI/CD
+
+Проект использует полностью автоматизированный CI/CD pipeline:
+
+| Workflow | Назначение |
+|----------|------------|
+| **CI** | Тесты API, Web, Desktop + Codecov |
+| **Release** | Semantic versioning, CHANGELOG, Docker images |
+| **Pages** | Deploy Web на GitHub Pages |
+| **CodeQL** | Security analysis |
+| **Dependabot** | Auto-update зависимостей |
+
+### Conventional Commits
+
+Все коммиты должны следовать формату:
+```
+feat(api): добавлена новая функция
+fix(web): исправлен баг
+docs: обновлена документация
+```
+
+Подробнее: [CONTRIBUTING.md](CONTRIBUTING.md) | [Git & CI/CD](docs/GIT-INTEGRATION.md)
 
 ## 📦 Технологии
 
