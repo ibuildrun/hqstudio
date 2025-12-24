@@ -55,11 +55,11 @@
                     </Border>
                     
                     <TextBlock Text="STUDIO" FontSize="22" FontWeight="Light" 
-                               Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"
+                               Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"
                                Margin="0,0,0,4"/>
                     
                     <TextBlock Text="ТЮНИНГ АВТОМОБИЛЕЙ" FontSize="10" 
-                               Foreground="{DynamicResource TextDarkBrush}" HorizontalAlignment="Center"
+                               Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"
                                Margin="0,0,0,28"/>
 
                     <!-- Login Form -->

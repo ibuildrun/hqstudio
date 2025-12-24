@@ -50,15 +50,15 @@
                 </Border>
                 
                 <TextBlock x:Name="StudioText" Text="STUDIO" FontSize="42" FontWeight="Light" 
-                           Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" Opacity="0"/>
+                           Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" Opacity="0"/>
                 
                 <TextBlock x:Name="TaglineText" Text="ПРОФЕССИОНАЛЬНЫЙ ТЮНИНГ АВТОМОБИЛЕЙ" 
-                           FontSize="13" Foreground="{DynamicResource TextDarkBrush}" HorizontalAlignment="Center"
+                           FontSize="13" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"
                            Margin="0,20,0,0" Opacity="0"/>
 
                 <!-- Loading Bar -->
                 <Border Margin="0,50,0,0" Width="300" Height="4" Background="{DynamicResource BgHoverBrush}" CornerRadius="2">
-                    <Border x:Name="LoadingBar" Width="0" Height="4" Background="{DynamicResource TextPrimaryBrush}" 
+                    <Border x:Name="LoadingBar" Width="0" Height="4" Background="{DynamicResource AccentBrush}" 
                             CornerRadius="2" HorizontalAlignment="Left">
                         <Border.Effect>
                             <DropShadowEffect Color="{DynamicResource TextPrimary}" BlurRadius="10" ShadowDepth="0" Opacity="0.5"/>
@@ -72,8 +72,8 @@
 
             <!-- Version & Copyright -->
             <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,30">
-                <TextBlock x:Name="VersionText" FontSize="11" Foreground="{DynamicResource TextDarkBrush}" HorizontalAlignment="Center"/>
-                <TextBlock x:Name="CopyrightText" FontSize="10" Foreground="{DynamicResource TextDarkBrush}" 
+                <TextBlock x:Name="VersionText" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="CopyrightText" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" 
                            HorizontalAlignment="Center" Margin="0,4,0,0"/>
             </StackPanel>
         </Grid>

@@ -45,6 +45,7 @@
     <SolidColorBrush x:Key="BgDialogHeaderBrush" Color="#0A0A0A"/>
     <SolidColorBrush x:Key="BgLoginBrush" Color="#0A0A0A"/>
     <SolidColorBrush x:Key="BorderLoginBrush" Color="#1A1A1A"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="#FFFFFF"/>
 
     <!-- EFFECTS -->
     <DropShadowEffect x:Key="GlowWhite" Color="White" BlurRadius="20" ShadowDepth="0" Opacity="0.4"/>
@@ -468,7 +469,6 @@
 
     <SolidColorBrush x:Key="BgIconBrush" Color="#1E1E1E"/>
     <SolidColorBrush x:Key="BgAvatarBrush" Color="#1A1A1A"/>
-    <SolidColorBrush x:Key="AccentBrush" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="BtnPrimaryBgBrush" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="BtnPrimaryFgBrush" Color="#0A0A0A"/>
     <SolidColorBrush x:Key="BtnSecondaryBorderBrush" Color="#3A3A3A"/>
