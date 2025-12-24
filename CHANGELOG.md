@@ -48,9 +48,9 @@
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
 * **api:** РІРѕР·РІСЂР°С‰С‘РЅ PostgreSQL РєР°Рє Р‘Р” РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
 * **desktop:** РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅ РѕСЂРёРіРёРЅР°Р»СЊРЅС‹Р№ UI Р·Р°РєР°Р·РѕРІ СЃ CardHoverable СЃС‚РёР»РµРј ([51f1776](https://github.com/randomu3/hqstudio/commit/51f177660097301dfaf7b3a019e02dd24e0538a9))
 * **desktop:** РґРѕР±Р°РІР»РµРЅС‹ Р°Р»РёР°СЃС‹ SecondaryButton Рё ButtonPrimary РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РёРЅРґРёРєР°С‚РѕСЂ РІС‹Р±СЂР°РЅРЅРѕРіРѕ Р·Р°РєР°Р·Р° С‡РµСЂРµР· code-behind ([c8bbd36](https://github.com/randomu3/hqstudio/commit/c8bbd367ef4d984a87f6ecb6909435065b394890))
@@ -61,7 +61,7 @@
 * **desktop:** СЃРѕР·РґР°РЅ РїРѕР»РЅРѕС†РµРЅРЅС‹Р№ СЃС‚РёР»СЊ SecondaryButton РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј С‚РµРєСЃС‚Р° ([6ca6437](https://github.com/randomu3/hqstudio/commit/6ca64370c761a76eb8510613ad86b972a89e5a12))
 * **desktop:** СѓР»СѓС‡С€РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє Рё РёРєРѕРЅРѕРє РІ СЃРІРµС‚Р»РѕР№ С‚РµРјРµ ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
 * **desktop:** СѓР»СѓС‡С€РµРЅС‹ РєРЅРѕРїРєРё РџРµС‡Р°С‚СЊ Рё Р—Р°РІРµСЂС€РёС‚СЊ - РґРѕР±Р°РІР»РµРЅС‹ СЃРѕРѕР±С‰РµРЅРёСЏ Рё РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ ([12f9eda](https://github.com/randomu3/hqstudio/commit/12f9eda3c9f284ee677e602e22a6c5b25d672c83))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
@@ -76,9 +76,9 @@
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
 * **api:** РІРѕР·РІСЂР°С‰С‘РЅ PostgreSQL РєР°Рє Р‘Р” РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
 * **desktop:** РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅ РѕСЂРёРіРёРЅР°Р»СЊРЅС‹Р№ UI Р·Р°РєР°Р·РѕРІ СЃ CardHoverable СЃС‚РёР»РµРј ([51f1776](https://github.com/randomu3/hqstudio/commit/51f177660097301dfaf7b3a019e02dd24e0538a9))
 * **desktop:** РґРѕР±Р°РІР»РµРЅС‹ Р°Р»РёР°СЃС‹ SecondaryButton Рё ButtonPrimary РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє SecondaryButton - Р±РµР»С‹Р№ С„РѕРЅ Рё TextBlock СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј ([df97456](https://github.com/randomu3/hqstudio/commit/df97456a924b5ac405ef7bb4a939d0080dbdc1e6))
@@ -88,7 +88,7 @@
 * **desktop:** СЃРѕР·РґР°РЅ РїРѕР»РЅРѕС†РµРЅРЅС‹Р№ СЃС‚РёР»СЊ SecondaryButton РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј С‚РµРєСЃС‚Р° ([6ca6437](https://github.com/randomu3/hqstudio/commit/6ca64370c761a76eb8510613ad86b972a89e5a12))
 * **desktop:** СѓР»СѓС‡С€РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє Рё РёРєРѕРЅРѕРє РІ СЃРІРµС‚Р»РѕР№ С‚РµРјРµ ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
 * **desktop:** СѓР»СѓС‡С€РµРЅС‹ РєРЅРѕРїРєРё РџРµС‡Р°С‚СЊ Рё Р—Р°РІРµСЂС€РёС‚СЊ - РґРѕР±Р°РІР»РµРЅС‹ СЃРѕРѕР±С‰РµРЅРёСЏ Рё РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ ([12f9eda](https://github.com/randomu3/hqstudio/commit/12f9eda3c9f284ee677e602e22a6c5b25d672c83))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
@@ -102,9 +102,9 @@
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
 * **api:** РІРѕР·РІСЂР°С‰С‘РЅ PostgreSQL РєР°Рє Р‘Р” РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
 * **desktop:** РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅ РѕСЂРёРіРёРЅР°Р»СЊРЅС‹Р№ UI Р·Р°РєР°Р·РѕРІ СЃ CardHoverable СЃС‚РёР»РµРј ([51f1776](https://github.com/randomu3/hqstudio/commit/51f177660097301dfaf7b3a019e02dd24e0538a9))
 * **desktop:** РґРѕР±Р°РІР»РµРЅС‹ Р°Р»РёР°СЃС‹ SecondaryButton Рё ButtonPrimary РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє SecondaryButton - Р±РµР»С‹Р№ С„РѕРЅ Рё TextBlock СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј ([df97456](https://github.com/randomu3/hqstudio/commit/df97456a924b5ac405ef7bb4a939d0080dbdc1e6))
@@ -114,7 +114,7 @@
 * **desktop:** СЃРѕР·РґР°РЅ РїРѕР»РЅРѕС†РµРЅРЅС‹Р№ СЃС‚РёР»СЊ SecondaryButton РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј С‚РµРєСЃС‚Р° ([6ca6437](https://github.com/randomu3/hqstudio/commit/6ca64370c761a76eb8510613ad86b972a89e5a12))
 * **desktop:** СѓР»СѓС‡С€РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє Рё РёРєРѕРЅРѕРє РІ СЃРІРµС‚Р»РѕР№ С‚РµРјРµ ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
 * **desktop:** СѓР»СѓС‡С€РµРЅС‹ РєРЅРѕРїРєРё РџРµС‡Р°С‚СЊ Рё Р—Р°РІРµСЂС€РёС‚СЊ - РґРѕР±Р°РІР»РµРЅС‹ СЃРѕРѕР±С‰РµРЅРёСЏ Рё РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ ([12f9eda](https://github.com/randomu3/hqstudio/commit/12f9eda3c9f284ee677e602e22a6c5b25d672c83))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
@@ -128,9 +128,9 @@
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
 * **api:** РІРѕР·РІСЂР°С‰С‘РЅ PostgreSQL РєР°Рє Р‘Р” РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
 * **desktop:** РґРѕР±Р°РІР»РµРЅС‹ Р°Р»РёР°СЃС‹ SecondaryButton Рё ButtonPrimary РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє SecondaryButton - Р±РµР»С‹Р№ С„РѕРЅ Рё TextBlock СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј ([df97456](https://github.com/randomu3/hqstudio/commit/df97456a924b5ac405ef7bb4a939d0080dbdc1e6))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ С‚РµРєСЃС‚Р° РІ РєРЅРѕРїРєР°С… СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ С‡РµСЂРµР· TextElement.Foreground ([2126a87](https://github.com/randomu3/hqstudio/commit/2126a878d266b9cd94a76a0e77fcd664dd5a3acc))
@@ -139,7 +139,7 @@
 * **desktop:** СЃРѕР·РґР°РЅ РїРѕР»РЅРѕС†РµРЅРЅС‹Р№ СЃС‚РёР»СЊ SecondaryButton РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј С‚РµРєСЃС‚Р° ([6ca6437](https://github.com/randomu3/hqstudio/commit/6ca64370c761a76eb8510613ad86b972a89e5a12))
 * **desktop:** СѓР»СѓС‡С€РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє Рё РёРєРѕРЅРѕРє РІ СЃРІРµС‚Р»РѕР№ С‚РµРјРµ ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
 * **desktop:** СѓР»СѓС‡С€РµРЅС‹ РєРЅРѕРїРєРё РџРµС‡Р°С‚СЊ Рё Р—Р°РІРµСЂС€РёС‚СЊ - РґРѕР±Р°РІР»РµРЅС‹ СЃРѕРѕР±С‰РµРЅРёСЏ Рё РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ ([12f9eda](https://github.com/randomu3/hqstudio/commit/12f9eda3c9f284ee677e602e22a6c5b25d672c83))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
@@ -153,9 +153,9 @@
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
 * **api:** РІРѕР·РІСЂР°С‰С‘РЅ PostgreSQL РєР°Рє Р‘Р” РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
 * **desktop:** РґРѕР±Р°РІР»РµРЅС‹ Р°Р»РёР°СЃС‹ SecondaryButton Рё ButtonPrimary РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє SecondaryButton - Р±РµР»С‹Р№ С„РѕРЅ Рё TextBlock СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј ([df97456](https://github.com/randomu3/hqstudio/commit/df97456a924b5ac405ef7bb4a939d0080dbdc1e6))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ С‚РµРєСЃС‚Р° РІ РєРЅРѕРїРєР°С… СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ С‡РµСЂРµР· TextElement.Foreground ([2126a87](https://github.com/randomu3/hqstudio/commit/2126a878d266b9cd94a76a0e77fcd664dd5a3acc))
@@ -163,7 +163,7 @@
 * **desktop:** СЃРѕР·РґР°РЅ РїРѕР»РЅРѕС†РµРЅРЅС‹Р№ СЃС‚РёР»СЊ SecondaryButton РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј С‚РµРєСЃС‚Р° ([6ca6437](https://github.com/randomu3/hqstudio/commit/6ca64370c761a76eb8510613ad86b972a89e5a12))
 * **desktop:** СѓР»СѓС‡С€РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє Рё РёРєРѕРЅРѕРє РІ СЃРІРµС‚Р»РѕР№ С‚РµРјРµ ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
 * **desktop:** СѓР»СѓС‡С€РµРЅС‹ РєРЅРѕРїРєРё РџРµС‡Р°С‚СЊ Рё Р—Р°РІРµСЂС€РёС‚СЊ - РґРѕР±Р°РІР»РµРЅС‹ СЃРѕРѕР±С‰РµРЅРёСЏ Рё РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ ([12f9eda](https://github.com/randomu3/hqstudio/commit/12f9eda3c9f284ee677e602e22a6c5b25d672c83))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
@@ -176,9 +176,9 @@
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
 * **api:** РІРѕР·РІСЂР°С‰С‘РЅ PostgreSQL РєР°Рє Р‘Р” РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
 * **desktop:** РґРѕР±Р°РІР»РµРЅС‹ Р°Р»РёР°СЃС‹ SecondaryButton Рё ButtonPrimary РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє SecondaryButton - Р±РµР»С‹Р№ С„РѕРЅ Рё TextBlock СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј ([df97456](https://github.com/randomu3/hqstudio/commit/df97456a924b5ac405ef7bb4a939d0080dbdc1e6))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ С‚РµРєСЃС‚Р° РІ РєРЅРѕРїРєР°С… СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ С‡РµСЂРµР· TextElement.Foreground ([2126a87](https://github.com/randomu3/hqstudio/commit/2126a878d266b9cd94a76a0e77fcd664dd5a3acc))
@@ -186,7 +186,7 @@
 * **desktop:** СЃРѕР·РґР°РЅ РїРѕР»РЅРѕС†РµРЅРЅС‹Р№ СЃС‚РёР»СЊ SecondaryButton РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј С‚РµРєСЃС‚Р° ([6ca6437](https://github.com/randomu3/hqstudio/commit/6ca64370c761a76eb8510613ad86b972a89e5a12))
 * **desktop:** СѓР»СѓС‡С€РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє Рё РёРєРѕРЅРѕРє РІ СЃРІРµС‚Р»РѕР№ С‚РµРјРµ ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
 * **desktop:** СѓР»СѓС‡С€РµРЅС‹ РєРЅРѕРїРєРё РџРµС‡Р°С‚СЊ Рё Р—Р°РІРµСЂС€РёС‚СЊ - РґРѕР±Р°РІР»РµРЅС‹ СЃРѕРѕР±С‰РµРЅРёСЏ Рё РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ ([12f9eda](https://github.com/randomu3/hqstudio/commit/12f9eda3c9f284ee677e602e22a6c5b25d672c83))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
@@ -199,16 +199,16 @@
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
 * **api:** РІРѕР·РІСЂР°С‰С‘РЅ PostgreSQL РєР°Рє Р‘Р” РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
 * **desktop:** РґРѕР±Р°РІР»РµРЅС‹ Р°Р»РёР°СЃС‹ SecondaryButton Рё ButtonPrimary РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє SecondaryButton - Р±РµР»С‹Р№ С„РѕРЅ Рё TextBlock СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј ([df97456](https://github.com/randomu3/hqstudio/commit/df97456a924b5ac405ef7bb4a939d0080dbdc1e6))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ С‚РµРєСЃС‚Р° РІ РєРЅРѕРїРєР°С… СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ С‡РµСЂРµР· TextElement.Foreground ([2126a87](https://github.com/randomu3/hqstudio/commit/2126a878d266b9cd94a76a0e77fcd664dd5a3acc))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅС‹ СЃС‚РёР»Рё РєРЅРѕРїРѕРє РІ Buttons.xaml - РёСЃРїРѕР»СЊР·СѓСЋС‚ DynamicResource РґР»СЏ РїРѕРґРґРµСЂР¶РєРё С‚РµРј ([1228141](https://github.com/randomu3/hqstudio/commit/1228141e179468426f20e4291d58b103ea924507))
 * **desktop:** СЃРѕР·РґР°РЅ РїРѕР»РЅРѕС†РµРЅРЅС‹Р№ СЃС‚РёР»СЊ SecondaryButton РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј С‚РµРєСЃС‚Р° ([6ca6437](https://github.com/randomu3/hqstudio/commit/6ca64370c761a76eb8510613ad86b972a89e5a12))
 * **desktop:** СѓР»СѓС‡С€РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє Рё РёРєРѕРЅРѕРє РІ СЃРІРµС‚Р»РѕР№ С‚РµРјРµ ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
@@ -221,15 +221,15 @@
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
 * **api:** РІРѕР·РІСЂР°С‰С‘РЅ PostgreSQL РєР°Рє Р‘Р” РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
 * **desktop:** РґРѕР±Р°РІР»РµРЅС‹ Р°Р»РёР°СЃС‹ SecondaryButton Рё ButtonPrimary РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє SecondaryButton - Р±РµР»С‹Р№ С„РѕРЅ Рё TextBlock СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј ([df97456](https://github.com/randomu3/hqstudio/commit/df97456a924b5ac405ef7bb4a939d0080dbdc1e6))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ С‚РµРєСЃС‚Р° РІ РєРЅРѕРїРєР°С… СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ С‡РµСЂРµР· TextElement.Foreground ([2126a87](https://github.com/randomu3/hqstudio/commit/2126a878d266b9cd94a76a0e77fcd664dd5a3acc))
 * **desktop:** СЃРѕР·РґР°РЅ РїРѕР»РЅРѕС†РµРЅРЅС‹Р№ СЃС‚РёР»СЊ SecondaryButton РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј С‚РµРєСЃС‚Р° ([6ca6437](https://github.com/randomu3/hqstudio/commit/6ca64370c761a76eb8510613ad86b972a89e5a12))
 * **desktop:** СѓР»СѓС‡С€РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє Рё РёРєРѕРЅРѕРє РІ СЃРІРµС‚Р»РѕР№ С‚РµРјРµ ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
@@ -242,14 +242,14 @@
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
 * **api:** РІРѕР·РІСЂР°С‰С‘РЅ PostgreSQL РєР°Рє Р‘Р” РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
 * **desktop:** РґРѕР±Р°РІР»РµРЅС‹ Р°Р»РёР°СЃС‹ SecondaryButton Рё ButtonPrimary РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ С‚РµРєСЃС‚Р° РІ РєРЅРѕРїРєР°С… СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ С‡РµСЂРµР· TextElement.Foreground ([2126a87](https://github.com/randomu3/hqstudio/commit/2126a878d266b9cd94a76a0e77fcd664dd5a3acc))
 * **desktop:** СЃРѕР·РґР°РЅ РїРѕР»РЅРѕС†РµРЅРЅС‹Р№ СЃС‚РёР»СЊ SecondaryButton РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ СЃ СЏРІРЅС‹Рј С†РІРµС‚РѕРј С‚РµРєСЃС‚Р° ([6ca6437](https://github.com/randomu3/hqstudio/commit/6ca64370c761a76eb8510613ad86b972a89e5a12))
 * **desktop:** СѓР»СѓС‡С€РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє Рё РёРєРѕРЅРѕРє РІ СЃРІРµС‚Р»РѕР№ С‚РµРјРµ ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
@@ -262,13 +262,13 @@
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
 * **api:** РІРѕР·РІСЂР°С‰С‘РЅ PostgreSQL РєР°Рє Р‘Р” РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
 * **desktop:** РґРѕР±Р°РІР»РµРЅС‹ Р°Р»РёР°СЃС‹ SecondaryButton Рё ButtonPrimary РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
 * **desktop:** РёСЃРїСЂР°РІР»РµРЅ РєРѕРЅС‚СЂР°СЃС‚ С‚РµРєСЃС‚Р° РІ РєРЅРѕРїРєР°С… СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ С‡РµСЂРµР· TextElement.Foreground ([2126a87](https://github.com/randomu3/hqstudio/commit/2126a878d266b9cd94a76a0e77fcd664dd5a3acc))
 * **desktop:** СѓР»СѓС‡С€РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє Рё РёРєРѕРЅРѕРє РІ СЃРІРµС‚Р»РѕР№ С‚РµРјРµ ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
@@ -281,12 +281,12 @@
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
 * **api:** РІРѕР·РІСЂР°С‰С‘РЅ PostgreSQL РєР°Рє Р‘Р” РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
 * **desktop:** РґРѕР±Р°РІР»РµРЅС‹ Р°Р»РёР°СЃС‹ SecondaryButton Рё ButtonPrimary РґР»СЏ СЃРІРµС‚Р»РѕР№ С‚РµРјС‹ ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
 * **desktop:** СѓР»СѓС‡С€РµРЅ РєРѕРЅС‚СЂР°СЃС‚ РєРЅРѕРїРѕРє Рё РёРєРѕРЅРѕРє РІ СЃРІРµС‚Р»РѕР№ С‚РµРјРµ ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
@@ -299,10 +299,10 @@
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
 * **api:** РІРѕР·РІСЂР°С‰С‘РЅ PostgreSQL РєР°Рє Р‘Р” РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
@@ -314,10 +314,10 @@
 
 ### рџђ› РСЃРїСЂР°РІР»РµРЅРёСЏ
 
-* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
-* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
-* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
-* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **desktop:** исправлена видимость emoji иконок для поддержки тем ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** исправлено наложение лоадера и пустого состояния ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** улучшен контраст темы - заменены хардкод цвета на динамические ресурсы ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **docker:** улучшены healthcheck - используется /api/health endpoint ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
 
 ## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-23)
 
