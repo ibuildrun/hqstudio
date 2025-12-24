@@ -21,6 +21,37 @@
 └── docker-compose.yml     # Production Docker setup
 ```
 
+## 📸 Скриншоты Desktop приложения
+
+<details>
+<summary>🖥️ Показать скриншоты</summary>
+
+### Окно входа
+![Login](docs/screenshots/01-login.png)
+
+### Дашборд (тёмная тема)
+![Dashboard Dark](docs/screenshots/02-dashboard.png)
+
+### Заказы
+![Orders](docs/screenshots/03-orders.png)
+
+### Клиенты
+![Clients](docs/screenshots/04-clients.png)
+
+### Услуги
+![Services](docs/screenshots/05-services.png)
+
+### Сотрудники
+![Staff](docs/screenshots/06-staff.png)
+
+### Настройки
+![Settings](docs/screenshots/07-settings.png)
+
+### Дашборд (светлая тема)
+![Dashboard Light](docs/screenshots/08-dashboard-light.png)
+
+</details>
+
 ## 🚀 Быстрый старт
 
 ### Требования
