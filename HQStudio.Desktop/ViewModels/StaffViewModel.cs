@@ -10,6 +10,9 @@ namespace HQStudio.ViewModels
     {
         private readonly ApiService _apiService = ApiService.Instance;
         private readonly SettingsService _settings = SettingsService.Instance;
+        private readonly ApiCacheService _cache = ApiCacheService.Instance;
+        private const string CacheKey = "staff";
+        
         private StaffItem? _selectedUser;
         private bool _isLoading;
         private bool _isApiConnected = true;
@@ -44,7 +47,7 @@ namespace HQStudio.ViewModels
 
         public StaffViewModel()
         {
-            RefreshCommand = new RelayCommand(async _ => await LoadUsersAsync());
+            RefreshCommand = new RelayCommand(async _ => await LoadUsersAsync(forceRefresh: true));
             AddUserCommand = new RelayCommand(async _ => await AddUserAsync());
             EditUserCommand = new RelayCommand(async _ => await EditUserAsync(), _ => SelectedUser != null);
             ToggleActiveCommand = new RelayCommand(async _ => await ToggleActiveAsync(), _ => SelectedUser != null);
@@ -53,7 +56,7 @@ namespace HQStudio.ViewModels
             _ = LoadUsersAsync();
         }
 
-        private async Task LoadUsersAsync()
+        private async Task LoadUsersAsync(bool forceRefresh = false)
         {
             if (!_settings.UseApi)
             {
@@ -78,21 +81,29 @@ namespace HQStudio.ViewModels
                 }
 
                 IsApiConnected = true;
-                var users = await _apiService.GetUsersAsync();
                 
-                Users.Clear();
-                foreach (var user in users)
+                var users = await _cache.GetOrFetchAsync(
+                    CacheKey,
+                    async () => await _apiService.GetUsersAsync(),
+                    TimeSpan.FromSeconds(30),
+                    forceRefresh);
+                
+                if (users != null)
                 {
-                    Users.Add(new StaffItem
+                    Users.Clear();
+                    foreach (var user in users)
                     {
-                        Id = user.Id,
-                        Login = user.Login,
-                        Name = user.Name,
-                        Role = user.Role,
-                        IsActive = user.IsActive,
-                        IsOnline = user.IsOnline,
-                        CreatedAt = user.CreatedAt
-                    });
+                        Users.Add(new StaffItem
+                        {
+                            Id = user.Id,
+                            Login = user.Login,
+                            Name = user.Name,
+                            Role = user.Role,
+                            IsActive = user.IsActive,
+                            IsOnline = user.IsOnline,
+                            CreatedAt = user.CreatedAt
+                        });
+                    }
                 }
             }
             catch (Exception ex)
@@ -122,7 +133,8 @@ namespace HQStudio.ViewModels
                 var result = await _apiService.CreateUserAsync(request);
                 if (result != null)
                 {
-                    await LoadUsersAsync();
+                    _cache.Invalidate(CacheKey);
+                    await LoadUsersAsync(forceRefresh: true);
                     ConfirmDialog.ShowInfo("Успех", $"Сотрудник {result.Name} добавлен", ConfirmDialog.DialogType.Success);
                 }
                 else
@@ -151,7 +163,8 @@ namespace HQStudio.ViewModels
                 var success = await _apiService.UpdateUserAsync(SelectedUser.Id, request);
                 if (success)
                 {
-                    await LoadUsersAsync();
+                    _cache.Invalidate(CacheKey);
+                    await LoadUsersAsync(forceRefresh: true);
                 }
                 else
                 {
@@ -182,7 +195,8 @@ namespace HQStudio.ViewModels
                 var success = await _apiService.ToggleUserActiveAsync(SelectedUser.Id);
                 if (success)
                 {
-                    await LoadUsersAsync();
+                    _cache.Invalidate(CacheKey);
+                    await LoadUsersAsync(forceRefresh: true);
                 }
             }
         }
@@ -208,7 +222,8 @@ namespace HQStudio.ViewModels
                 var success = await _apiService.DeleteUserAsync(SelectedUser.Id);
                 if (success)
                 {
-                    await LoadUsersAsync();
+                    _cache.Invalidate(CacheKey);
+                    await LoadUsersAsync(forceRefresh: true);
                 }
             }
         }

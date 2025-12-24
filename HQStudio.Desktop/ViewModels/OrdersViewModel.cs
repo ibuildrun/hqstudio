@@ -13,6 +13,8 @@ namespace HQStudio.ViewModels
         private readonly ApiService _apiService = ApiService.Instance;
         private readonly SettingsService _settings = SettingsService.Instance;
         private readonly DataSyncService _syncService = DataSyncService.Instance;
+        private readonly ApiCacheService _cache = ApiCacheService.Instance;
+        private const string CacheKeyPrefix = "orders";
         
         private static bool _isInitialized;
         private static int _cachedPage = 1;
@@ -180,7 +182,8 @@ namespace HQStudio.ViewModels
         private async Task ForceRefreshAsync()
         {
             CurrentPage = 1;
-            await LoadOrdersAsync();
+            _cache.Invalidate(CacheKeyPrefix);
+            await LoadOrdersAsync(forceRefresh: true);
         }
 
         private async void OnOrdersChanged(object? sender, EventArgs e)
@@ -245,7 +248,7 @@ namespace HQStudio.ViewModels
         /// <summary>
         /// Загрузка заказов с пагинацией
         /// </summary>
-        public async Task LoadOrdersAsync()
+        public async Task LoadOrdersAsync(bool forceRefresh = false)
         {
             if (IsLoading) return;
             IsLoading = true;
@@ -267,7 +270,14 @@ namespace HQStudio.ViewModels
                     if (_apiService.IsConnected)
                     {
                         IsApiConnected = true;
-                        var response = await _apiService.GetOrdersAsync(CurrentPage, PageSize);
+                        
+                        var cacheKey = $"{CacheKeyPrefix}_page{CurrentPage}";
+                        var response = await _cache.GetOrFetchAsync(
+                            cacheKey,
+                            async () => await _apiService.GetOrdersAsync(CurrentPage, PageSize),
+                            TimeSpan.FromSeconds(20),
+                            forceRefresh);
+                        
                         if (response != null)
                         {
                             TotalOrders = response.Total;

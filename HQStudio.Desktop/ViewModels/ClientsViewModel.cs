@@ -12,6 +12,8 @@ namespace HQStudio.ViewModels
         private readonly DataService _dataService = DataService.Instance;
         private readonly ApiService _apiService = ApiService.Instance;
         private readonly SettingsService _settings = SettingsService.Instance;
+        private readonly ApiCacheService _cache = ApiCacheService.Instance;
+        private const string CacheKey = "clients";
         
         private Client? _selectedClient;
         private string _searchText = string.Empty;
@@ -95,7 +97,7 @@ namespace HQStudio.ViewModels
             AddClientCommand = new RelayCommand(_ => AddClientAsync());
             EditClientCommand = new RelayCommand(_ => EditClient(), _ => SelectedClient != null);
             DeleteClientCommand = new RelayCommand(_ => DeleteClient());
-            RefreshCommand = new RelayCommand(async _ => await LoadClientsAsync());
+            RefreshCommand = new RelayCommand(async _ => await LoadClientsAsync(forceRefresh: true));
             PreviousPageCommand = new RelayCommand(async _ => await PreviousPageAsync(), _ => CanGoPrevious);
             NextPageCommand = new RelayCommand(async _ => await NextPageAsync(), _ => CanGoNext);
             ExportToExcelCommand = new RelayCommand(async _ => await ExportToExcelAsync(), _ => _allClients.Any());
@@ -122,7 +124,7 @@ namespace HQStudio.ViewModels
             await Task.CompletedTask;
         }
 
-        private async Task LoadClientsAsync()
+        private async Task LoadClientsAsync(bool forceRefresh = false)
         {
             if (IsLoading) return;
             IsLoading = true;
@@ -131,8 +133,6 @@ namespace HQStudio.ViewModels
             
             try
             {
-                _allClients.Clear();
-                
                 if (_settings.UseApi)
                 {
                     if (!_apiService.IsConnected)
@@ -143,17 +143,26 @@ namespace HQStudio.ViewModels
                     if (_apiService.IsConnected)
                     {
                         IsApiConnected = true;
-                        var apiClients = await _apiService.GetClientsAsync();
-                        _allClients = apiClients.Select(c => new Client
+                        
+                        var apiClients = await _cache.GetOrFetchAsync(
+                            CacheKey,
+                            async () => await _apiService.GetClientsAsync(),
+                            TimeSpan.FromSeconds(30),
+                            forceRefresh);
+                        
+                        if (apiClients != null)
                         {
-                            Id = c.Id,
-                            Name = c.Name,
-                            Phone = c.Phone,
-                            Car = c.CarModel ?? "",
-                            CarNumber = c.LicensePlate ?? "",
-                            Notes = c.Notes ?? "",
-                            CreatedAt = c.CreatedAt
-                        }).ToList();
+                            _allClients = apiClients.Select(c => new Client
+                            {
+                                Id = c.Id,
+                                Name = c.Name,
+                                Phone = c.Phone,
+                                Car = c.CarModel ?? "",
+                                CarNumber = c.LicensePlate ?? "",
+                                Notes = c.Notes ?? "",
+                                CreatedAt = c.CreatedAt
+                            }).ToList();
+                        }
                     }
                     else
                     {
@@ -247,6 +256,7 @@ namespace HQStudio.ViewModels
                         ConfirmDialog.ShowInfo("Ошибка", error ?? "Не удалось создать клиента", ConfirmDialog.DialogType.Error);
                         return;
                     }
+                    _cache.Invalidate(CacheKey);
                 }
                 else
                 {
@@ -257,7 +267,7 @@ namespace HQStudio.ViewModels
                 }
                 
                 CurrentPage = 1;
-                await LoadClientsAsync();
+                await LoadClientsAsync(forceRefresh: true);
             }
         }
 
@@ -271,11 +281,12 @@ namespace HQStudio.ViewModels
             if (dialog.ShowDialog() == true)
             {
                 _dataService.SaveData();
-                _ = LoadClientsAsync();
+                _cache.Invalidate(CacheKey);
+                _ = LoadClientsAsync(forceRefresh: true);
             }
         }
 
-        private void DeleteClient()
+        private async void DeleteClient()
         {
             if (SelectedClient == null)
             {
@@ -296,8 +307,9 @@ namespace HQStudio.ViewModels
             {
                 _dataService.Clients.Remove(SelectedClient);
                 _dataService.SaveData();
+                _cache.Invalidate(CacheKey);
                 SelectedClient = null;
-                _ = LoadClientsAsync();
+                await LoadClientsAsync(forceRefresh: true);
             }
         }
 

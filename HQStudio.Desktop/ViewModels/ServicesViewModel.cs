@@ -12,6 +12,8 @@ namespace HQStudio.ViewModels
         private readonly DataService _dataService = DataService.Instance;
         private readonly ApiService _apiService = ApiService.Instance;
         private readonly SettingsService _settings = SettingsService.Instance;
+        private readonly ApiCacheService _cache = ApiCacheService.Instance;
+        private const string CacheKey = "services";
         
         private Service? _selectedService;
         private string _searchText = string.Empty;
@@ -94,7 +96,7 @@ namespace HQStudio.ViewModels
             AddServiceCommand = new RelayCommand(_ => AddServiceAsync());
             EditServiceCommand = new RelayCommand(_ => EditServiceAsync(), _ => SelectedService != null);
             DeleteServiceCommand = new RelayCommand(_ => DeleteServiceAsync());
-            RefreshCommand = new RelayCommand(async _ => await LoadServicesAsync());
+            RefreshCommand = new RelayCommand(async _ => await LoadServicesAsync(forceRefresh: true));
             PreviousPageCommand = new RelayCommand(_ => PreviousPage());
             NextPageCommand = new RelayCommand(_ => NextPage());
             _ = LoadServicesAsync();
@@ -118,7 +120,7 @@ namespace HQStudio.ViewModels
             }
         }
 
-        private async Task LoadServicesAsync()
+        private async Task LoadServicesAsync(bool forceRefresh = false)
         {
             if (IsLoading) return;
             IsLoading = true;
@@ -127,8 +129,6 @@ namespace HQStudio.ViewModels
             
             try
             {
-                _allServices.Clear();
-                
                 if (_settings.UseApi)
                 {
                     if (!_apiService.IsConnected)
@@ -139,17 +139,26 @@ namespace HQStudio.ViewModels
                     if (_apiService.IsConnected)
                     {
                         IsApiConnected = true;
-                        var apiServices = await _apiService.GetServicesAsync();
-                        _allServices = apiServices.Select(s => new Service
+                        
+                        var apiServices = await _cache.GetOrFetchAsync(
+                            CacheKey,
+                            async () => await _apiService.GetServicesAsync(),
+                            TimeSpan.FromSeconds(30),
+                            forceRefresh);
+                        
+                        if (apiServices != null)
                         {
-                            Id = s.Id,
-                            Name = s.Title,
-                            Description = s.Description,
-                            Category = s.Category,
-                            PriceFrom = ParsePrice(s.Price),
-                            Icon = string.IsNullOrEmpty(s.Icon) ? "🔧" : s.Icon,
-                            IsActive = s.IsActive
-                        }).ToList();
+                            _allServices = apiServices.Select(s => new Service
+                            {
+                                Id = s.Id,
+                                Name = s.Title,
+                                Description = s.Description,
+                                Category = s.Category,
+                                PriceFrom = ParsePrice(s.Price),
+                                Icon = string.IsNullOrEmpty(s.Icon) ? "🔧" : s.Icon,
+                                IsActive = s.IsActive
+                            }).ToList();
+                        }
                     }
                     else
                     {
@@ -248,6 +257,7 @@ namespace HQStudio.ViewModels
                         ConfirmDialog.ShowInfo("Ошибка", "Не удалось создать услугу", ConfirmDialog.DialogType.Error);
                         return;
                     }
+                    _cache.Invalidate(CacheKey);
                 }
                 else
                 {
@@ -256,7 +266,7 @@ namespace HQStudio.ViewModels
                     _dataService.SaveData();
                 }
                 
-                await LoadServicesAsync();
+                await LoadServicesAsync(forceRefresh: true);
             }
         }
 
@@ -297,6 +307,7 @@ namespace HQStudio.ViewModels
                             ConfirmDialog.ShowInfo("Ошибка", "Не удалось обновить услугу", ConfirmDialog.DialogType.Error);
                             return;
                         }
+                        _cache.Invalidate(CacheKey);
                     }
                     else
                     {
@@ -309,7 +320,7 @@ namespace HQStudio.ViewModels
                     _dataService.SaveData();
                 }
                 
-                await LoadServicesAsync();
+                await LoadServicesAsync(forceRefresh: true);
             }
         }
 
@@ -340,6 +351,7 @@ namespace HQStudio.ViewModels
                         ConfirmDialog.ShowInfo("Ошибка", "Не удалось удалить услугу", ConfirmDialog.DialogType.Error);
                         return;
                     }
+                    _cache.Invalidate(CacheKey);
                 }
                 else
                 {
@@ -348,7 +360,7 @@ namespace HQStudio.ViewModels
                 }
                 
                 SelectedService = null;
-                await LoadServicesAsync();
+                await LoadServicesAsync(forceRefresh: true);
             }
         }
     }
