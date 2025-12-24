@@ -19,7 +19,7 @@ namespace HQStudio.ViewModels
         private string _searchText = string.Empty;
         private List<Client> _allClients = new();
         private bool _isLoading;
-        private bool _isApiConnected = true;
+        private bool _isApiConnected;
         private int _currentPage = 1;
         private int _totalPages = 1;
         private int _totalClients;

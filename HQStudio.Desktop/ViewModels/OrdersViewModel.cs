@@ -23,7 +23,7 @@ namespace HQStudio.ViewModels
         
         private Order? _selectedOrder;
         private bool _isLoading;
-        private bool _isApiConnected = true;
+        private bool _isApiConnected;
         private int _currentPage = 1;
         private int _totalPages = 1;
         private int _totalOrders;
