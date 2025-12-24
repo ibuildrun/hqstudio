@@ -18,7 +18,7 @@
                            Style="{DynamicResource TextSmall}"/>
             </StackPanel>
             <Button Content="🔄 Обновить" Command="{Binding RefreshCommand}" 
-                    Style="{DynamicResource ButtonPrimary}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                    Style="{DynamicResource SecondaryButton}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
         </Grid>
 
         <!-- Stats Cards -->

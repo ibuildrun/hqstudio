@@ -31,14 +31,14 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
+                <Border Style="{DynamicResource CounterBadge}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Всего: " FontSize="13" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding TotalClients}" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
-                <Button Content="🔄" Style="{DynamicResource SecondaryButton}" Padding="8" MinWidth="36" Height="36"
-                        Command="{Binding RefreshCommand}" ToolTip="Обновить"/>
+                <Button Content="🔄 Обновить" Style="{DynamicResource SecondaryButton}" Margin="0,0,12,0"
+                        Command="{Binding RefreshCommand}"/>
             </StackPanel>
 
             <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
@@ -55,7 +55,7 @@
         </Grid>
 
         <!-- Loading Overlay -->
-        <Border Grid.Row="2" Background="#80000000" CornerRadius="16" Panel.ZIndex="100"
+        <Border Grid.Row="2" Background="{DynamicResource BgOverlayBrush}" CornerRadius="16" Panel.ZIndex="100"
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Border Width="60" Height="60" CornerRadius="30" Background="{DynamicResource BgIconBrush}" Margin="0,0,0,16">
@@ -84,22 +84,27 @@
             <ItemsControl ItemsSource="{Binding Clients}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{DynamicResource CardHoverable}" Margin="0,0,0,12" Padding="20"
-                                MouseLeftButtonDown="Client_MouseLeftButtonDown">
+                        <Border Style="{DynamicResource ListRowCard}"
+                                MouseLeftButtonDown="Client_MouseLeftButtonDown"
+                                Cursor="Hand">
                             <Grid>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <Border Grid.Column="0" Width="50" Height="50" CornerRadius="25" 
-                                        Background="{DynamicResource BgIconBrush}" Margin="0,0,16,0">
-                                    <TextBlock Text="👤" FontSize="22" Foreground="{DynamicResource TextPrimaryBrush}"
+                                <!-- Selection Indicator -->
+                                <Border x:Name="SelectionIndicator" Grid.Column="0" Width="4" CornerRadius="2" Margin="0,4,12,4"
+                                        VerticalAlignment="Stretch" Background="Transparent"/>
+
+                                <Border Grid.Column="1" Style="{DynamicResource ListRowIcon}">
+                                    <TextBlock Text="👤" FontSize="24" Foreground="{DynamicResource TextPrimaryBrush}"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
 
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" 
                                                Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
                                     <StackPanel Orientation="Horizontal">
@@ -108,7 +113,7 @@
                                     </StackPanel>
                                 </StackPanel>
 
-                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
                                     <Border Background="{DynamicResource BgIconBrush}" CornerRadius="6" Padding="10,5" Margin="0,0,0,4">
                                         <TextBlock Text="{Binding CarNumber}" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" 
                                                    FontFamily="Consolas" FontWeight="SemiBold"/>

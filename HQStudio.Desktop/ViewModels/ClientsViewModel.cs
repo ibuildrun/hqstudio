@@ -87,7 +87,7 @@ namespace HQStudio.ViewModels
         {
             AddClientCommand = new RelayCommand(_ => AddClientAsync());
             EditClientCommand = new RelayCommand(_ => EditClient(), _ => SelectedClient != null);
-            DeleteClientCommand = new RelayCommand(_ => DeleteClient(), _ => SelectedClient != null);
+            DeleteClientCommand = new RelayCommand(_ => DeleteClient());
             RefreshCommand = new RelayCommand(async _ => await LoadClientsAsync());
             PreviousPageCommand = new RelayCommand(async _ => await PreviousPageAsync(), _ => CanGoPrevious);
             NextPageCommand = new RelayCommand(async _ => await NextPageAsync(), _ => CanGoNext);
@@ -201,11 +201,10 @@ namespace HQStudio.ViewModels
                 
                 if (existingClient != null)
                 {
-                    MessageBox.Show(
-                        $"Клиент с таким номером телефона уже существует:\n{existingClient.Name}",
+                    ConfirmDialog.ShowInfo(
                         "Дубликат клиента",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
+                        $"Клиент с таким номером телефона уже существует:\n{existingClient.Name}",
+                        ConfirmDialog.DialogType.Warning);
                     return;
                 }
                 
@@ -223,7 +222,7 @@ namespace HQStudio.ViewModels
                     var (created, error) = await _apiService.CreateClientAsync(apiClient);
                     if (created == null)
                     {
-                        MessageBox.Show(error ?? "Не удалось создать клиента", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ConfirmDialog.ShowInfo("Ошибка", error ?? "Не удалось создать клиента", ConfirmDialog.DialogType.Error);
                         return;
                     }
                 }
@@ -256,18 +255,26 @@ namespace HQStudio.ViewModels
 
         private void DeleteClient()
         {
-            if (SelectedClient == null) return;
+            if (SelectedClient == null)
+            {
+                ConfirmDialog.ShowInfo(
+                    "Удаление клиента",
+                    "Выберите клиента для удаления.\n\nКликните на клиента в списке, чтобы выбрать его.",
+                    ConfirmDialog.DialogType.Warning);
+                return;
+            }
             
-            var result = MessageBox.Show(
-                $"Удалить клиента \"{SelectedClient.Name}\"?",
-                "Подтверждение",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+            var confirmed = ConfirmDialog.Show(
+                "Удалить клиента?",
+                $"Вы уверены, что хотите удалить клиента \"{SelectedClient.Name}\"?\n\nЭто действие нельзя отменить.",
+                ConfirmDialog.DialogType.Warning,
+                "Удалить", "Отмена");
             
-            if (result == MessageBoxResult.Yes)
+            if (confirmed)
             {
                 _dataService.Clients.Remove(SelectedClient);
                 _dataService.SaveData();
+                SelectedClient = null;
                 _ = LoadClientsAsync();
             }
         }
@@ -276,7 +283,7 @@ namespace HQStudio.ViewModels
         {
             if (!_allClients.Any())
             {
-                MessageBox.Show("Нет клиентов для экспорта", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
+                ConfirmDialog.ShowInfo("Информация", "Нет клиентов для экспорта", ConfirmDialog.DialogType.Warning);
                 return;
             }
             
@@ -289,7 +296,7 @@ namespace HQStudio.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при экспорте: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                ConfirmDialog.ShowInfo("Ошибка", $"Ошибка при экспорте: {ex.Message}", ConfirmDialog.DialogType.Error);
             }
             finally
             {

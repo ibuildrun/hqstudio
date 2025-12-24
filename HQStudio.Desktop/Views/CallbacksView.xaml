@@ -19,7 +19,7 @@
                            Style="{DynamicResource TextSmall}"/>
             </StackPanel>
             <Button Content="🔄 Обновить" Command="{Binding RefreshCommand}" 
-                    Style="{DynamicResource ButtonPrimary}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                    Style="{DynamicResource SecondaryButton}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
         </Grid>
 
         <!-- Stats Cards -->
@@ -147,10 +147,48 @@
                         <DataGridTemplateColumn Header="Статус" Width="100">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="{Binding StatusColor}" CornerRadius="4" Padding="8,4" 
-                                            HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding Status}" Foreground="White" 
-                                                   FontWeight="SemiBold" FontSize="11"/>
+                                    <Border CornerRadius="8" Padding="10,6" HorizontalAlignment="Left">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#2A2A2A"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Завершена">
+                                                        <Setter Property="Background" Value="#1A2A1A"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="В работе">
+                                                        <Setter Property="Background" Value="#1A2A3A"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Новая">
+                                                        <Setter Property="Background" Value="#2A2A1A"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Отменена">
+                                                        <Setter Property="Background" Value="#2A1A1A"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock FontSize="11" FontWeight="Medium">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#909090"/>
+                                                    <Setter Property="Text" Value="{Binding Status}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Завершена">
+                                                            <Setter Property="Foreground" Value="#4CAF50"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="В работе">
+                                                            <Setter Property="Foreground" Value="#2196F3"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Новая">
+                                                            <Setter Property="Foreground" Value="#FFC107"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Отменена">
+                                                            <Setter Property="Foreground" Value="#F44336"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                     </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -187,10 +225,48 @@
                             <TextBlock FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}">
                                 <Run Text="Заявка #"/><Run Text="{Binding SelectedCallback.Id}"/>
                             </TextBlock>
-                            <Border Background="{Binding SelectedCallback.StatusColor}" CornerRadius="4" 
-                                    Padding="8,4" HorizontalAlignment="Left" Margin="0,8,0,0" Opacity="0.8">
-                                <TextBlock Text="{Binding SelectedCallback.Status}" Foreground="White" 
-                                           FontWeight="SemiBold" FontSize="11"/>
+                            <Border CornerRadius="8" Padding="10,6" HorizontalAlignment="Left" Margin="0,8,0,0">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#2A2A2A"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedCallback.Status}" Value="Завершена">
+                                                <Setter Property="Background" Value="#1A2A1A"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedCallback.Status}" Value="В работе">
+                                                <Setter Property="Background" Value="#1A2A3A"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedCallback.Status}" Value="Новая">
+                                                <Setter Property="Background" Value="#2A2A1A"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedCallback.Status}" Value="Отменена">
+                                                <Setter Property="Background" Value="#2A1A1A"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock FontSize="11" FontWeight="Medium">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#909090"/>
+                                            <Setter Property="Text" Value="{Binding SelectedCallback.Status}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedCallback.Status}" Value="Завершена">
+                                                    <Setter Property="Foreground" Value="#4CAF50"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding SelectedCallback.Status}" Value="В работе">
+                                                    <Setter Property="Foreground" Value="#2196F3"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding SelectedCallback.Status}" Value="Новая">
+                                                    <Setter Property="Foreground" Value="#FFC107"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding SelectedCallback.Status}" Value="Отменена">
+                                                    <Setter Property="Foreground" Value="#F44336"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </Border>
                         </StackPanel>
 

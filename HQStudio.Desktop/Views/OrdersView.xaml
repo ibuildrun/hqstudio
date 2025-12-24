@@ -31,15 +31,15 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
+                <Border Style="{DynamicResource CounterBadge}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Всего: " FontSize="13" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding TotalOrders}" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
-                <Button Content="🔄" Style="{DynamicResource SecondaryButton}" Padding="8" MinWidth="36" Height="36"
-                        Command="{Binding RefreshCommand}" ToolTip="Обновить"/>
-                <Button Content="🔍 Фильтр" Style="{DynamicResource SecondaryButton}" Margin="12,0,0,0"
+                <Button Content="🔄 Обновить" Style="{DynamicResource SecondaryButton}" Margin="0,0,12,0"
+                        Command="{Binding RefreshCommand}"/>
+                <Button Content="🔍 Фильтр" Style="{DynamicResource SecondaryButton}" Margin="0,0,12,0"
                         Command="{Binding ToggleFilterCommand}"/>
             </StackPanel>
 
@@ -104,7 +104,7 @@
         </Border>
 
         <!-- Loading Overlay -->
-        <Border Grid.Row="3" Background="#80000000" CornerRadius="16" Panel.ZIndex="100"
+        <Border Grid.Row="3" Background="{DynamicResource BgOverlayBrush}" CornerRadius="16" Panel.ZIndex="100"
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Border Width="60" Height="60" CornerRadius="30" Background="{DynamicResource BgIconBrush}" Margin="0,0,0,16">
@@ -133,7 +133,7 @@
             <ItemsControl ItemsSource="{Binding Orders}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{DynamicResource CardHoverable}" Margin="0,0,0,12"
+                        <Border Style="{DynamicResource ListRowCard}"
                                 MouseLeftButtonDown="Order_MouseLeftButtonDown"
                                 Cursor="Hand">
                             <Grid>
@@ -150,8 +150,7 @@
                                         VerticalAlignment="Stretch" Background="Transparent"/>
 
                                 <!-- Order Number -->
-                                <Border Grid.Column="1" Width="64" Height="64" CornerRadius="14" 
-                                        Background="{DynamicResource BgIconBrush}" Margin="0,0,20,0">
+                                <Border Grid.Column="1" Style="{DynamicResource ListRowIcon}">
                                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                                         <TextBlock Text="#" FontSize="12" Foreground="#505050" HorizontalAlignment="Center"/>
                                         <TextBlock Text="{Binding Id}" FontSize="20" FontWeight="Bold"
@@ -160,16 +159,16 @@
                                 </Border>
 
                                 <!-- Order Info -->
-                                <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding ClientDisplay}" 
-                                               FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
-                                    <TextBlock Text="{Binding ServicesDisplay}" Style="{DynamicResource TextBody}"
-                                               TextTrimming="CharacterEllipsis" MaxWidth="350" Margin="0,0,0,4"/>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="📅" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0"/>
-                                        <TextBlock Text="{Binding CreatedAt, StringFormat=dd.MM.yyyy в HH:mm}" 
-                                                   Style="{DynamicResource TextSmall}"/>
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <TextBlock Text="{Binding ClientDisplay}" 
+                                                   FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        <TextBlock Text=" • " FontSize="12" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding CreatedAt, StringFormat=dd.MM.yyyy}" 
+                                                   FontSize="12" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
                                     </StackPanel>
+                                    <TextBlock Text="{Binding ServicesDisplay}" Style="{DynamicResource TextSmall}"
+                                               TextTrimming="CharacterEllipsis" MaxWidth="350" HorizontalAlignment="Left"/>
                                 </StackPanel>
 
                                 <!-- Status Badge -->
