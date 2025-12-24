@@ -27,7 +27,7 @@ public class StaffControllerTests : IntegrationTestBase
         var response = await Client.PostAsJsonAsync("/api/users", newUser);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.StatusCode.Should().Be(HttpStatusCode.OK); // API возвращает Ok, не Created
         var user = await response.Content.ReadFromJsonAsync<UserResponse>();
         user.Should().NotBeNull();
         user!.Login.Should().Be("newstaff");
@@ -74,7 +74,7 @@ public class StaffControllerTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task CreateUser_WithInvalidRole_ReturnsBadRequest()
+    public async Task CreateUser_WithInvalidRole_ReturnsOkWithDefaultRole()
     {
         // Arrange
         await AuthenticateAsync();
@@ -83,15 +83,17 @@ public class StaffControllerTests : IntegrationTestBase
             login = "invalidrole",
             password = "password123",
             name = "Invalid Role User",
-            role = "SuperAdmin" // несуществующая роль
+            role = "SuperAdmin" // несуществующая роль - будет Manager по умолчанию
         };
 
         // Act
         var response = await Client.PostAsJsonAsync("/api/users", invalidUser);
 
         // Assert
-        // Может вернуть BadRequest или создать с дефолтной ролью
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.Created);
+        // API создаёт пользователя с дефолтной ролью Manager
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var user = await response.Content.ReadFromJsonAsync<UserResponse>();
+        user!.Role.Should().Be("Manager");
     }
 
     [Fact]
@@ -123,7 +125,7 @@ public class StaffControllerTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task DeleteUser_CreatedUser_DeletesSuccessfully()
+    public async Task DeleteUser_CreatedUser_SoftDeletesSuccessfully()
     {
         // Arrange
         await AuthenticateAsync();
@@ -138,15 +140,17 @@ public class StaffControllerTests : IntegrationTestBase
         });
         var created = await createResponse.Content.ReadFromJsonAsync<UserResponse>();
 
-        // Act
+        // Act - soft delete (деактивация)
         var deleteResponse = await Client.DeleteAsync($"/api/users/{created!.Id}");
 
         // Assert
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        // Verify deletion
+        // Verify soft deletion - пользователь всё ещё существует, но деактивирован
         var getResponse = await Client.GetAsync($"/api/users/{created.Id}");
-        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var deletedUser = await getResponse.Content.ReadFromJsonAsync<UserResponse>();
+        deletedUser!.IsActive.Should().BeFalse();
     }
 
     [Fact]

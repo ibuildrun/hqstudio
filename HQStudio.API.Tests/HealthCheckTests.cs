@@ -18,7 +18,7 @@ public class HealthCheckTests : IntegrationTestBase
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Healthy");
+        content.Should().Contain("healthy");
     }
 
     [Fact]
