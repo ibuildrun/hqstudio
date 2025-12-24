@@ -48,6 +48,67 @@
 * **tests:** исправлены тесты API для соответствия реальному поведению ([6f7e970](https://github.com/randomu3/hqstudio/commit/6f7e9707c165e88f8616aefebdc56762e6f4da0c))
 
 
+### ⚡ Производительность
+
+* **ci:** оптимизация скриншотов - умный триггер и уменьшены задержки ([d936585](https://github.com/randomu3/hqstudio/commit/d9365855a69a7d5980e11f0476cd1c1b86a8794d))
+
+
+### ♻️ Рефакторинг
+
+* **desktop:** заменены все MessageBox на кастомный ConfirmDialog ([57a90d3](https://github.com/randomu3/hqstudio/commit/57a90d3a784bb4c9c06b7f43465aa1d2a861b3e2))
+* **desktop:** унификация инициализации IsApiConnected в ViewModels ([da9f47b](https://github.com/randomu3/hqstudio/commit/da9f47b4ec18635374fc9da4f6b9787d8541cec3))
+* **desktop:** унифицирована кнопка Обновить во всех Views ([ae68fcd](https://github.com/randomu3/hqstudio/commit/ae68fcd2f3872aa6e47ca088fc915ecc0f2e9445))
+
+## [1.14.0](https://github.com/randomu3/hqstudio/compare/v1.13.1...v1.14.0) (2025-12-24)
+
+
+### 🚀 Новые возможности
+
+* **api:** добавлен endpoint сброса пароля пользователя ([9596613](https://github.com/randomu3/hqstudio/commit/9596613d242dcbc47f02bcdd20a75aaf2c8181e6))
+* **ci:** скрытый режим скриншотов и автозапуск runner ([61072e2](https://github.com/randomu3/hqstudio/commit/61072e292d8497503a9ee1abf76904c3551a8c5b))
+* **desktop:** визуальный выбор сотрудника и кнопка сброса пароля ([5de499f](https://github.com/randomu3/hqstudio/commit/5de499f6c013eec365a301950f492bccf276841a))
+* **desktop:** выбор заказа кликом, кастомные диалоги вместо MessageBox ([10309a4](https://github.com/randomu3/hqstudio/commit/10309a4c9fea3f697f8580848dd54205213d437f))
+* **desktop:** добавлен ApiCacheService для кеширования и rate limiting API запросов ([daefd76](https://github.com/randomu3/hqstudio/commit/daefd76466d52c01e2e6abc6d507d19a3a00551f))
+* **desktop:** добавлен screenshot-режим и workflow для автоматических скриншотов ([cde81dd](https://github.com/randomu3/hqstudio/commit/cde81ddadd4fa7d0f90474e889eafe1dae54ca57))
+* **desktop:** добавлен диалог смены пароля при первом входе ([2dd2d23](https://github.com/randomu3/hqstudio/commit/2dd2d23321319914dd3e3dc927318a5224c30928))
+* **desktop:** добавлен зелёный индикатор выбранного заказа слева ([e34d60d](https://github.com/randomu3/hqstudio/commit/e34d60d3ee17250387505837425113759c077aee))
+* **desktop:** добавлен экран 'Нет подключения к API' для всех страниц и упрощён прелоадер ([d5151d2](https://github.com/randomu3/hqstudio/commit/d5151d2683a458d560c16fabed178b43551cda66))
+* **desktop:** добавлена валидация ввода для полей цены, телефона и гос. номера ([6fd17d8](https://github.com/randomu3/hqstudio/commit/6fd17d8d565ce790843a2a92bb7dc0a4538c9304))
+* **desktop:** добавлена пагинация на страницу Услуги ([82215a7](https://github.com/randomu3/hqstudio/commit/82215a75fcbe56003b593bbb8250daa589d8a8d5))
+* **desktop:** защита от перебора паролей и экран недоступности сервера ([3748ace](https://github.com/randomu3/hqstudio/commit/3748aced7e287c73fce8a427d978adc9f5032496))
+* **desktop:** методы смены и сброса пароля в ApiService ([8665211](https://github.com/randomu3/hqstudio/commit/86652117f9ff2ec5ef6ada3c7941c4fa25d00e5c))
+* добавлены тесты Desktop, ADR документация и Makefile ([47d1385](https://github.com/randomu3/hqstudio/commit/47d13851ba614704dc4ab9d9ce397dcceabb5d2c))
+
+
+### 🐛 Исправления
+
+* **api:** возвращён PostgreSQL как БД по умолчанию для разработки ([ede21f8](https://github.com/randomu3/hqstudio/commit/ede21f8a4216fc550bfcd291b1abf7f5f939d733))
+* **desktop:** fixed emoji icons visibility for theme support ([1547eb1](https://github.com/randomu3/hqstudio/commit/1547eb172a402079193697aed6d9939f75779bd8))
+* **desktop:** fixed loader and empty state overlap - show empty state only when not loading ([1f410e7](https://github.com/randomu3/hqstudio/commit/1f410e7fd3c7e84f6bf52aeddcd7ba38fddacbb2))
+* **desktop:** improved theme contrast - replaced hardcoded colors with dynamic resources ([97c453a](https://github.com/randomu3/hqstudio/commit/97c453abab33a00cbb3fe6cd0267ccfa2803c48f))
+* **desktop:** адаптированы окна входа и загрузки для светлой темы ([d2f52e7](https://github.com/randomu3/hqstudio/commit/d2f52e75411091b345aac52aafc3168ebd0ccb4d))
+* **desktop:** восстановлен оригинальный UI заказов с CardHoverable стилем ([51f1776](https://github.com/randomu3/hqstudio/commit/51f177660097301dfaf7b3a019e02dd24e0538a9))
+* **desktop:** добавлены алиасы SecondaryButton и ButtonPrimary для светлой темы ([c70fcbb](https://github.com/randomu3/hqstudio/commit/c70fcbb4a906b8c84e1cb4495ca11c464b4dd854))
+* **desktop:** исправлен индикатор выбранного заказа через code-behind ([c8bbd36](https://github.com/randomu3/hqstudio/commit/c8bbd367ef4d984a87f6ecb6909435065b394890))
+* **desktop:** исправлен контраст кнопок SecondaryButton - белый фон и TextBlock с явным цветом ([df97456](https://github.com/randomu3/hqstudio/commit/df97456a924b5ac405ef7bb4a939d0080dbdc1e6))
+* **desktop:** исправлен контраст текста в кнопках светлой темы через TextElement.Foreground ([2126a87](https://github.com/randomu3/hqstudio/commit/2126a878d266b9cd94a76a0e77fcd664dd5a3acc))
+* **desktop:** исправлен стиль диалога редактирования пользователя ([ed23c02](https://github.com/randomu3/hqstudio/commit/ed23c0271b94ed091a2f2393b487f2b205cbc309))
+* **desktop:** исправлена светлая тема для прелоадера и окна входа ([bdb92d4](https://github.com/randomu3/hqstudio/commit/bdb92d46beb105cabe1272a1feaa3bb6bc3a925f))
+* **desktop:** исправлена сигнатура GetOrFetchAsync для nullable типов ([66bfe89](https://github.com/randomu3/hqstudio/commit/66bfe89172d0be6ecc8eeb67eed7bf9e827cfa43))
+* **desktop:** исправлено отображение экрана 'Нет подключения к API' ([f22ebc8](https://github.com/randomu3/hqstudio/commit/f22ebc854d55824d92813160644185940f027069))
+* **desktop:** исправлены стили кнопок в Buttons.xaml - используют DynamicResource для поддержки тем ([1228141](https://github.com/randomu3/hqstudio/commit/1228141e179468426f20e4291d58b103ea924507))
+* **desktop:** разделительные линии между заказами, исправлено обновление статуса на API ([541453e](https://github.com/randomu3/hqstudio/commit/541453e876b49c259fcf6d4f08c260cbb68a1d80))
+* **desktop:** создан полноценный стиль SecondaryButton для светлой темы с явным цветом текста ([6ca6437](https://github.com/randomu3/hqstudio/commit/6ca64370c761a76eb8510613ad86b972a89e5a12))
+* **desktop:** улучшен контраст кнопок и иконок в светлой теме ([ec29ae7](https://github.com/randomu3/hqstudio/commit/ec29ae7adc17dc4ee98ce48381fa5ae483807e51))
+* **desktop:** улучшен контраст светлой темы ([2b4665f](https://github.com/randomu3/hqstudio/commit/2b4665f8cbf3a927275620052a319a8d610bc790))
+* **desktop:** улучшены кнопки Печать и Завершить - добавлены сообщения и подтверждения ([12f9eda](https://github.com/randomu3/hqstudio/commit/12f9eda3c9f284ee677e602e22a6c5b25d672c83))
+* **docker:** improved healthchecks - use /api/health endpoint, add proper depends_on conditions ([78db28b](https://github.com/randomu3/hqstudio/commit/78db28b3e9009cdd254fcf549d0e074e415d7d53))
+* **docs:** исправлены даты в ADR на 2025 год ([95b1245](https://github.com/randomu3/hqstudio/commit/95b1245e85740756e590dc6d350b81d0a60a3b81))
+* **release:** очищен CHANGELOG от дублирующихся записей версии 1.14.0 [skip ci] ([72c6217](https://github.com/randomu3/hqstudio/commit/72c62173a3f8483e567f65d1c1bab60e6944320f))
+* **tests:** исправлены edge case тесты для соответствия реализации ([981105f](https://github.com/randomu3/hqstudio/commit/981105f5a5c757f6af75eeff760a5a1b45b90f6e))
+* **tests:** исправлены тесты API для соответствия реальному поведению ([6f7e970](https://github.com/randomu3/hqstudio/commit/6f7e9707c165e88f8616aefebdc56762e6f4da0c))
+
+
 ### ♻️ Рефакторинг
 
 * **desktop:** заменены все MessageBox на кастомный ConfirmDialog ([57a90d3](https://github.com/randomu3/hqstudio/commit/57a90d3a784bb4c9c06b7f43465aa1d2a861b3e2))
