@@ -52,7 +52,7 @@
                         <ComboBoxItem Content="Работник" IsSelected="True"/>
                     </ComboBox>
 
-                    <Border Background="#141414" CornerRadius="10" Padding="16,12" Margin="0,8,0,0">
+                    <Border Background="{DynamicResource BgInputBrush}" CornerRadius="10" Padding="16,12" Margin="0,8,0,0">
                         <CheckBox x:Name="IsActiveCheck" IsChecked="True">
                             <CheckBox.Content>
                                 <StackPanel Orientation="Horizontal">
