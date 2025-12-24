@@ -60,6 +60,10 @@ public class CacheServiceTests
         };
 
         await cache.GetOrFetchAsync("key1", fetchFunc);
+        
+        // Ждём чтобы rate limiting не сработал
+        await Task.Delay(600);
+        
         var result = await cache.GetOrFetchAsync("key1", fetchFunc, forceRefresh: true);
 
         result.Should().Be("data2");
