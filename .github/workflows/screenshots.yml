@@ -1,0 +1,54 @@
+name: Desktop Screenshots
+
+on:
+  workflow_dispatch:  # Ручной запуск
+  push:
+    branches: [main]
+    paths:
+      - 'HQStudio.Desktop/**/*.xaml'
+      - 'HQStudio.Desktop/**/*.cs'
+      - '.github/workflows/screenshots.yml'
+
+jobs:
+  screenshots:
+    runs-on: self-hosted
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Restore dependencies
+        run: dotnet restore HQStudio.Desktop
+      
+      - name: Build Desktop
+        run: dotnet build HQStudio.Desktop -c Release --no-restore
+      
+      - name: Create screenshots directory
+        run: New-Item -ItemType Directory -Force -Path docs/screenshots
+      
+      - name: Run Desktop in Screenshot Mode
+        env:
+          SCREENSHOT_MODE: 'true'
+          SCREENSHOT_OUTPUT: 'docs/screenshots'
+        run: |
+          $process = Start-Process -FilePath "HQStudio.Desktop/bin/Release/net8.0-windows/HQStudio.Desktop.exe" -PassThru
+          # Ждём завершения (макс 60 секунд)
+          $process | Wait-Process -Timeout 60 -ErrorAction SilentlyContinue
+          if (!$process.HasExited) {
+            $process | Stop-Process -Force
+          }
+      
+      - name: List screenshots
+        run: Get-ChildItem docs/screenshots -ErrorAction SilentlyContinue
+      
+      - name: Commit screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots/*.png
+          git diff --staged --quiet || git commit -m "docs: обновлены скриншоты Desktop приложения [skip ci]"
+          git push
