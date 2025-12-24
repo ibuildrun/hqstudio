@@ -12,6 +12,7 @@ namespace HQStudio.ViewModels
         private readonly SettingsService _settings = SettingsService.Instance;
         private StaffItem? _selectedUser;
         private bool _isLoading;
+        private bool _isApiConnected = true;
 
         public ObservableCollection<StaffItem> Users { get; } = new();
 
@@ -26,6 +27,14 @@ namespace HQStudio.ViewModels
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
+
+        public bool IsApiConnected
+        {
+            get => _isApiConnected;
+            set => SetProperty(ref _isApiConnected, value);
+        }
+
+        public bool ShowEmptyState => !IsLoading && Users.Count == 0 && IsApiConnected;
 
         public ICommand RefreshCommand { get; }
         public ICommand AddUserCommand { get; }
@@ -48,7 +57,7 @@ namespace HQStudio.ViewModels
         {
             if (!_settings.UseApi)
             {
-                ConfirmDialog.ShowInfo("Информация", "API отключён в настройках", ConfirmDialog.DialogType.Warning);
+                IsApiConnected = false;
                 return;
             }
 
@@ -56,6 +65,19 @@ namespace HQStudio.ViewModels
 
             try
             {
+                if (!_apiService.IsConnected)
+                {
+                    await _apiService.CheckConnectionAsync();
+                }
+
+                if (!_apiService.IsConnected)
+                {
+                    IsApiConnected = false;
+                    IsLoading = false;
+                    return;
+                }
+
+                IsApiConnected = true;
                 var users = await _apiService.GetUsersAsync();
                 
                 Users.Clear();
@@ -75,7 +97,8 @@ namespace HQStudio.ViewModels
             }
             catch (Exception ex)
             {
-                ConfirmDialog.ShowInfo("Ошибка загрузки", ex.Message, ConfirmDialog.DialogType.Error);
+                System.Diagnostics.Debug.WriteLine($"LoadUsersAsync error: {ex.Message}");
+                IsApiConnected = false;
             }
 
             IsLoading = false;

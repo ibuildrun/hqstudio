@@ -17,6 +17,7 @@ namespace HQStudio.ViewModels
         private string _searchText = string.Empty;
         private List<Client> _allClients = new();
         private bool _isLoading;
+        private bool _isApiConnected = true;
         private int _currentPage = 1;
         private int _totalPages = 1;
         private int _totalClients;
@@ -51,7 +52,13 @@ namespace HQStudio.ViewModels
             }
         }
 
-        public bool ShowEmptyState => !IsLoading && Clients.Count == 0;
+        public bool IsApiConnected
+        {
+            get => _isApiConnected;
+            set => SetProperty(ref _isApiConnected, value);
+        }
+
+        public bool ShowEmptyState => !IsLoading && Clients.Count == 0 && IsApiConnected;
 
         public int CurrentPage
         {
@@ -126,31 +133,46 @@ namespace HQStudio.ViewModels
             {
                 _allClients.Clear();
                 
-                if (_settings.UseApi && !_apiService.IsConnected)
+                if (_settings.UseApi)
                 {
-                    await _apiService.CheckConnectionAsync();
-                }
-                
-                if (_settings.UseApi && _apiService.IsConnected)
-                {
-                    var apiClients = await _apiService.GetClientsAsync();
-                    _allClients = apiClients.Select(c => new Client
+                    if (!_apiService.IsConnected)
                     {
-                        Id = c.Id,
-                        Name = c.Name,
-                        Phone = c.Phone,
-                        Car = c.CarModel ?? "",
-                        CarNumber = c.LicensePlate ?? "",
-                        Notes = c.Notes ?? "",
-                        CreatedAt = c.CreatedAt
-                    }).ToList();
+                        await _apiService.CheckConnectionAsync();
+                    }
+                    
+                    if (_apiService.IsConnected)
+                    {
+                        IsApiConnected = true;
+                        var apiClients = await _apiService.GetClientsAsync();
+                        _allClients = apiClients.Select(c => new Client
+                        {
+                            Id = c.Id,
+                            Name = c.Name,
+                            Phone = c.Phone,
+                            Car = c.CarModel ?? "",
+                            CarNumber = c.LicensePlate ?? "",
+                            Notes = c.Notes ?? "",
+                            CreatedAt = c.CreatedAt
+                        }).ToList();
+                    }
+                    else
+                    {
+                        IsApiConnected = false;
+                        return;
+                    }
                 }
                 else
                 {
+                    IsApiConnected = true;
                     _allClients = _dataService.Clients.ToList();
                 }
                 
                 FilterClients();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"LoadClientsAsync error: {ex.Message}");
+                IsApiConnected = false;
             }
             finally
             {

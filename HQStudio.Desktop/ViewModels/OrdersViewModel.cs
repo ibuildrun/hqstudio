@@ -21,6 +21,7 @@ namespace HQStudio.ViewModels
         
         private Order? _selectedOrder;
         private bool _isLoading;
+        private bool _isApiConnected = true;
         private int _currentPage = 1;
         private int _totalPages = 1;
         private int _totalOrders;
@@ -44,7 +45,13 @@ namespace HQStudio.ViewModels
             }
         }
 
-        public bool ShowEmptyState => !IsLoading && Orders.Count == 0;
+        public bool IsApiConnected
+        {
+            get => _isApiConnected;
+            set => SetProperty(ref _isApiConnected, value);
+        }
+
+        public bool ShowEmptyState => !IsLoading && Orders.Count == 0 && IsApiConnected;
 
         public int CurrentPage
         {
@@ -250,52 +257,62 @@ namespace HQStudio.ViewModels
                 var selectedId = SelectedOrder?.Id;
                 Orders.Clear();
                 
-                if (_settings.UseApi && !_apiService.IsConnected)
+                if (_settings.UseApi)
                 {
-                    await _apiService.CheckConnectionAsync();
-                }
-                
-                if (_settings.UseApi && _apiService.IsConnected)
-                {
-                    var response = await _apiService.GetOrdersAsync(CurrentPage, PageSize);
-                    if (response != null)
+                    if (!_apiService.IsConnected)
                     {
-                        TotalOrders = response.Total;
-                        TotalPages = response.TotalPages > 0 ? response.TotalPages : 1;
-                        
-                        foreach (var apiOrder in response.Items)
+                        await _apiService.CheckConnectionAsync();
+                    }
+                    
+                    if (_apiService.IsConnected)
+                    {
+                        IsApiConnected = true;
+                        var response = await _apiService.GetOrdersAsync(CurrentPage, PageSize);
+                        if (response != null)
                         {
-                            var clientName = apiOrder.Client?.Name ?? string.Empty;
+                            TotalOrders = response.Total;
+                            TotalPages = response.TotalPages > 0 ? response.TotalPages : 1;
                             
-                            Orders.Add(new Order
+                            foreach (var apiOrder in response.Items)
                             {
-                                Id = apiOrder.Id,
-                                ClientId = apiOrder.ClientId,
-                                ClientName = clientName,
-                                Client = apiOrder.Client != null ? new Client
+                                var clientName = apiOrder.Client?.Name ?? string.Empty;
+                                
+                                Orders.Add(new Order
                                 {
-                                    Id = apiOrder.Client.Id,
-                                    Name = apiOrder.Client.Name,
-                                    Phone = apiOrder.Client.Phone,
-                                    Car = apiOrder.Client.CarModel ?? string.Empty,
-                                    CarNumber = apiOrder.Client.LicensePlate ?? string.Empty
-                                } : null,
-                                Status = MapStatus(apiOrder.Status),
-                                TotalPrice = apiOrder.TotalPrice,
-                                Notes = apiOrder.Notes ?? string.Empty,
-                                CreatedAt = apiOrder.CreatedAt,
-                                CompletedAt = apiOrder.CompletedAt
-                            });
+                                    Id = apiOrder.Id,
+                                    ClientId = apiOrder.ClientId,
+                                    ClientName = clientName,
+                                    Client = apiOrder.Client != null ? new Client
+                                    {
+                                        Id = apiOrder.Client.Id,
+                                        Name = apiOrder.Client.Name,
+                                        Phone = apiOrder.Client.Phone,
+                                        Car = apiOrder.Client.CarModel ?? string.Empty,
+                                        CarNumber = apiOrder.Client.LicensePlate ?? string.Empty
+                                    } : null,
+                                    Status = MapStatus(apiOrder.Status),
+                                    TotalPrice = apiOrder.TotalPrice,
+                                    Notes = apiOrder.Notes ?? string.Empty,
+                                    CreatedAt = apiOrder.CreatedAt,
+                                    CompletedAt = apiOrder.CompletedAt
+                                });
+                            }
+                            
+                            _isInitialized = true;
+                            _cachedPage = CurrentPage;
+                            _cachedTotalPages = TotalPages;
+                            _cachedTotal = TotalOrders;
                         }
-                        
-                        _isInitialized = true;
-                        _cachedPage = CurrentPage;
-                        _cachedTotalPages = TotalPages;
-                        _cachedTotal = TotalOrders;
+                    }
+                    else
+                    {
+                        IsApiConnected = false;
+                        return;
                     }
                 }
                 else
                 {
+                    IsApiConnected = true;
                     var localOrders = _dataService.Orders.OrderByDescending(o => o.CreatedAt).ToList();
                     TotalOrders = localOrders.Count;
                     TotalPages = Math.Max(1, (int)Math.Ceiling(localOrders.Count / (double)PageSize));
@@ -314,6 +331,7 @@ namespace HQStudio.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading orders: {ex.Message}");
+                IsApiConnected = false;
             }
             finally
             {

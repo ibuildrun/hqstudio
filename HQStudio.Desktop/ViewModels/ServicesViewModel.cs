@@ -17,6 +17,7 @@ namespace HQStudio.ViewModels
         private string _searchText = string.Empty;
         private List<Service> _allServices = new();
         private bool _isLoading;
+        private bool _isApiConnected = true;
         private int _currentPage = 1;
         private int _totalPages = 1;
         private int _totalServices;
@@ -51,7 +52,13 @@ namespace HQStudio.ViewModels
             }
         }
 
-        public bool ShowEmptyState => !IsLoading && Services.Count == 0;
+        public bool IsApiConnected
+        {
+            get => _isApiConnected;
+            set => SetProperty(ref _isApiConnected, value);
+        }
+
+        public bool ShowEmptyState => !IsLoading && Services.Count == 0 && IsApiConnected;
 
         public int CurrentPage
         {
@@ -122,31 +129,46 @@ namespace HQStudio.ViewModels
             {
                 _allServices.Clear();
                 
-                if (_settings.UseApi && !_apiService.IsConnected)
+                if (_settings.UseApi)
                 {
-                    await _apiService.CheckConnectionAsync();
-                }
-                
-                if (_settings.UseApi && _apiService.IsConnected)
-                {
-                    var apiServices = await _apiService.GetServicesAsync();
-                    _allServices = apiServices.Select(s => new Service
+                    if (!_apiService.IsConnected)
                     {
-                        Id = s.Id,
-                        Name = s.Title,
-                        Description = s.Description,
-                        Category = s.Category,
-                        PriceFrom = ParsePrice(s.Price),
-                        Icon = string.IsNullOrEmpty(s.Icon) ? "🔧" : s.Icon,
-                        IsActive = s.IsActive
-                    }).ToList();
+                        await _apiService.CheckConnectionAsync();
+                    }
+                    
+                    if (_apiService.IsConnected)
+                    {
+                        IsApiConnected = true;
+                        var apiServices = await _apiService.GetServicesAsync();
+                        _allServices = apiServices.Select(s => new Service
+                        {
+                            Id = s.Id,
+                            Name = s.Title,
+                            Description = s.Description,
+                            Category = s.Category,
+                            PriceFrom = ParsePrice(s.Price),
+                            Icon = string.IsNullOrEmpty(s.Icon) ? "🔧" : s.Icon,
+                            IsActive = s.IsActive
+                        }).ToList();
+                    }
+                    else
+                    {
+                        IsApiConnected = false;
+                        return;
+                    }
                 }
                 else
                 {
+                    IsApiConnected = true;
                     _allServices = _dataService.Services.ToList();
                 }
                 
                 FilterServices();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"LoadServicesAsync error: {ex.Message}");
+                IsApiConnected = false;
             }
             finally
             {
