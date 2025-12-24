@@ -238,6 +238,32 @@ public class UsersController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
+    /// <summary>
+    /// Сброс пароля пользователя (пароль = логин, требуется смена при входе)
+    /// </summary>
+    [HttpPost("{id}/reset-password")]
+    public async Task<IActionResult> ResetPassword(int id)
+    {
+        var clientType = Request.Headers["X-Client-Type"].FirstOrDefault();
+        var isDesktopClient = clientType?.Equals("Desktop", StringComparison.OrdinalIgnoreCase) == true;
+        
+        if (!isDesktopClient && !User.Identity?.IsAuthenticated == true)
+        {
+            return Unauthorized(new { message = "Требуется авторизация" });
+        }
+        
+        var user = await _db.Users.FindAsync(id);
+        if (user == null) return NotFound();
+        
+        // Сбрасываем пароль на логин
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Login);
+        user.MustChangePassword = true;
+        
+        await _db.SaveChangesAsync();
+        
+        return Ok(new { message = "Пароль сброшен", newPassword = user.Login });
+    }
 }
 
 public record CreateUserRequest(
