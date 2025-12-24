@@ -52,6 +52,18 @@ docker-compose up --build -d              # Production
 docker-compose -f docker-compose.dev.yml up --build  # Development
 ```
 
+### Makefile (рекомендуется)
+Используй Makefile для упрощения команд:
+```bash
+make help          # Показать все команды
+make install       # Установить зависимости
+make test          # Запустить все тесты
+make build         # Собрать все проекты
+make docker-dev    # Запустить Docker (dev)
+make ci-status     # Проверить статус CI
+make commit        # Интерактивный коммит
+```
+
 ---
 
 ## Backend API (HQStudio.API)
