@@ -1,3 +1,10 @@
+## [1.19.0](https://github.com/randomu3/hqstudio/compare/v1.18.1...v1.19.0) (2025-12-26)
+
+
+### 🚀 Новые возможности
+
+* **desktop:** add AnalyticsView code-behind ([bf38e45](https://github.com/randomu3/hqstudio/commit/bf38e459a324e44ee2e25f4adf2647ded2e0d70d))
+
 ## [1.18.1](https://github.com/randomu3/hqstudio/compare/v1.18.0...v1.18.1) (2025-12-26)
 
 
