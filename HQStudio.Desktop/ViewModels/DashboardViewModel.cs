@@ -34,6 +34,12 @@ namespace HQStudio.ViewModels
         private Axis[] _revenueXAxes = Array.Empty<Axis>();
         private Axis[] _revenueYAxes = Array.Empty<Axis>();
 
+        /// <summary>Название текущего месяца для отображения</summary>
+        public string CurrentMonthName => DateTime.Today.ToString("MMMM yyyy", new System.Globalization.CultureInfo("ru-RU"));
+
+        /// <summary>Подсказка для карточки выручки</summary>
+        public string RevenueTooltip => $"Выручка за {CurrentMonthName}\n(только завершённые заказы)";
+
         public int TotalClients
         {
             get => _totalClients;
@@ -160,8 +166,17 @@ namespace HQStudio.ViewModels
             IsApiConnected = false;
             TotalClients = _dataService.Clients.Count;
             TotalOrders = _dataService.Orders.Count;
-            ActiveOrders = _dataService.Orders.Count(o => o.Status != "Завершен");
-            TotalRevenue = _dataService.Orders.Where(o => o.Status == "Завершен").Sum(o => o.TotalPrice);
+            
+            var completedStatus = OrderStatus.Completed.DisplayName;
+            var cancelledStatus = OrderStatus.Cancelled.DisplayName;
+            
+            ActiveOrders = _dataService.Orders.Count(o => o.Status != completedStatus && o.Status != cancelledStatus);
+            
+            // Выручка за текущий месяц (как в API)
+            var monthStart = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            TotalRevenue = _dataService.Orders
+                .Where(o => o.Status == completedStatus && o.CompletedAt.HasValue && o.CompletedAt.Value >= monthStart)
+                .Sum(o => o.TotalPrice);
 
             foreach (var service in _dataService.Services.Where(s => s.IsActive).Take(6))
             {
@@ -175,6 +190,7 @@ namespace HQStudio.ViewModels
         private void LoadServiceStatistics()
         {
             ServiceStatistics.Clear();
+            var completedStatus = OrderStatus.Completed.DisplayName;
 
             var stats = _dataService.Services
                 .Select(service => new ServiceStatistic
@@ -182,7 +198,7 @@ namespace HQStudio.ViewModels
                     Service = service,
                     OrderCount = _dataService.Orders.Count(o => o.ServiceIds.Contains(service.Id)),
                     TotalRevenue = _dataService.Orders
-                        .Where(o => o.ServiceIds.Contains(service.Id) && o.Status == "Завершен")
+                        .Where(o => o.ServiceIds.Contains(service.Id) && o.Status == completedStatus)
                         .Sum(o => o.TotalPrice / Math.Max(o.ServiceIds.Count, 1))
                 })
                 .Where(s => s.OrderCount > 0)
@@ -205,11 +221,15 @@ namespace HQStudio.ViewModels
 
                 var labels = days.Select(d => d.ToString("dd.MM")).ToArray();
                 var hasRealData = _dataService.Orders.Any();
+                var completedStatus = OrderStatus.Completed.DisplayName;
                 
                 var values = days.Select(d =>
                 {
+                    // Выручка по дате завершения (CompletedAt), не по дате создания
                     var dayRevenue = (double)_dataService.Orders
-                        .Where(o => o.CreatedAt.Date == d && o.Status == "Завершен")
+                        .Where(o => o.Status == completedStatus && 
+                                    o.CompletedAt.HasValue && 
+                                    o.CompletedAt.Value.Date == d)
                         .Sum(o => o.TotalPrice);
                     
                     // Если нет реальных данных, показываем демо-значения
