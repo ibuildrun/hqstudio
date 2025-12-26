@@ -21,8 +21,12 @@ public class DashboardController : ControllerBase
         var today = DateTime.UtcNow.Date;
         var monthStart = new DateTime(today.Year, today.Month, 1);
 
+        // Завершённые заказы за текущий месяц
+        // Используем CompletedAt если есть, иначе CreatedAt (для старых заказов)
         var completedOrders = await _db.Orders
-            .Where(o => o.CompletedAt >= monthStart && o.Status == OrderStatus.Completed)
+            .Where(o => o.Status == OrderStatus.Completed &&
+                        ((o.CompletedAt.HasValue && o.CompletedAt >= monthStart) ||
+                         (!o.CompletedAt.HasValue && o.CreatedAt >= monthStart)))
             .ToListAsync();
 
         var stats = new DashboardStats
