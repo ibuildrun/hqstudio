@@ -29,35 +29,39 @@ public static class DbSeeder
 
         if (isDevelopment)
         {
-            // Разработка: простые пароли для тестирования
+            // Разработка: пароль = логин, требуется смена при первом входе
             context.Users.AddRange(
                 new User
                 {
                     Login = "admin",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"),
                     Name = "Администратор",
-                    Role = UserRole.Admin
+                    Role = UserRole.Admin,
+                    MustChangePassword = true
                 },
                 new User
                 {
                     Login = "developer",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("developer"),
                     Name = "Разработчик",
-                    Role = UserRole.Admin
+                    Role = UserRole.Admin,
+                    MustChangePassword = true
                 },
                 new User
                 {
                     Login = "manager",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("manager"),
                     Name = "Менеджер Иванов",
-                    Role = UserRole.Manager
+                    Role = UserRole.Manager,
+                    MustChangePassword = true
                 },
                 new User
                 {
                     Login = "editor",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("editor"),
                     Name = "Редактор Петров",
-                    Role = UserRole.Editor
+                    Role = UserRole.Editor,
+                    MustChangePassword = true
                 }
             );
         }

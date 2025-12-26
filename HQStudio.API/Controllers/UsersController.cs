@@ -264,7 +264,33 @@ public class UsersController : ControllerBase
         
         return Ok(new { message = "Пароль сброшен", newPassword = user.Login });
     }
+
+    /// <summary>
+    /// Сброс пароля по логину (только для development, без авторизации)
+    /// </summary>
+    [HttpPost("reset-by-login")]
+    public async Task<IActionResult> ResetPasswordByLogin([FromBody] ResetByLoginRequest request, [FromServices] IWebHostEnvironment env)
+    {
+        // Только в development режиме
+        if (!env.IsDevelopment())
+        {
+            return NotFound();
+        }
+        
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Login.ToLower() == request.Login.ToLower());
+        if (user == null) return NotFound(new { message = "Пользователь не найден" });
+        
+        // Сбрасываем пароль на логин
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Login);
+        user.MustChangePassword = false; // Для удобства тестирования
+        
+        await _db.SaveChangesAsync();
+        
+        return Ok(new { message = "Пароль сброшен", login = user.Login, password = user.Login });
+    }
 }
+
+public record ResetByLoginRequest(string Login);
 
 public record CreateUserRequest(
     string Login, 
