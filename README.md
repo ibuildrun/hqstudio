@@ -6,11 +6,11 @@
 [![GitHub release](https://img.shields.io/github/v/release/randomu3/hqstudio)](https://github.com/randomu3/hqstudio/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Комплексное решение для автотюнинг студии: веб-сайт, API и десктопное CRM приложение.
+A comprehensive solution for an auto tuning studio: website, API, and desktop CRM application.
 
-**[Демо сайт](https://randomu3.github.io/hqstudio/)** | **[Релизы](https://github.com/randomu3/hqstudio/releases)** | **[API Docs](docs/API.md)** | **[Архитектура](docs/ARCHITECTURE.md)** | **[Git & CI/CD](docs/GIT-INTEGRATION.md)**
+**[Demo Site](https://randomu3.github.io/hqstudio/)** | **[Releases](https://github.com/randomu3/hqstudio/releases)** | **[API Docs](docs/API.md)** | **[Architecture](docs/ARCHITECTURE.md)** | **[Git & CI/CD](docs/GIT-INTEGRATION.md)**
 
-## Структура проекта
+## Project Structure
 
 ```
 ├── HQStudio.API/          # ASP.NET Core 8.0 Backend
@@ -21,69 +21,69 @@
 └── docker-compose.yml     # Production Docker setup
 ```
 
-## Скриншоты Desktop приложения
+## Desktop Application Screenshots
 
 <details>
-<summary>Показать скриншоты</summary>
+<summary>Show screenshots</summary>
 
-### Окно входа
+### Login Window
 ![Login](docs/screenshots/01-login.png)
 
-### Дашборд (тёмная тема)
+### Dashboard (Dark Theme)
 ![Dashboard Dark](docs/screenshots/02-dashboard.png)
 
-### Заказы
+### Orders
 ![Orders](docs/screenshots/03-orders.png)
 
-### Клиенты
+### Clients
 ![Clients](docs/screenshots/04-clients.png)
 
-### Услуги
+### Services
 ![Services](docs/screenshots/05-services.png)
 
-### Сотрудники
+### Staff
 ![Staff](docs/screenshots/06-staff.png)
 
-### Настройки
+### Settings
 ![Settings](docs/screenshots/07-settings.png)
 
-### Дашборд (светлая тема)
+### Dashboard (Light Theme)
 ![Dashboard Light](docs/screenshots/08-dashboard-light.png)
 
 </details>
 
-## Быстрый старт
+## Quick Start
 
-### Требования
+### Requirements
 - .NET 8.0 SDK
 - Node.js 20+
-- Docker (опционально)
+- Docker (optional)
 
-### Локальная разработка
+### Local Development
 
 ```bash
-# Клонировать репозиторий
+# Clone the repository
 git clone https://github.com/randomu3/hqstudio.git
 cd hqstudio
 
-# Скопировать env файлы
+# Copy env files
 cp .env.example .env
 
-# Запустить API
+# Run API
 cd HQStudio.API
 dotnet run
 
-# Запустить Web (в другом терминале)
+# Run Web (in another terminal)
 cd HQStudio.Web
 npm install
 npm run dev
 
-# Запустить Desktop (Windows)
+# Run Desktop (Windows)
 cd HQStudio.Desktop
 dotnet run
 ```
 
-### Docker (разработка с hot-reload)
+### Docker (development with hot-reload)
 
 ```bash
 docker-compose -f docker-compose.dev.yml up --build
@@ -95,43 +95,43 @@ docker-compose -f docker-compose.dev.yml up --build
 docker-compose up --build -d
 ```
 
-## Тесты
+## Tests
 
 ```bash
-# API тесты
+# API tests
 dotnet test HQStudio.API.Tests
 
-# Web тесты
+# Web tests
 cd HQStudio.Web && npm test
 
-# Desktop тесты
+# Desktop tests
 dotnet test HQStudio.Desktop.Tests
 ```
 
 ## CI/CD
 
-Проект использует полностью автоматизированный CI/CD pipeline:
+The project uses a fully automated CI/CD pipeline:
 
-| Workflow | Назначение |
-|----------|------------|
-| **CI** | Тесты API, Web, Desktop + Codecov |
+| Workflow | Purpose |
+|----------|---------|
+| **CI** | API, Web, Desktop tests + Codecov |
 | **Release** | Semantic versioning, CHANGELOG, Docker images |
-| **Pages** | Deploy Web на GitHub Pages |
+| **Pages** | Deploy Web to GitHub Pages |
 | **CodeQL** | Security analysis |
-| **Dependabot** | Auto-update зависимостей |
+| **Dependabot** | Auto-update dependencies |
 
 ### Conventional Commits
 
-Все коммиты должны следовать формату:
+All commits must follow the format:
 ```
-feat(api): добавлена новая функция
-fix(web): исправлен баг
-docs: обновлена документация
+feat(api): add new feature
+fix(web): fix bug
+docs: update documentation
 ```
 
-Подробнее: [CONTRIBUTING.md](CONTRIBUTING.md) | [Git & CI/CD](docs/GIT-INTEGRATION.md)
+More details: [CONTRIBUTING.md](CONTRIBUTING.md) | [Git & CI/CD](docs/GIT-INTEGRATION.md)
 
-## Технологии
+## Technologies
 
 ### Backend (API)
 - ASP.NET Core 8.0
@@ -152,18 +152,18 @@ docs: обновлена документация
 - MVVM Pattern
 - Material Design
 
-## Переменные окружения
+## Environment Variables
 
-См. `.env.example` для полного списка переменных.
+See `.env.example` for the full list of variables.
 
-## Лицензия
+## License
 
-MIT License — см. [LICENSE](LICENSE)
+MIT License — see [LICENSE](LICENSE)
 
-## Вклад в проект
+## Contributing
 
-См. [CONTRIBUTING.md](CONTRIBUTING.md) для информации о том, как внести вклад.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for information on how to contribute.
 
-## Безопасность
+## Security
 
-См. [SECURITY.md](SECURITY.md) для политики безопасности.
+See [SECURITY.md](SECURITY.md) for the security policy.

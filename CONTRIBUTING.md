@@ -1,27 +1,25 @@
 # Contributing to HQ Studio
 
-Руководство по внесению вклада в проект HQ Studio.
+A guide for contributing to the HQ Studio project.
 
-## 📋 Содержание
+## Table of Contents
 
 - [Conventional Commits](#-conventional-commits)
 - [Git Hooks](#-git-hooks)
-- [Как делать коммиты](#-как-делать-коммиты)
-- [Автоматический релиз](#-автоматический-релиз)
-- [Тестирование](#-тестирование)
+- [How to Make Commits](#-how-to-make-commits)
+- [Automatic Release](#-automatic-release)
+- [Testing](#-testing)
 - [Pull Request](#-pull-request)
 - [CI/CD Pipeline](#-cicd-pipeline)
-- [Проверка статуса CI](#-проверка-статуса-ci)
+- [Checking CI Status](#-checking-ci-status)
 
 ---
 
-## 📝 Conventional Commits
+## Conventional Commits
 
-Мы используем [Conventional Commits](https://www.conventionalcommits.org/) для стандартизации сообщений коммитов.
+We use [Conventional Commits](https://www.conventionalcommits.org/) to standardize commit messages.
 
-> ⚠️ **ВАЖНО:** Все сообщения коммитов должны быть на **русском языке**!
-
-### Формат коммита
+### Commit Format
 
 ```
 <type>(<scope>): <description>
@@ -31,134 +29,134 @@
 [optional footer(s)]
 ```
 
-### Типы коммитов
+### Commit Types
 
-| Тип | Описание | Влияние на версию |
-|-----|----------|-------------------|
-| `feat` | Новая функциональность | **minor** (1.x.0) |
-| `fix` | Исправление бага | **patch** (1.0.x) |
-| `perf` | Улучшение производительности | **patch** |
-| `refactor` | Рефакторинг кода | **patch** |
-| `docs` | Документация | Без релиза |
-| `style` | Форматирование (не влияет на код) | Без релиза |
-| `test` | Добавление/изменение тестов | Без релиза |
-| `build` | Сборка/зависимости | Без релиза |
-| `ci` | CI/CD конфигурация | Без релиза |
-| `chore` | Прочие изменения | Без релиза |
-| `revert` | Откат изменений | Зависит от типа |
+| Type | Description | Version Impact |
+|------|-------------|----------------|
+| `feat` | New feature | **minor** (1.x.0) |
+| `fix` | Bug fix | **patch** (1.0.x) |
+| `perf` | Performance improvement | **patch** |
+| `refactor` | Code refactoring | **patch** |
+| `docs` | Documentation | No release |
+| `style` | Formatting (no code change) | No release |
+| `test` | Adding/changing tests | No release |
+| `build` | Build/dependencies | No release |
+| `ci` | CI/CD configuration | No release |
+| `chore` | Miscellaneous changes | No release |
+| `revert` | Revert changes | Depends on type |
 
-### Области (scope)
+### Scopes
 
-| Scope | Описание |
-|-------|----------|
+| Scope | Description |
+|-------|-------------|
 | `api` | HQStudio.API (ASP.NET Core backend) |
 | `web` | HQStudio.Web (Next.js frontend) |
-| `desktop` | HQStudio.Desktop (WPF приложение) |
-| `tests` | Тесты любого компонента |
-| `docker` | Docker конфигурация |
-| `ci` | CI/CD пайплайны |
-| `deps` | Зависимости |
-| `release` | Автоматические релизы |
+| `desktop` | HQStudio.Desktop (WPF application) |
+| `tests` | Tests for any component |
+| `docker` | Docker configuration |
+| `ci` | CI/CD pipelines |
+| `deps` | Dependencies |
+| `release` | Automatic releases |
 
-### Примеры
+### Examples
 
 ```bash
-# Новая функция (создаст minor релиз)
-feat(api): добавлен endpoint для экспорта заказов
+# New feature (creates minor release)
+feat(api): add order export endpoint
 
-# Исправление бага (создаст patch релиз)
-fix(web): исправлена ошибка валидации формы обратной связи
+# Bug fix (creates patch release)
+fix(web): fix contact form validation error
 
-# Документация (без релиза)
-docs: обновлена документация по API
+# Documentation (no release)
+docs: update API documentation
 
-# Рефакторинг (создаст patch релиз)
-refactor(desktop): оптимизирован DataService для работы с кэшем
+# Refactoring (creates patch release)
+refactor(desktop): optimize DataService for caching
 
-# Breaking change (создаст major релиз)
-feat(api)!: изменён формат ответа API
+# Breaking change (creates major release)
+feat(api)!: change API response format
 
-BREAKING CHANGE: поле `status` теперь возвращает enum вместо строки
+BREAKING CHANGE: `status` field now returns enum instead of string
 
-# Зависимости (без релиза)
-chore(deps): обновлены зависимости NuGet
+# Dependencies (no release)
+chore(deps): update NuGet dependencies
 ```
 
 ---
 
-## 🪝 Git Hooks
+## Git Hooks
 
-Проект использует [Husky](https://typicode.github.io/husky/) для автоматической проверки коммитов.
+The project uses [Husky](https://typicode.github.io/husky/) for automatic commit validation.
 
-### Установленные hooks
+### Installed Hooks
 
-| Hook | Действие |
-|------|----------|
-| `commit-msg` | Проверка формата сообщения через Commitlint |
+| Hook | Action |
+|------|--------|
+| `commit-msg` | Message format validation via Commitlint |
 
-### Конфигурация Commitlint
+### Commitlint Configuration
 
-Файл `commitlint.config.js` определяет:
-- Разрешённые типы коммитов
-- Рекомендуемые области (scopes)
-- Правила форматирования
+The `commitlint.config.js` file defines:
+- Allowed commit types
+- Recommended scopes
+- Formatting rules
 
-### Установка hooks
+### Installing Hooks
 
 ```bash
-# Автоматически при npm install
+# Automatically on npm install
 npm install
 
-# Или вручную
+# Or manually
 npx husky install
 ```
 
 ---
 
-## 🚀 Как делать коммиты
+## How to Make Commits
 
-### Вариант 1: Интерактивный режим (рекомендуется)
+### Option 1: Interactive Mode (recommended)
 
 ```bash
 npm run commit
 ```
 
-Commitizen проведёт вас через процесс создания правильного коммита.
+Commitizen will guide you through creating a proper commit.
 
-### Вариант 2: Вручную
+### Option 2: Manual
 
 ```bash
-git commit -m "feat(api): добавлена авторизация по JWT"
+git commit -m "feat(api): add JWT authentication"
 ```
 
-### Вариант 3: VS Code / IDE
+### Option 3: VS Code / IDE
 
-Используйте стандартный интерфейс коммитов, но следуйте формату Conventional Commits.
+Use the standard commit interface, but follow the Conventional Commits format.
 
 ---
 
-## 🔄 Автоматический релиз
+## Automatic Release
 
-При пуше в `main` автоматически запускается [Semantic Release](https://semantic-release.gitbook.io/):
+When pushing to `main`, [Semantic Release](https://semantic-release.gitbook.io/) automatically runs:
 
-### Процесс релиза
+### Release Process
 
-1. ✅ Запускаются все тесты (API, Web, Desktop)
-2. 📊 Анализируются коммиты с последнего релиза
-3. 🔢 Определяется новая версия по semver
-4. 📝 Генерируется/обновляется CHANGELOG.md
-5. 🏷️ Создаётся Git tag
-6. 📦 Создаётся GitHub Release
-7. 🐳 Собираются и публикуются Docker images в GHCR
-8. 💻 Собирается Desktop приложение (ZIP)
+1. All tests run (API, Web, Desktop)
+2. Commits since last release are analyzed
+3. New version determined by semver
+4. CHANGELOG.md generated/updated
+5. Git tag created
+6. GitHub Release created
+7. Docker images built and pushed to GHCR
+8. Desktop application built (ZIP)
 
-### Артефакты релиза
+### Release Artifacts
 
-- `ghcr.io/randomu3/hqstudio/api:X.Y.Z` — Docker image API
-- `ghcr.io/randomu3/hqstudio/web:X.Y.Z` — Docker image Web
-- `HQStudio-Desktop-vX.Y.Z.zip` — Windows приложение
+- `ghcr.io/randomu3/hqstudio/api:X.Y.Z` — API Docker image
+- `ghcr.io/randomu3/hqstudio/web:X.Y.Z` — Web Docker image
+- `HQStudio-Desktop-vX.Y.Z.zip` — Windows application
 
-### Локальный dry-run
+### Local Dry-run
 
 ```bash
 npm run release:dry
@@ -166,22 +164,22 @@ npm run release:dry
 
 ---
 
-## 🧪 Тестирование
+## Testing
 
-### Перед коммитом обязательно запустите тесты:
+### Before committing, always run tests:
 
 ```bash
-# API тесты (xUnit + FluentAssertions)
+# API tests (xUnit + FluentAssertions)
 dotnet test HQStudio.API.Tests
 
-# Web тесты (Vitest)
+# Web tests (Vitest)
 cd HQStudio.Web && npm test
 
-# Desktop тесты (xUnit, без Integration)
+# Desktop tests (xUnit, without Integration)
 dotnet test HQStudio.Desktop.Tests --filter "Category!=Integration"
 ```
 
-### Тесты с покрытием
+### Tests with Coverage
 
 ```bash
 # API
@@ -193,69 +191,69 @@ cd HQStudio.Web && npm test -- --coverage
 
 ### Codecov
 
-Покрытие автоматически загружается в [Codecov](https://codecov.io/gh/randomu3/hqstudio) при каждом push.
+Coverage is automatically uploaded to [Codecov](https://codecov.io/gh/randomu3/hqstudio) on every push.
 
 ---
 
-## 📋 Pull Request
+## Pull Request
 
-### Процесс
+### Process
 
-1. Создайте ветку от `main`:
+1. Create a branch from `main`:
    ```bash
    git checkout -b feat/my-feature
    ```
 
-2. Сделайте изменения и коммиты
+2. Make changes and commits
 
-3. Убедитесь что тесты проходят локально
+3. Ensure tests pass locally
 
-4. Создайте PR с описанием изменений
+4. Create a PR with a description of changes
 
-### Чеклист PR
+### PR Checklist
 
-- [ ] Код соответствует стилю проекта (EditorConfig)
-- [ ] Добавлены/обновлены тесты
-- [ ] Документация обновлена (если нужно)
-- [ ] Все тесты проходят локально
-- [ ] Коммиты следуют Conventional Commits
-- [ ] PR описание заполнено по шаблону
+- [ ] Code follows project style (EditorConfig)
+- [ ] Tests added/updated
+- [ ] Documentation updated (if needed)
+- [ ] All tests pass locally
+- [ ] Commits follow Conventional Commits
+- [ ] PR description filled out per template
 
-### Автоматические проверки
+### Automatic Checks
 
-При создании PR автоматически запускаются:
-- CI тесты (API, Web, Desktop)
+When creating a PR, the following automatically run:
+- CI tests (API, Web, Desktop)
 - CodeQL security analysis
-- Lint и type check
+- Lint and type check
 
 ---
 
-## 🔧 CI/CD Pipeline
+## CI/CD Pipeline
 
 ### Workflows
 
-| Workflow | Триггер | Назначение |
-|----------|---------|------------|
-| **CI** | Push/PR to main, develop | Тесты + Codecov |
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| **CI** | Push/PR to main, develop | Tests + Codecov |
 | **Release** | Push to main | Semantic Release + Docker + Desktop |
-| **Pages** | Push to main | Deploy Web на GitHub Pages |
+| **Pages** | Push to main | Deploy Web to GitHub Pages |
 | **CodeQL** | Push/PR + Weekly | Security analysis |
 | **Dependabot Auto-merge** | Dependabot PR | Auto-merge patch/minor |
 
 ### Dependabot
 
-Автоматически создаёт PR для обновления зависимостей:
-- **npm** (Web) — еженедельно
-- **NuGet** (API, Desktop) — еженедельно
-- **GitHub Actions** — ежемесячно
+Automatically creates PRs for dependency updates:
+- **npm** (Web) — weekly
+- **NuGet** (API, Desktop) — weekly
+- **GitHub Actions** — monthly
 
-Patch и minor updates автоматически мержатся после прохождения CI.
+Patch and minor updates are automatically merged after CI passes.
 
 ---
 
-## ✅ Проверка статуса CI
+## Checking CI Status
 
-### После push в main обязательно проверьте статус:
+### After pushing to main, always check status:
 
 ```powershell
 # PowerShell
@@ -270,24 +268,24 @@ Invoke-RestMethod -Uri "https://api.github.com/repos/randomu3/hqstudio/actions/r
 gh run list --limit 5
 ```
 
-### Ожидаемый результат
+### Expected Result
 
-Все workflows должны быть `success`:
-- ✅ CI
-- ✅ Release
-- ✅ Deploy to GitHub Pages
-- ✅ CodeQL Security Analysis
+All workflows should be `success`:
+- CI
+- Release
+- Deploy to GitHub Pages
+- CodeQL Security Analysis
 
-### Если CI падает
+### If CI Fails
 
-1. Проверьте логи: `gh run view <run-id> --log-failed`
-2. Исправьте тесты локально
-3. Сделайте fix коммит и push
+1. Check logs: `gh run view <run-id> --log-failed`
+2. Fix tests locally
+3. Make a fix commit and push
 
 ---
 
-## 📚 Дополнительная документация
+## Additional Documentation
 
-- [Git-интеграция и CI/CD](docs/GIT-INTEGRATION.md) — полная техническая документация
-- [Архитектура](docs/ARCHITECTURE.md) — обзор системы
-- [API документация](docs/API.md) — REST endpoints
+- [Git Integration & CI/CD](docs/GIT-INTEGRATION.md) — full technical documentation
+- [Architecture](docs/ARCHITECTURE.md) — system overview
+- [API Documentation](docs/API.md) — REST endpoints

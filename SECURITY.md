@@ -1,30 +1,30 @@
-# Политика безопасности
+# Security Policy
 
-## Поддерживаемые версии
+## Supported Versions
 
-| Версия | Поддержка |
-| ------ | --------- |
-| 1.x.x  | ✅ Активная |
-| < 1.0  | ❌ Не поддерживается |
+| Version | Support |
+| ------- | ------- |
+| 1.x.x   | ✅ Active |
+| < 1.0   | ❌ Not supported |
 
-## Сообщение об уязвимостях
+## Reporting Vulnerabilities
 
-Если вы обнаружили уязвимость безопасности, пожалуйста:
+If you discover a security vulnerability, please:
 
-1. **НЕ** создавайте публичный Issue
-2. Отправьте описание на email владельца репозитория
-3. Включите в сообщение:
-   - Описание уязвимости
-   - Шаги для воспроизведения
-   - Возможное влияние
-   - Предложения по исправлению (если есть)
+1. **DO NOT** create a public Issue
+2. Send a description to the repository owner's email
+3. Include in your message:
+   - Description of the vulnerability
+   - Steps to reproduce
+   - Potential impact
+   - Suggestions for fixing (if any)
 
-## Время ответа
+## Response Time
 
-- Подтверждение получения: 48 часов
-- Первичная оценка: 7 дней
-- Исправление критических уязвимостей: 14 дней
+- Acknowledgment of receipt: 48 hours
+- Initial assessment: 7 days
+- Critical vulnerability fix: 14 days
 
-## Благодарности
+## Acknowledgments
 
-Мы благодарим всех, кто ответственно сообщает об уязвимостях.
+We thank everyone who responsibly reports vulnerabilities.

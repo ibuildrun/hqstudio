@@ -1,6 +1,6 @@
-# Архитектура HQ Studio
+# HQ Studio Architecture
 
-## Обзор системы
+## System Overview
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
@@ -20,13 +20,13 @@
                     └─────────────────────────┘
 ```
 
-## Компоненты
+## Components
 
 ### HQStudio.API (Backend)
 
-**Технологии:** ASP.NET Core 8.0, Entity Framework Core, JWT
+**Technologies:** ASP.NET Core 8.0, Entity Framework Core, JWT
 
-**Структура:**
+**Structure:**
 ```
 HQStudio.API/
 ├── Controllers/     # REST endpoints
@@ -40,37 +40,37 @@ HQStudio.API/
 └── Program.cs
 ```
 
-**Паттерны:**
-- Repository через EF Core DbContext
-- JWT Bearer аутентификация
-- Rate Limiting для защиты от DDoS
+**Patterns:**
+- Repository via EF Core DbContext
+- JWT Bearer authentication
+- Rate Limiting for DDoS protection
 
 ### HQStudio.Web (Frontend)
 
-**Технологии:** Next.js 14, React 18, TypeScript, Tailwind CSS
+**Technologies:** Next.js 14, React 18, TypeScript, Tailwind CSS
 
-**Структура:**
+**Structure:**
 ```
 HQStudio.Web/
 ├── app/             # Next.js App Router
-├── components/      # React компоненты
+├── components/      # React components
 ├── lib/
-│   ├── constants.ts # Конфигурация
+│   ├── constants.ts # Configuration
 │   ├── store.tsx    # React Context
-│   └── types.ts     # TypeScript типы
-└── public/          # Статические файлы
+│   └── types.ts     # TypeScript types
+└── public/          # Static files
 ```
 
-**Паттерны:**
-- Server Components для SEO
-- Client Components для интерактивности
-- React Context для состояния
+**Patterns:**
+- Server Components for SEO
+- Client Components for interactivity
+- React Context for state
 
 ### HQStudio.Desktop (CRM)
 
-**Технологии:** .NET 8.0 WPF, MVVM
+**Technologies:** .NET 8.0 WPF, MVVM
 
-**Структура:**
+**Structure:**
 ```
 HQStudio.Desktop/
 ├── Views/           # XAML views
@@ -81,14 +81,14 @@ HQStudio.Desktop/
 └── Styles/          # Resource dictionaries
 ```
 
-**Паттерны:**
+**Patterns:**
 - MVVM (Model-View-ViewModel)
-- RelayCommand для команд
-- Offline-first с синхронизацией
+- RelayCommand for commands
+- Offline-first with synchronization
 
-## База данных
+## Database
 
-### Схема
+### Schema
 
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
@@ -125,24 +125,24 @@ HQStudio.Desktop/
 └──────────────┘
 ```
 
-## Безопасность
+## Security
 
-### Аутентификация
-- JWT токены с 24-часовым сроком
-- BCrypt для хеширования паролей
-- Refresh токены (планируется)
+### Authentication
+- JWT tokens with 24-hour expiration
+- BCrypt for password hashing
+- Refresh tokens (planned)
 
-### Авторизация
+### Authorization
 - Role-based access control (RBAC)
-- Роли: Admin, Editor, Manager
+- Roles: Admin, Editor, Manager
 
-### Защита
+### Protection
 - Rate Limiting
-- CORS политики
+- CORS policies
 - Input validation
 - SQL injection protection (EF Core)
 
-## Деплой
+## Deployment
 
 ### Development
 ```bash
@@ -182,33 +182,33 @@ docker-compose up -d
 
 ### GitHub Actions Workflows
 
-| Workflow | Файл | Триггер | Назначение |
-|----------|------|---------|------------|
-| CI | `ci.yml` | Push/PR to main, develop | Тесты API, Web, Desktop + Codecov |
+| Workflow | File | Trigger | Purpose |
+|----------|------|---------|---------|
+| CI | `ci.yml` | Push/PR to main, develop | API, Web, Desktop tests + Codecov |
 | Release | `release.yml` | Push to main | Semantic versioning, CHANGELOG, GitHub Release, Docker images |
-| Pages | `pages.yml` | Push to main | Deploy Web на GitHub Pages |
-| CodeQL | `codeql.yml` | Push/PR + Weekly | Анализ безопасности C# и JS/TS |
+| Pages | `pages.yml` | Push to main | Deploy Web to GitHub Pages |
+| CodeQL | `codeql.yml` | Push/PR + Weekly | Security analysis for C# and JS/TS |
 | Dependabot Auto-merge | `dependabot-automerge.yml` | Dependabot PR | Auto-merge patch/minor updates |
 
-### Артефакты релиза
+### Release Artifacts
 
-При каждом релизе автоматически создаются:
-- **Docker images** в GitHub Container Registry:
+Each release automatically creates:
+- **Docker images** in GitHub Container Registry:
   - `ghcr.io/randomu3/hqstudio/api:X.Y.Z`
   - `ghcr.io/randomu3/hqstudio/web:X.Y.Z`
-- **Desktop ZIP** с self-contained exe
-- **CHANGELOG.md** с описанием изменений
-- **GitHub Release** с release notes
+- **Desktop ZIP** with self-contained exe
+- **CHANGELOG.md** with change descriptions
+- **GitHub Release** with release notes
 
-## Мониторинг
+## Monitoring
 
 - `/api/health` — health check endpoint
-- Swagger UI — API документация (`/swagger`)
-- GitHub Actions — CI/CD статус
-- Codecov — покрытие кода тестами
+- Swagger UI — API documentation (`/swagger`)
+- GitHub Actions — CI/CD status
+- Codecov — code test coverage
 - CodeQL — security alerts
 
-## Дополнительная документация
+## Additional Documentation
 
-- [Git-интеграция и CI/CD](GIT-INTEGRATION.md) — полная документация по автоматизации
-- [API документация](API.md) — описание REST endpoints
+- [Git Integration & CI/CD](GIT-INTEGRATION.md) — full automation documentation
+- [API Documentation](API.md) — REST endpoints description

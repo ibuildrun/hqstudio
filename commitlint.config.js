@@ -8,17 +8,17 @@ module.exports = {
       2,
       'always',
       [
-        'feat',     // Новая функциональность
-        'fix',      // Исправление бага
-        'docs',     // Документация
-        'style',    // Форматирование (не влияет на код)
-        'refactor', // Рефакторинг
-        'perf',     // Улучшение производительности
-        'test',     // Тесты
-        'build',    // Сборка/зависимости
+        'feat',     // New feature
+        'fix',      // Bug fix
+        'docs',     // Documentation
+        'style',    // Formatting (no code change)
+        'refactor', // Code refactoring
+        'perf',     // Performance improvement
+        'test',     // Tests
+        'build',    // Build/dependencies
         'ci',       // CI/CD
-        'chore',    // Прочее
-        'revert',   // Откат изменений
+        'chore',    // Miscellaneous
+        'revert',   // Revert changes
       ],
     ],
     'scope-enum': [
@@ -28,11 +28,11 @@ module.exports = {
         'api',      // HQStudio.API
         'web',      // HQStudio.Web
         'desktop',  // HQStudio.Desktop
-        'tests',    // Тесты
-        'docker',   // Docker конфигурация
+        'tests',    // Tests
+        'docker',   // Docker configuration
         'ci',       // CI/CD
-        'deps',     // Зависимости
-        'release',  // Автоматические релизы
+        'deps',     // Dependencies
+        'release',  // Automatic releases
       ],
     ],
     'subject-case': [0],

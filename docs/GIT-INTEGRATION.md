@@ -1,10 +1,10 @@
-# Git-интеграция и CI/CD
+# Git Integration & CI/CD
 
-Полная документация по интеграции с Git, автоматизации и CI/CD пайплайнам проекта HQ Studio.
+Complete documentation on Git integration, automation, and CI/CD pipelines for the HQ Studio project.
 
-## 📋 Содержание
+## Table of Contents
 
-- [Обзор инфраструктуры](#обзор-инфраструктуры)
+- [Infrastructure Overview](#infrastructure-overview)
 - [Conventional Commits](#conventional-commits)
 - [Git Hooks (Husky)](#git-hooks-husky)
 - [GitHub Actions Workflows](#github-actions-workflows)
@@ -17,7 +17,7 @@
 
 ---
 
-## Обзор инфраструктуры
+## Infrastructure Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -47,24 +47,24 @@
                     └─────────────────────────┘
 ```
 
-### Ключевые компоненты
+### Key Components
 
-| Компонент | Файл | Назначение |
-|-----------|------|------------|
-| Commitlint | `commitlint.config.js` | Валидация сообщений коммитов |
-| Husky | `.husky/commit-msg` | Git hooks для проверки коммитов |
-| Semantic Release | `.releaserc.json` | Автоматическое версионирование |
-| Dependabot | `.github/dependabot.yml` | Автообновление зависимостей |
-| Codecov | `codecov.yml` | Отслеживание покрытия кода |
-| EditorConfig | `.editorconfig` | Единый стиль кода |
+| Component | File | Purpose |
+|-----------|------|---------|
+| Commitlint | `commitlint.config.js` | Commit message validation |
+| Husky | `.husky/commit-msg` | Git hooks for commit checking |
+| Semantic Release | `.releaserc.json` | Automatic versioning |
+| Dependabot | `.github/dependabot.yml` | Auto-update dependencies |
+| Codecov | `codecov.yml` | Code coverage tracking |
+| EditorConfig | `.editorconfig` | Unified code style |
 
 ---
 
 ## Conventional Commits
 
-Проект использует [Conventional Commits](https://www.conventionalcommits.org/) для стандартизации сообщений коммитов.
+The project uses [Conventional Commits](https://www.conventionalcommits.org/) to standardize commit messages.
 
-### Формат
+### Format
 
 ```
 <type>(<scope>): <description>
@@ -74,63 +74,63 @@
 [optional footer(s)]
 ```
 
-### Типы коммитов
+### Commit Types
 
-| Тип | Описание | Влияние на версию |
-|-----|----------|-------------------|
-| `feat` | Новая функциональность | **minor** (1.x.0) |
-| `fix` | Исправление бага | **patch** (1.0.x) |
-| `perf` | Улучшение производительности | **patch** |
-| `refactor` | Рефакторинг кода | **patch** |
-| `docs` | Документация | Без релиза |
-| `style` | Форматирование | Без релиза |
-| `test` | Тесты | Без релиза |
-| `build` | Сборка/зависимости | Без релиза |
-| `ci` | CI/CD конфигурация | Без релиза |
-| `chore` | Прочие изменения | Без релиза |
-| `revert` | Откат изменений | Зависит от типа |
+| Type | Description | Version Impact |
+|------|-------------|----------------|
+| `feat` | New feature | **minor** (1.x.0) |
+| `fix` | Bug fix | **patch** (1.0.x) |
+| `perf` | Performance improvement | **patch** |
+| `refactor` | Code refactoring | **patch** |
+| `docs` | Documentation | No release |
+| `style` | Formatting | No release |
+| `test` | Tests | No release |
+| `build` | Build/dependencies | No release |
+| `ci` | CI/CD configuration | No release |
+| `chore` | Miscellaneous changes | No release |
+| `revert` | Revert changes | Depends on type |
 
-### Области (Scopes)
+### Scopes
 
-| Scope | Описание |
-|-------|----------|
+| Scope | Description |
+|-------|-------------|
 | `api` | HQStudio.API (ASP.NET Core) |
 | `web` | HQStudio.Web (Next.js) |
 | `desktop` | HQStudio.Desktop (WPF) |
-| `tests` | Тесты любого компонента |
-| `docker` | Docker конфигурация |
-| `ci` | CI/CD пайплайны |
-| `deps` | Зависимости |
-| `release` | Автоматические релизы |
+| `tests` | Tests for any component |
+| `docker` | Docker configuration |
+| `ci` | CI/CD pipelines |
+| `deps` | Dependencies |
+| `release` | Automatic releases |
 
-### Примеры коммитов
+### Commit Examples
 
 ```bash
-# Новая функция (minor release)
-feat(api): добавлен endpoint для экспорта заказов
+# New feature (minor release)
+feat(api): add order export endpoint
 
-# Исправление бага (patch release)
-fix(web): исправлена ошибка валидации формы обратной связи
+# Bug fix (patch release)
+fix(web): fix contact form validation error
 
-# Документация (без релиза)
-docs: обновлена документация по API
+# Documentation (no release)
+docs: update API documentation
 
-# Рефакторинг (patch release)
-refactor(desktop): оптимизирован DataService для работы с кэшем
+# Refactoring (patch release)
+refactor(desktop): optimize DataService for caching
 
 # Breaking change (major release)
-feat(api)!: изменён формат ответа API
+feat(api)!: change API response format
 
-BREAKING CHANGE: поле `status` теперь возвращает enum вместо строки
+BREAKING CHANGE: `status` field now returns enum instead of string
 
-# Зависимости (без релиза)
-chore(deps): обновлены зависимости NuGet
+# Dependencies (no release)
+chore(deps): update NuGet dependencies
 ```
 
-### Интерактивный коммит
+### Interactive Commit
 
 ```bash
-# Запуск Commitizen для интерактивного создания коммита
+# Run Commitizen for interactive commit creation
 npm run commit
 ```
 
@@ -138,26 +138,26 @@ npm run commit
 
 ## Git Hooks (Husky)
 
-### Структура
+### Structure
 
 ```
 .husky/
 ├── _/                  # Husky internals
-└── commit-msg          # Валидация сообщения коммита
+└── commit-msg          # Commit message validation
 ```
 
 ### commit-msg hook
 
-Файл `.husky/commit-msg`:
+File `.husky/commit-msg`:
 ```bash
 npx --no -- commitlint --edit $1
 ```
 
-Этот hook автоматически проверяет каждый коммит на соответствие Conventional Commits.
+This hook automatically checks each commit for Conventional Commits compliance.
 
-### Конфигурация Commitlint
+### Commitlint Configuration
 
-Файл `commitlint.config.js`:
+File `commitlint.config.js`:
 ```javascript
 module.exports = {
   extends: ['@commitlint/config-conventional'],
@@ -169,19 +169,19 @@ module.exports = {
     'scope-enum': [1, 'always', [
       'api', 'web', 'desktop', 'tests', 'docker', 'ci', 'deps'
     ]],
-    'subject-case': [0],        // Разрешён любой регистр
-    'body-max-line-length': [0] // Без ограничения длины body
+    'subject-case': [0],        // Any case allowed
+    'body-max-line-length': [0] // No body length limit
   }
 };
 ```
 
-### Установка hooks
+### Installing Hooks
 
 ```bash
-# Автоматически при npm install (через prepare script)
+# Automatically on npm install (via prepare script)
 npm install
 
-# Или вручную
+# Or manually
 npx husky install
 ```
 
@@ -191,81 +191,81 @@ npx husky install
 
 ### 1. CI Workflow (`ci.yml`)
 
-**Триггеры:** Push/PR в `main`, `develop`
+**Triggers:** Push/PR to `main`, `develop`
 
 ```yaml
 jobs:
   api-test:      # Ubuntu, .NET 8.0
   web-test:      # Ubuntu, Node 20
   desktop-build: # Windows, .NET 8.0
-  docker-build:  # Ubuntu (после тестов)
+  docker-build:  # Ubuntu (after tests)
 ```
 
-**Этапы API Tests:**
-1. Checkout кода
+**API Tests Steps:**
+1. Checkout code
 2. Setup .NET 8.0
 3. Restore dependencies
-4. Build проекта
-5. Запуск тестов с coverage
-6. Upload coverage в Codecov (flag: `api`)
+4. Build project
+5. Run tests with coverage
+6. Upload coverage to Codecov (flag: `api`)
 7. Upload test results artifact
 
-**Этапы Web Tests:**
-1. Checkout кода
+**Web Tests Steps:**
+1. Checkout code
 2. Setup Node.js 20
-3. npm ci (с кэшированием)
-4. ESLint проверка
+3. npm ci (with caching)
+4. ESLint check
 5. TypeScript type check
-6. Vitest с coverage
-7. Upload coverage в Codecov (flag: `web`)
+6. Vitest with coverage
+7. Upload coverage to Codecov (flag: `web`)
 
-**Этапы Desktop Build:**
-1. Checkout кода
+**Desktop Build Steps:**
+1. Checkout code
 2. Setup .NET 8.0
 3. Restore dependencies
 4. Build Release
-5. Запуск unit тестов (без Integration)
+5. Run unit tests (without Integration)
 
-**Этапы Docker Build:**
+**Docker Build Steps:**
 1. Build API image
 2. Build Web image
 
 ### 2. Release Workflow (`release.yml`)
 
-**Триггеры:** Push в `main`, manual dispatch
+**Triggers:** Push to `main`, manual dispatch
 
 ```yaml
 jobs:
-  test:     # Прогон всех тестов
+  test:     # Run all tests
   release:  # Semantic Release
-  docker:   # Push images в GHCR
-  desktop:  # Build и upload ZIP
+  docker:   # Push images to GHCR
+  desktop:  # Build and upload ZIP
 ```
 
-**Semantic Release этапы:**
-1. Анализ коммитов с последнего релиза
-2. Определение новой версии (semver)
-3. Генерация CHANGELOG.md
-4. Создание Git tag
-5. Создание GitHub Release
-6. Push изменений в репозиторий
+**Semantic Release Steps:**
+1. Analyze commits since last release
+2. Determine new version (semver)
+3. Generate CHANGELOG.md
+4. Create Git tag
+5. Create GitHub Release
+6. Push changes to repository
 
-**Docker этапы (если есть новый релиз):**
-1. Login в GitHub Container Registry
-2. Build и push API image с тегами:
+**Docker Steps (if new release):**
+1. Login to GitHub Container Registry
+2. Build and push API image with tags:
    - `ghcr.io/randomu3/hqstudio/api:X.Y.Z`
    - `ghcr.io/randomu3/hqstudio/api:latest`
-3. Build и push Web image аналогично
+3. Build and push Web image similarly
 
-**Desktop этапы (если есть новый релиз):**
-1. Update версии в .csproj
+**Desktop Steps (if new release):**
+1. Update version in .csproj
 2. Publish self-contained single-file exe
-3. Создание ZIP архива
-4. Upload в GitHub Release
+3. Create ZIP archive
+4. Upload to GitHub Release
 
 ### 3. Pages Workflow (`pages.yml`)
 
-**Триггеры:** Push в `main`, manual dispatch
+**Triggers:** Push to `main`, manual dispatch
 
 ```yaml
 jobs:
@@ -273,20 +273,20 @@ jobs:
   deploy:  # GitHub Pages deployment
 ```
 
-**Этапы:**
-1. Checkout кода
+**Steps:**
+1. Checkout code
 2. Setup Node.js 20
-3. Configure Pages для Next.js
+3. Configure Pages for Next.js
 4. npm ci
-5. `npm run build` (static export в `out/`)
+5. `npm run build` (static export to `out/`)
 6. Upload artifact
-7. Deploy в GitHub Pages
+7. Deploy to GitHub Pages
 
 **URL:** https://randomu3.github.io/hqstudio/
 
 ### 4. CodeQL Workflow (`codeql.yml`)
 
-**Триггеры:** Push/PR в `main`, Weekly (понедельник 6:00 UTC)
+**Triggers:** Push/PR to `main`, Weekly (Monday 6:00 UTC)
 
 ```yaml
 strategy:
@@ -294,27 +294,27 @@ strategy:
     language: ['csharp', 'javascript-typescript']
 ```
 
-**Этапы:**
-1. Checkout кода
-2. Initialize CodeQL с `security-extended` queries
-3. Build .NET проектов (для C#)
+**Steps:**
+1. Checkout code
+2. Initialize CodeQL with `security-extended` queries
+3. Build .NET projects (for C#)
 4. Perform CodeQL Analysis
-5. Upload results в Security tab
+5. Upload results to Security tab
 
 ### 5. Dependabot Auto-merge (`dependabot-automerge.yml`)
 
-**Триггеры:** PR от dependabot[bot]
+**Triggers:** PR from dependabot[bot]
 
-**Логика:**
+**Logic:**
 - Patch/Minor updates → Auto-merge (squash)
 - GitHub Actions updates → Auto-merge (squash)
-- Major updates → Требуют ручного review
+- Major updates → Require manual review
 
 ---
 
 ## Semantic Release
 
-### Конфигурация (`.releaserc.json`)
+### Configuration (`.releaserc.json`)
 
 ```json
 {
@@ -331,24 +331,24 @@ strategy:
 
 ### Release Rules
 
-| Тип коммита | Релиз |
-|-------------|-------|
+| Commit Type | Release |
+|-------------|---------|
 | `feat` | minor |
 | `fix` | patch |
 | `perf` | patch |
 | `refactor` | patch |
-| `docs`, `style`, `chore`, `test`, `build`, `ci` | Без релиза |
+| `docs`, `style`, `chore`, `test`, `build`, `ci` | No release |
 
-### Секции CHANGELOG
+### CHANGELOG Sections
 
-| Тип | Секция в CHANGELOG |
-|-----|-------------------|
-| `feat` | 🚀 Новые возможности |
-| `fix` | 🐛 Исправления |
-| `perf` | ⚡ Производительность |
-| `refactor` | ♻️ Рефакторинг |
+| Type | CHANGELOG Section |
+|------|-------------------|
+| `feat` | Features |
+| `fix` | Bug Fixes |
+| `perf` | Performance |
+| `refactor` | Refactoring |
 
-### Локальный dry-run
+### Local Dry-run
 
 ```bash
 npm run release:dry
@@ -358,7 +358,7 @@ npm run release:dry
 
 ## Dependabot
 
-### Конфигурация (`.github/dependabot.yml`)
+### Configuration (`.github/dependabot.yml`)
 
 | Ecosystem | Directory | Schedule | Limit |
 |-----------|-----------|----------|-------|
@@ -368,7 +368,7 @@ npm run release:dry
 | nuget | `/HQStudio.Desktop` | Weekly (Mon) | 5 PRs |
 | github-actions | `/` | Monthly | - |
 
-### Игнорируемые major updates
+### Ignored Major Updates
 
 - `next` (Next.js)
 - `eslint`, `eslint-config-next`
@@ -376,17 +376,17 @@ npm run release:dry
 
 ### Labels
 
-| Label | Описание |
-|-------|----------|
-| `dependencies` | Все PR от Dependabot |
-| `web` | NPM зависимости Web |
-| `api` | NuGet зависимости API |
-| `desktop` | NuGet зависимости Desktop |
-| `ci` | GitHub Actions и root npm |
+| Label | Description |
+|-------|-------------|
+| `dependencies` | All Dependabot PRs |
+| `web` | Web NPM dependencies |
+| `api` | API NuGet dependencies |
+| `desktop` | Desktop NuGet dependencies |
+| `ci` | GitHub Actions and root npm |
 
-### Commit prefix
+### Commit Prefix
 
-Все коммиты от Dependabot используют prefix `chore(deps)`:
+All Dependabot commits use prefix `chore(deps)`:
 ```
 chore(deps): bump framer-motion from 11.0.0 to 11.1.0
 ```
@@ -395,7 +395,7 @@ chore(deps): bump framer-motion from 11.0.0 to 11.1.0
 
 ## Codecov
 
-### Конфигурация (`codecov.yml`)
+### Configuration (`codecov.yml`)
 
 ```yaml
 coverage:
@@ -419,8 +419,8 @@ flags:
 
 ### Flags
 
-| Flag | Покрытие | Источник |
-|------|----------|----------|
+| Flag | Coverage | Source |
+|------|----------|--------|
 | `api` | HQStudio.API | xUnit + coverlet |
 | `web` | HQStudio.Web/lib | Vitest + v8 |
 
@@ -430,7 +430,7 @@ flags:
 [![codecov](https://codecov.io/gh/randomu3/hqstudio/graph/badge.svg)](https://codecov.io/gh/randomu3/hqstudio)
 ```
 
-### Локальный запуск с coverage
+### Local Run with Coverage
 
 ```bash
 # API
@@ -446,84 +446,83 @@ cd HQStudio.Web && npm test -- --coverage
 
 ### Bug Report (`.github/ISSUE_TEMPLATE/bug_report.md`)
 
-Поля:
-- Описание бага
-- Шаги для воспроизведения
-- Ожидаемое поведение
-- Скриншоты
-- Окружение (компонент, версия, ОС, браузер)
+Fields:
+- Bug description
+- Steps to reproduce
+- Expected behavior
+- Screenshots
+- Environment (component, version, OS, browser)
 
 ### Feature Request (`.github/ISSUE_TEMPLATE/feature_request.md`)
 
-Поля:
-- Проблема
-- Предлагаемое решение
-- Альтернативы
-- Компонент (Web/Desktop/API/Инфраструктура)
+Fields:
+- Problem
+- Proposed solution
+- Alternatives
+- Component (Web/Desktop/API/Infrastructure)
 
 ### Pull Request (`.github/pull_request_template.md`)
 
-Чеклист:
-- [ ] Тип изменений (fix/feat/docs/refactor/test/chore)
-- [ ] Связанные Issues
-- [ ] Код соответствует стилю
-- [ ] Тесты добавлены/обновлены
-- [ ] Документация обновлена
-- [ ] Все тесты проходят локально
-- [ ] Коммиты следуют Conventional Commits
+Checklist:
+- [ ] Change type (fix/feat/docs/refactor/test/chore)
+- [ ] Related Issues
+- [ ] Code follows style
+- [ ] Tests added/updated
+- [ ] Documentation updated
+- [ ] All tests pass locally
+- [ ] Commits follow Conventional Commits
 
 ---
 
 ## EditorConfig
 
-### Конфигурация (`.editorconfig`)
+### Configuration (`.editorconfig`)
 
-| Файлы | Indent | Особенности |
-|-------|--------|-------------|
+| Files | Indent | Notes |
+|-------|--------|-------|
 | `*.cs` | 4 spaces | .NET naming conventions |
 | `*.{ts,tsx,js,jsx}` | 2 spaces | - |
 | `*.json` | 2 spaces | - |
 | `*.{yml,yaml}` | 2 spaces | - |
 | `*.{xml,xaml,csproj}` | 2 spaces | - |
-| `*.md` | 2 spaces | Сохранять trailing whitespace |
+| `*.md` | 2 spaces | Preserve trailing whitespace |
 | `Makefile` | tabs | - |
 | `*.sh` | 2 spaces | LF line endings |
 | `*.{cmd,bat}` | 2 spaces | CRLF line endings |
 
-### Общие настройки
+### General Settings
 
 - Charset: UTF-8
-- Line endings: LF (кроме Windows batch)
+- Line endings: LF (except Windows batch)
 - Final newline: Yes
-- Trim trailing whitespace: Yes (кроме Markdown)
+- Trim trailing whitespace: Yes (except Markdown)
 
 ---
 
 ## Kiro AI Integration
 
-### Структура Steering Files
+### Steering Files Structure
 
 ```
 .kiro/
 └── steering/
-    ├── conventions.md   # Coding conventions и Git правила
-    ├── product.md       # Описание продукта
-    ├── structure.md     # Структура проекта
-    └── tech.md          # Technology stack и CI/CD
+    ├── conventions.md   # Coding conventions and Git rules
+    ├── product.md       # Product description
+    ├── structure.md     # Project structure
+    └── tech.md          # Technology stack and CI/CD
 ```
 
-### Автоматическое включение
+### Automatic Inclusion
 
-Все steering files включаются автоматически в контекст Kiro при работе с проектом.
+All steering files are automatically included in Kiro's context when working with the project.
 
-### Ключевые правила для Kiro
+### Key Rules for Kiro
 
-1. **Коммиты на русском языке** — все сообщения коммитов должны быть на русском
-2. **Conventional Commits** — строгое следование формату
-3. **Проверка CI после push** — обязательная проверка статуса workflows
-4. **Локальные тесты** — запуск тестов перед push
+1. **Conventional Commits** — strict format compliance
+2. **Check CI after push** — mandatory workflow status check
+3. **Local tests** — run tests before push
 
-### Команда проверки CI статуса
+### CI Status Check Command
 
 ```powershell
 Invoke-RestMethod -Uri "https://api.github.com/repos/randomu3/hqstudio/actions/runs?per_page=5" `
@@ -534,44 +533,44 @@ Invoke-RestMethod -Uri "https://api.github.com/repos/randomu3/hqstudio/actions/r
 
 ---
 
-## Быстрые команды
+## Quick Commands
 
-### Локальная разработка
+### Local Development
 
 ```bash
-# Запуск тестов перед коммитом
+# Run tests before commit
 dotnet test HQStudio.API.Tests
 npm test --prefix HQStudio.Web
 dotnet test HQStudio.Desktop.Tests --filter "Category!=Integration"
 
-# Интерактивный коммит
+# Interactive commit
 npm run commit
 
-# Dry-run релиза
+# Release dry-run
 npm run release:dry
 ```
 
-### Проверка статуса
+### Status Check
 
 ```bash
-# Статус последних workflow runs
+# Status of recent workflow runs
 gh run list --limit 5
 
-# Детали конкретного run
+# Details of specific run
 gh run view <run-id>
 
-# Логи failed job
+# Failed job logs
 gh run view <run-id> --log-failed
 ```
 
 ### Docker
 
 ```bash
-# Локальная сборка
+# Local build
 docker build -t hqstudio-api:local ./HQStudio.API
 docker build -t hqstudio-web:local ./HQStudio.Web
 
-# Pull из GHCR
+# Pull from GHCR
 docker pull ghcr.io/randomu3/hqstudio/api:latest
 docker pull ghcr.io/randomu3/hqstudio/web:latest
 ```

@@ -1,12 +1,12 @@
 # HQ Studio API Documentation
 
-## Обзор
+## Overview
 
-REST API для HQ Studio CRM системы. Базовый URL: `http://localhost:5000/api`
+REST API for the HQ Studio CRM system. Base URL: `http://localhost:5000/api`
 
-## Аутентификация
+## Authentication
 
-API использует JWT Bearer токены. Получите токен через `/api/auth/login` и передавайте в заголовке:
+The API uses JWT Bearer tokens. Get a token via `/api/auth/login` and pass it in the header:
 
 ```
 Authorization: Bearer <token>
@@ -14,13 +14,13 @@ Authorization: Bearer <token>
 
 ## Endpoints
 
-### Аутентификация
+### Authentication
 
-| Метод | Endpoint | Описание | Auth |
-|-------|----------|----------|------|
-| POST | `/auth/login` | Вход в систему | ❌ |
-| GET | `/auth/me` | Текущий пользователь | ✅ |
-| POST | `/auth/change-password` | Смена пароля | ✅ |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/auth/login` | Login | ❌ |
+| GET | `/auth/me` | Current user | ✅ |
+| POST | `/auth/change-password` | Change password | ✅ |
 
 #### POST /auth/login
 
@@ -37,111 +37,111 @@ Authorization: Bearer <token>
   "user": {
     "id": 1,
     "login": "admin",
-    "name": "Администратор",
+    "name": "Administrator",
     "role": 0
   }
 }
 ```
 
-### Клиенты
+### Clients
 
-| Метод | Endpoint | Описание | Auth |
-|-------|----------|----------|------|
-| GET | `/clients` | Список клиентов | ✅ |
-| GET | `/clients/{id}` | Клиент по ID | ✅ |
-| POST | `/clients` | Создать клиента | ✅ |
-| PUT | `/clients/{id}` | Обновить клиента | ✅ |
-| DELETE | `/clients/{id}` | Удалить клиента | ✅ Admin |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/clients` | List clients | ✅ |
+| GET | `/clients/{id}` | Get client by ID | ✅ |
+| POST | `/clients` | Create client | ✅ |
+| PUT | `/clients/{id}` | Update client | ✅ |
+| DELETE | `/clients/{id}` | Delete client | ✅ Admin |
 
-### Заказы
+### Orders
 
-| Метод | Endpoint | Описание | Auth |
-|-------|----------|----------|------|
-| GET | `/orders` | Список заказов | ✅ |
-| GET | `/orders/{id}` | Заказ по ID | ✅ |
-| POST | `/orders` | Создать заказ | ✅ |
-| PUT | `/orders/{id}/status` | Изменить статус | ✅ |
-| DELETE | `/orders/{id}` | Удалить заказ | ✅ Admin |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/orders` | List orders | ✅ |
+| GET | `/orders/{id}` | Get order by ID | ✅ |
+| POST | `/orders` | Create order | ✅ |
+| PUT | `/orders/{id}/status` | Change status | ✅ |
+| DELETE | `/orders/{id}` | Delete order | ✅ Admin |
 
-### Заявки на обратный звонок
+### Callback Requests
 
-| Метод | Endpoint | Описание | Auth |
-|-------|----------|----------|------|
-| GET | `/callbacks` | Список заявок | ✅ |
-| GET | `/callbacks/stats` | Статистика | ✅ |
-| POST | `/callbacks` | Создать заявку (сайт) | ❌ |
-| POST | `/callbacks/manual` | Создать заявку (CRM) | ✅ |
-| PUT | `/callbacks/{id}/status` | Изменить статус | ✅ |
-| DELETE | `/callbacks/{id}` | Удалить заявку | ✅ Admin |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/callbacks` | List requests | ✅ |
+| GET | `/callbacks/stats` | Statistics | ✅ |
+| POST | `/callbacks` | Create request (website) | ❌ |
+| POST | `/callbacks/manual` | Create request (CRM) | ✅ |
+| PUT | `/callbacks/{id}/status` | Change status | ✅ |
+| DELETE | `/callbacks/{id}` | Delete request | ✅ Admin |
 
-### Услуги
+### Services
 
-| Метод | Endpoint | Описание | Auth |
-|-------|----------|----------|------|
-| GET | `/services` | Список услуг | ❌ |
-| GET | `/services/{id}` | Услуга по ID | ❌ |
-| POST | `/services` | Создать услугу | ✅ |
-| PUT | `/services/{id}` | Обновить услугу | ✅ |
-| DELETE | `/services/{id}` | Удалить услугу | ✅ Admin |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/services` | List services | ❌ |
+| GET | `/services/{id}` | Get service by ID | ❌ |
+| POST | `/services` | Create service | ✅ |
+| PUT | `/services/{id}` | Update service | ✅ |
+| DELETE | `/services/{id}` | Delete service | ✅ Admin |
 
-### Контент сайта
+### Site Content
 
-| Метод | Endpoint | Описание | Auth |
-|-------|----------|----------|------|
-| GET | `/site` | Все публичные данные | ❌ |
-| GET | `/site/blocks` | Блоки контента | ✅ |
-| GET | `/site/testimonials` | Отзывы | ✅ |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/site` | All public data | ❌ |
+| GET | `/site/blocks` | Content blocks | ✅ |
+| GET | `/site/testimonials` | Testimonials | ✅ |
 | GET | `/site/faq` | FAQ | ✅ |
 
-### Дашборд
+### Dashboard
 
-| Метод | Endpoint | Описание | Auth |
-|-------|----------|----------|------|
-| GET | `/dashboard` | Статистика | ✅ |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/dashboard` | Statistics | ✅ |
 
-### Пользователи
+### Users
 
-| Метод | Endpoint | Описание | Auth |
-|-------|----------|----------|------|
-| GET | `/users` | Список пользователей | ✅ Admin |
-| GET | `/users/{id}` | Пользователь по ID | ✅ Admin |
-| POST | `/users` | Создать пользователя | ✅ Admin |
-| PUT | `/users/{id}` | Обновить пользователя | ✅ Admin |
-| DELETE | `/users/{id}` | Удалить пользователя | ✅ Admin |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/users` | List users | ✅ Admin |
+| GET | `/users/{id}` | Get user by ID | ✅ Admin |
+| POST | `/users` | Create user | ✅ Admin |
+| PUT | `/users/{id}` | Update user | ✅ Admin |
+| DELETE | `/users/{id}` | Delete user | ✅ Admin |
 
 ### Health Check
 
-| Метод | Endpoint | Описание | Auth |
-|-------|----------|----------|------|
-| GET | `/health` | Статус API | ❌ |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/health` | API status | ❌ |
 
-## Роли пользователей
+## User Roles
 
-| Роль | Код | Права |
-|------|-----|-------|
-| Admin | 0 | Полный доступ |
-| Editor | 1 | Редактирование контента |
-| Manager | 2 | Работа с клиентами и заказами |
+| Role | Code | Permissions |
+|------|------|-------------|
+| Admin | 0 | Full access |
+| Editor | 1 | Content editing |
+| Manager | 2 | Work with clients and orders |
 
-## Коды ошибок
+## Error Codes
 
-| Код | Описание |
-|-----|----------|
-| 200 | Успех |
-| 201 | Создано |
-| 400 | Неверный запрос |
-| 401 | Не авторизован |
-| 403 | Доступ запрещён |
-| 404 | Не найдено |
-| 429 | Слишком много запросов |
-| 500 | Внутренняя ошибка |
+| Code | Description |
+|------|-------------|
+| 200 | Success |
+| 201 | Created |
+| 400 | Bad request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not found |
+| 429 | Too many requests |
+| 500 | Internal error |
 
 ## Rate Limiting
 
-- Общий лимит: 100 запросов/минуту
-- Авторизация: 5 попыток/минуту
-- Публичные формы: 10 запросов/5 минут
+- General limit: 100 requests/minute
+- Authorization: 5 attempts/minute
+- Public forms: 10 requests/5 minutes
 
 ## Swagger UI
 
-Интерактивная документация доступна по адресу: `http://localhost:5000/swagger`
+Interactive documentation available at: `http://localhost:5000/swagger`

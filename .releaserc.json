@@ -20,16 +20,16 @@
       "preset": "conventionalcommits",
       "presetConfig": {
         "types": [
-          { "type": "feat", "section": "🚀 Новые возможности" },
-          { "type": "fix", "section": "🐛 Исправления" },
-          { "type": "perf", "section": "⚡ Производительность" },
-          { "type": "refactor", "section": "♻️ Рефакторинг" },
-          { "type": "docs", "section": "📚 Документация", "hidden": true },
-          { "type": "style", "section": "💄 Стили", "hidden": true },
-          { "type": "test", "section": "✅ Тесты", "hidden": true },
-          { "type": "build", "section": "📦 Сборка", "hidden": true },
-          { "type": "ci", "section": "👷 CI/CD", "hidden": true },
-          { "type": "chore", "section": "🔧 Прочее", "hidden": true }
+          { "type": "feat", "section": "Features" },
+          { "type": "fix", "section": "Bug Fixes" },
+          { "type": "perf", "section": "Performance" },
+          { "type": "refactor", "section": "Refactoring" },
+          { "type": "docs", "section": "Documentation", "hidden": true },
+          { "type": "style", "section": "Styles", "hidden": true },
+          { "type": "test", "section": "Tests", "hidden": true },
+          { "type": "build", "section": "Build", "hidden": true },
+          { "type": "ci", "section": "CI/CD", "hidden": true },
+          { "type": "chore", "section": "Miscellaneous", "hidden": true }
         ]
       }
     }],
@@ -41,7 +41,7 @@
     }],
     ["@semantic-release/git", {
       "assets": ["CHANGELOG.md", "package.json", "HQStudio.Desktop/HQStudio.csproj", "HQStudio.API/HQStudio.API.csproj"],
-      "message": "chore(release): релиз ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      "message": "chore(release): release ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
     }],
     "@semantic-release/github"
   ]
