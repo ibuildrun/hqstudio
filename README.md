@@ -8,9 +8,9 @@
 
 Комплексное решение для автотюнинг студии: веб-сайт, API и десктопное CRM приложение.
 
-🌐 **[Демо сайт](https://randomu3.github.io/hqstudio/)** | 📦 **[Релизы](https://github.com/randomu3/hqstudio/releases)** | 📖 **[API Docs](docs/API.md)** | 🏛️ **[Архитектура](docs/ARCHITECTURE.md)** | 🔧 **[Git & CI/CD](docs/GIT-INTEGRATION.md)**
+**[Демо сайт](https://randomu3.github.io/hqstudio/)** | **[Релизы](https://github.com/randomu3/hqstudio/releases)** | **[API Docs](docs/API.md)** | **[Архитектура](docs/ARCHITECTURE.md)** | **[Git & CI/CD](docs/GIT-INTEGRATION.md)**
 
-## 🏗️ Структура проекта
+## Структура проекта
 
 ```
 ├── HQStudio.API/          # ASP.NET Core 8.0 Backend
@@ -21,10 +21,10 @@
 └── docker-compose.yml     # Production Docker setup
 ```
 
-## 📸 Скриншоты Desktop приложения
+## Скриншоты Desktop приложения
 
 <details>
-<summary>🖥️ Показать скриншоты</summary>
+<summary>Показать скриншоты</summary>
 
 ### Окно входа
 ![Login](docs/screenshots/01-login.png)
@@ -52,7 +52,7 @@
 
 </details>
 
-## 🚀 Быстрый старт
+## Быстрый старт
 
 ### Требования
 - .NET 8.0 SDK
@@ -95,7 +95,7 @@ docker-compose -f docker-compose.dev.yml up --build
 docker-compose up --build -d
 ```
 
-## 🧪 Тесты
+## Тесты
 
 ```bash
 # API тесты
@@ -108,7 +108,7 @@ cd HQStudio.Web && npm test
 dotnet test HQStudio.Desktop.Tests
 ```
 
-## 🔄 CI/CD
+## CI/CD
 
 Проект использует полностью автоматизированный CI/CD pipeline:
 
@@ -131,7 +131,7 @@ docs: обновлена документация
 
 Подробнее: [CONTRIBUTING.md](CONTRIBUTING.md) | [Git & CI/CD](docs/GIT-INTEGRATION.md)
 
-## 📦 Технологии
+## Технологии
 
 ### Backend (API)
 - ASP.NET Core 8.0
@@ -152,18 +152,18 @@ docs: обновлена документация
 - MVVM Pattern
 - Material Design
 
-## 🔐 Переменные окружения
+## Переменные окружения
 
 См. `.env.example` для полного списка переменных.
 
-## 📝 Лицензия
+## Лицензия
 
 MIT License — см. [LICENSE](LICENSE)
 
-## 🤝 Вклад в проект
+## Вклад в проект
 
 См. [CONTRIBUTING.md](CONTRIBUTING.md) для информации о том, как внести вклад.
 
-## 🔒 Безопасность
+## Безопасность
 
 См. [SECURITY.md](SECURITY.md) для политики безопасности.
