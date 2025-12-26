@@ -1,3 +1,10 @@
+## [1.18.1](https://github.com/randomu3/hqstudio/compare/v1.18.0...v1.18.1) (2025-12-26)
+
+
+### 🐛 Исправления
+
+* **api:** исправлен расчёт выручки на Dashboard ([cf47b9a](https://github.com/randomu3/hqstudio/commit/cf47b9a2a03deca2b296feee204dad40c585a6d0))
+
 ## [1.18.0](https://github.com/randomu3/hqstudio/compare/v1.17.0...v1.18.0) (2025-12-26)
 
 
