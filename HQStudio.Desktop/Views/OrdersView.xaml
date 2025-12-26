@@ -49,6 +49,8 @@
                         Command="{Binding ExportToExcelCommand}" ToolTip="Экспорт в Excel"/>
                 <Button Content="🖨️ Печать" Style="{DynamicResource SecondaryButton}" Margin="0,0,12,0"
                         Command="{Binding PrintOrderCommand}" ToolTip="Печать заказа"/>
+                <Button Content="✗ Отменить" Style="{DynamicResource BtnDanger}" Margin="0,0,12,0"
+                        Command="{Binding CancelOrderCommand}" ToolTip="Отменить заказ"/>
                 <Button Content="✓ Завершить" Style="{DynamicResource BtnSuccess}" Margin="0,0,12,0"
                         Command="{Binding CompleteOrderCommand}"/>
                 <Button Content="+ Новый заказ" Style="{DynamicResource BtnPrimary}"
@@ -194,6 +196,9 @@
                                                 <DataTrigger Binding="{Binding Status}" Value="В работе">
                                                     <Setter Property="Background" Value="#2A2A1A"/>
                                                 </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Отменен">
+                                                    <Setter Property="Background" Value="#2A1A1A"/>
+                                                </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
@@ -208,6 +213,9 @@
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding Status}" Value="В работе">
                                                         <Setter Property="Foreground" Value="#FFC107"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Отменен">
+                                                        <Setter Property="Foreground" Value="#F44336"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>

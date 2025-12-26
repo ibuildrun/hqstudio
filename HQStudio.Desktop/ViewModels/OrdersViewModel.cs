@@ -81,6 +81,7 @@ namespace HQStudio.ViewModels
         public ICommand AddOrderCommand { get; }
         public ICommand EditOrderCommand { get; }
         public ICommand CompleteOrderCommand { get; }
+        public ICommand CancelOrderCommand { get; }
         public ICommand DeleteOrderCommand { get; }
         public ICommand RefreshCommand { get; }
         public ICommand PreviousPageCommand { get; }
@@ -128,7 +129,8 @@ namespace HQStudio.ViewModels
             set => SetProperty(ref _filterClientName, value);
         }
         
-        public List<string> StatusOptions { get; } = new() { "Все", "Новый", "В работе", "Завершен", "Отменен" };
+        public List<string> StatusOptions { get; } = new List<string> { "Все" }
+            .Concat(OrderStatus.All.Select(s => s.DisplayName)).ToList();
 
         public OrdersViewModel() : this(filterActive: false)
         {
@@ -143,6 +145,7 @@ namespace HQStudio.ViewModels
             AddOrderCommand = new RelayCommand(_ => AddOrder());
             EditOrderCommand = new RelayCommand(_ => EditOrder(), _ => SelectedOrder != null);
             CompleteOrderCommand = new RelayCommand(_ => CompleteOrder());
+            CancelOrderCommand = new RelayCommand(_ => CancelOrder());
             DeleteOrderCommand = new RelayCommand(_ => DeleteOrderAsync(), _ => SelectedOrder != null);
             RefreshCommand = new RelayCommand(async _ => await ForceRefreshAsync());
             PreviousPageCommand = new RelayCommand(async _ => await PreviousPageAsync(), _ => CanGoPrevious);
@@ -191,6 +194,8 @@ namespace HQStudio.ViewModels
             try
             {
                 Orders.Clear();
+                var completedStatus = OrderStatus.Completed.DisplayName;
+                var cancelledStatus = OrderStatus.Cancelled.DisplayName;
                 
                 if (_settings.UseApi && _apiService.IsConnected)
                 {
@@ -210,7 +215,7 @@ namespace HQStudio.ViewModels
                         {
                             var status = MapStatus(apiOrder.Status);
                             // Только активные заказы (не Завершен и не Отменен)
-                            if (status != "Завершен" && status != "Отменен")
+                            if (status != completedStatus && status != cancelledStatus)
                             {
                                 allOrders.Add(new Order
                                 {
@@ -251,7 +256,7 @@ namespace HQStudio.ViewModels
                 {
                     IsApiConnected = true;
                     var activeOrders = _dataService.Orders
-                        .Where(o => o.Status != "Завершен" && o.Status != "Отменен")
+                        .Where(o => o.Status != completedStatus && o.Status != cancelledStatus)
                         .OrderByDescending(o => o.CreatedAt)
                         .ToList();
                     
@@ -476,14 +481,7 @@ namespace HQStudio.ViewModels
 
         private string MapStatus(int apiStatus)
         {
-            return apiStatus switch
-            {
-                0 => "Новый",
-                1 => "В работе",
-                2 => "Завершен",
-                3 => "Отменен",
-                _ => $"Статус {apiStatus}"
-            };
+            return OrderStatus.FromCode(apiStatus).DisplayName;
         }
 
         private async void AddOrder()
@@ -590,9 +588,15 @@ namespace HQStudio.ViewModels
                 return;
             }
             
-            if (SelectedOrder.Status == "Завершен")
+            if (SelectedOrder.Status == OrderStatus.Completed.DisplayName)
             {
                 ConfirmDialog.ShowInfo("Завершение заказа", "Этот заказ уже завершён.", ConfirmDialog.DialogType.Warning);
+                return;
+            }
+
+            if (SelectedOrder.Status == OrderStatus.Cancelled.DisplayName)
+            {
+                ConfirmDialog.ShowInfo("Завершение заказа", "Нельзя завершить отменённый заказ.", ConfirmDialog.DialogType.Warning);
                 return;
             }
             
@@ -609,7 +613,7 @@ namespace HQStudio.ViewModels
             
             if (_settings.UseApi && _apiService.IsConnected)
             {
-                success = await _apiService.UpdateOrderStatusAsync(SelectedOrder.Id, "Completed");
+                success = await _apiService.UpdateOrderStatusAsync(SelectedOrder.Id, OrderStatus.Completed.ApiName);
                 if (!success)
                 {
                     ConfirmDialog.ShowInfo("Ошибка", "Не удалось обновить статус заказа на сервере.\nПопробуйте позже.", ConfirmDialog.DialogType.Error);
@@ -618,7 +622,7 @@ namespace HQStudio.ViewModels
             }
             else
             {
-                SelectedOrder.Status = "Завершен";
+                SelectedOrder.Status = OrderStatus.Completed.DisplayName;
                 SelectedOrder.CompletedAt = DateTime.Now;
                 _dataService.SaveData();
                 success = true;
@@ -626,6 +630,57 @@ namespace HQStudio.ViewModels
             
             await LoadOrdersAsync();
             ConfirmDialog.ShowInfo("Готово", $"Заказ #{orderId} успешно завершён!", ConfirmDialog.DialogType.Success);
+        }
+
+        private async void CancelOrder()
+        {
+            if (SelectedOrder == null)
+            {
+                ConfirmDialog.ShowInfo("Отмена заказа", "Выберите заказ для отмены.\n\nКликните на заказ в списке, чтобы выбрать его.", ConfirmDialog.DialogType.Warning);
+                return;
+            }
+            
+            if (SelectedOrder.Status == OrderStatus.Cancelled.DisplayName)
+            {
+                ConfirmDialog.ShowInfo("Отмена заказа", "Этот заказ уже отменён.", ConfirmDialog.DialogType.Warning);
+                return;
+            }
+
+            if (SelectedOrder.Status == OrderStatus.Completed.DisplayName)
+            {
+                ConfirmDialog.ShowInfo("Отмена заказа", "Нельзя отменить завершённый заказ.", ConfirmDialog.DialogType.Warning);
+                return;
+            }
+            
+            var confirmed = ConfirmDialog.Show(
+                "Отменить заказ?",
+                $"Заказ #{SelectedOrder.Id} будет отменён.\n\nКлиент отказался или не приехал?",
+                ConfirmDialog.DialogType.Warning,
+                "Отменить", "Назад");
+            
+            if (!confirmed) return;
+            
+            var orderId = SelectedOrder.Id;
+            bool success = false;
+            
+            if (_settings.UseApi && _apiService.IsConnected)
+            {
+                success = await _apiService.UpdateOrderStatusAsync(SelectedOrder.Id, OrderStatus.Cancelled.ApiName);
+                if (!success)
+                {
+                    ConfirmDialog.ShowInfo("Ошибка", "Не удалось обновить статус заказа на сервере.\nПопробуйте позже.", ConfirmDialog.DialogType.Error);
+                    return;
+                }
+            }
+            else
+            {
+                SelectedOrder.Status = OrderStatus.Cancelled.DisplayName;
+                _dataService.SaveData();
+                success = true;
+            }
+            
+            await LoadOrdersAsync();
+            ConfirmDialog.ShowInfo("Готово", $"Заказ #{orderId} отменён.", ConfirmDialog.DialogType.Success);
         }
 
         private async void DeleteOrderAsync()
