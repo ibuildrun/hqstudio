@@ -1,3 +1,10 @@
+## [1.15.1](https://github.com/randomu3/hqstudio/compare/v1.15.0...v1.15.1) (2025-12-26)
+
+
+### 🐛 Исправления
+
+* **desktop:** очистка поля пароля при неверном вводе ([a847fde](https://github.com/randomu3/hqstudio/commit/a847fde62abaffd0f6f15acdcc809125f2aba251))
+
 ## [1.15.0](https://github.com/randomu3/hqstudio/compare/v1.14.0...v1.15.0) (2025-12-26)
 
 
