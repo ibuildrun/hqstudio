@@ -1,3 +1,16 @@
+## [1.17.0](https://github.com/randomu3/hqstudio/compare/v1.16.0...v1.17.0) (2025-12-26)
+
+
+### 🚀 Новые возможности
+
+* **desktop:** добавлен трекер несохранённых изменений ([b34d952](https://github.com/randomu3/hqstudio/commit/b34d952229de46a4e7468d0d96be667e07875148))
+* **desktop:** добавлена страница аналитики с графиками выручки и заказов ([a0f8038](https://github.com/randomu3/hqstudio/commit/a0f8038cd2c6d1159266b5736212cbd735dd6fcc))
+
+
+### 🐛 Исправления
+
+* **deps:** синхронизация package-lock.json с @semantic-release/exec ([b4931f8](https://github.com/randomu3/hqstudio/commit/b4931f85f7fb1140d1813ff935f3a99c4fc791f6))
+
 ## [1.16.0](https://github.com/randomu3/hqstudio/compare/v1.15.1...v1.16.0) (2025-12-26)
 
 
