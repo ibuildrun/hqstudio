@@ -110,6 +110,7 @@ namespace HQStudio.Views.Dialogs
             {
                 "В работе" => 1,
                 "Завершен" => 2,
+                "Отменен" => 3,
                 _ => 0
             };
 
@@ -355,8 +356,13 @@ namespace HQStudio.Views.Dialogs
             var statusItem = StatusCombo.SelectedItem as ComboBoxItem;
             var newStatus = statusItem?.Content?.ToString() ?? "Новый";
             
+            // Устанавливаем CompletedAt при завершении заказа
             if (newStatus == "Завершен" && Order.Status != "Завершен")
                 Order.CompletedAt = DateTime.Now;
+            
+            // Сбрасываем CompletedAt если заказ снова активен
+            if (newStatus != "Завершен" && newStatus != "Отменен")
+                Order.CompletedAt = null;
             
             Order.Status = newStatus;
             Order.Notes = NotesBox.Text.Trim();

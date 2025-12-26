@@ -206,6 +206,7 @@
                         <ComboBoxItem Content="Новый" IsSelected="True"/>
                         <ComboBoxItem Content="В работе"/>
                         <ComboBoxItem Content="Завершен"/>
+                        <ComboBoxItem Content="Отменен"/>
                     </ComboBox>
 
                     <TextBlock Text="СУММА (₽)" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
