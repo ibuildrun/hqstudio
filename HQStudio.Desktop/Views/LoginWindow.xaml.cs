@@ -14,6 +14,7 @@ namespace HQStudio.Views
             if (DataContext is LoginViewModel vm)
             {
                 vm.LoginSuccessful += OnLoginSuccessful;
+                vm.ClearPassword += OnClearPassword;
             }
             
             // Фокус на поле логина при загрузке
@@ -25,6 +26,12 @@ namespace HQStudio.Views
             var mainWindow = new MainWindow();
             mainWindow.Show();
             Close();
+        }
+
+        private void OnClearPassword()
+        {
+            PasswordBox.Clear();
+            PasswordBox.Focus();
         }
 
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

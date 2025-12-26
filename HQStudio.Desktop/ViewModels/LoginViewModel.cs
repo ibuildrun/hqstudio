@@ -67,6 +67,7 @@ namespace HQStudio.ViewModels
         public ICommand RetryConnectionCommand { get; }
 
         public event Action? LoginSuccessful;
+        public event Action? ClearPassword;
 
         public LoginViewModel()
         {
@@ -197,6 +198,10 @@ namespace HQStudio.ViewModels
                         ErrorMessage = $"Неверный логин или пароль (осталось {remaining} попыток)";
                     }
                     
+                    // Очищаем пароль при неверном вводе
+                    Password = string.Empty;
+                    ClearPassword?.Invoke();
+                    
                     IsLoading = false;
                     return;
                 }
@@ -226,6 +231,10 @@ namespace HQStudio.ViewModels
                 {
                     ErrorMessage = "Неверный логин или пароль";
                 }
+                
+                // Очищаем пароль при неверном вводе
+                Password = string.Empty;
+                ClearPassword?.Invoke();
             }
 
             IsLoading = false;
