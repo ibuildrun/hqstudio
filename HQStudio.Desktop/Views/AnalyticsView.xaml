@@ -125,7 +125,8 @@
                             YAxes="{Binding OrdersYAxes}"
                             TooltipPosition="Top"
                             ZoomMode="None"
-                            LegendPosition="Bottom"/>
+                            LegendPosition="Bottom"
+                            LegendTextPaint="{Binding LegendTextPaint}"/>
                     </Border>
                 </StackPanel>
 
@@ -135,7 +136,8 @@
                     <Border Style="{DynamicResource Card}" Height="280">
                         <lvc:PieChart 
                             Series="{Binding ServicesPieSeries}"
-                            LegendPosition="Right"/>
+                            LegendPosition="Right"
+                            LegendTextPaint="{Binding LegendTextPaint}"/>
                     </Border>
                 </StackPanel>
             </Grid>
@@ -143,37 +145,47 @@
             <!-- Top Services Table -->
             <TextBlock Text="🏆 ТОП УСЛУГ ПО ВЫРУЧКЕ" Style="{DynamicResource TextLabel}" Margin="0,0,0,16"/>
             <Border Style="{DynamicResource Card}">
-                <ItemsControl ItemsSource="{Binding TopServices}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Margin="0,8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="40"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="120"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <TextBlock Grid.Column="0" Text="{Binding Service.Icon}" FontSize="20" 
-                                           Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="{Binding Service.Name}" FontSize="14" 
-                                           Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                                <Border Grid.Column="2" Background="{DynamicResource BgHoverBrush}" 
-                                        CornerRadius="6" Padding="10,4" Margin="8,0">
-                                    <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}">
-                                        <Run Text="{Binding OrderCount}"/>
-                                        <Run Text="заказов"/>
+                <Grid>
+                    <!-- Пустое состояние -->
+                    <TextBlock Text="Нет данных по услугам. Услуги отображаются только для локальных заказов с привязанными услугами."
+                               Style="{DynamicResource TextSmall}" 
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               TextWrapping="Wrap" Padding="16"
+                               Visibility="{Binding TopServices.Count, Converter={StaticResource CountToVisibility}}"/>
+                    
+                    <!-- Список услуг -->
+                    <ItemsControl ItemsSource="{Binding TopServices}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="120"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <TextBlock Grid.Column="0" Text="{Binding Service.Icon}" FontSize="20" 
+                                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Service.Name}" FontSize="14" 
+                                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    <Border Grid.Column="2" Background="{DynamicResource BgHoverBrush}" 
+                                            CornerRadius="6" Padding="10,4" Margin="8,0">
+                                        <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}">
+                                            <Run Text="{Binding OrderCount}"/>
+                                            <Run Text="заказов"/>
+                                        </TextBlock>
+                                    </Border>
+                                    <TextBlock Grid.Column="3" FontSize="16" FontWeight="SemiBold" 
+                                               Foreground="#4CAF50" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Run Text="{Binding TotalRevenue, StringFormat={}{0:N0}}"/>
+                                        <Run Text="₽"/>
                                     </TextBlock>
-                                </Border>
-                                <TextBlock Grid.Column="3" FontSize="16" FontWeight="SemiBold" 
-                                           Foreground="#4CAF50" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                    <Run Text="{Binding TotalRevenue, StringFormat={}{0:N0}}"/>
-                                    <Run Text="₽"/>
-                                </TextBlock>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
             </Border>
             
         </StackPanel>

@@ -26,6 +26,16 @@ namespace HQStudio.ViewModels
         private decimal _revenueGrowth;
         private bool _isLoading;
 
+        // Цвета для графиков (контрастные)
+        private static readonly SKColor ColorCompleted = new(76, 175, 80);    // Зелёный #4CAF50
+        private static readonly SKColor ColorInProgress = new(255, 152, 0);   // Оранжевый #FF9800
+        private static readonly SKColor ColorNew = new(33, 150, 243);         // Синий #2196F3
+        private static readonly SKColor ColorCancelled = new(244, 67, 54);    // Красный #F44336
+        private static readonly SKColor ColorLegendText = new(220, 220, 220); // Светлый текст для легенды
+
+        /// <summary>Цвет текста легенды для графиков</summary>
+        public SolidColorPaint LegendTextPaint { get; } = new SolidColorPaint(ColorLegendText);
+
         public ObservableCollection<string> Periods { get; } = new()
         {
             "Неделя", "Месяц", "Квартал", "Год"
@@ -199,13 +209,27 @@ namespace HQStudio.ViewModels
 
                     foreach (var apiOrder in response.Items)
                     {
-                        if (apiOrder.CreatedAt >= start && apiOrder.CreatedAt <= end.AddDays(1))
+                        var status = MapStatus(apiOrder.Status);
+                        
+                        // Для завершённых заказов проверяем дату завершения
+                        // Для остальных — дату создания
+                        bool inPeriod;
+                        if (status == "Завершен" && apiOrder.CompletedAt.HasValue)
+                        {
+                            inPeriod = apiOrder.CompletedAt.Value >= start && apiOrder.CompletedAt.Value <= end.AddDays(1);
+                        }
+                        else
+                        {
+                            inPeriod = apiOrder.CreatedAt >= start && apiOrder.CreatedAt <= end.AddDays(1);
+                        }
+                        
+                        if (inPeriod)
                         {
                             orders.Add(new Order
                             {
                                 Id = apiOrder.Id,
                                 ClientId = apiOrder.ClientId,
-                                Status = MapStatus(apiOrder.Status),
+                                Status = status,
                                 TotalPrice = apiOrder.TotalPrice,
                                 CreatedAt = apiOrder.CreatedAt,
                                 CompletedAt = apiOrder.CompletedAt,
@@ -220,27 +244,27 @@ namespace HQStudio.ViewModels
             }
             else
             {
+                // Для локальных данных аналогичная логика
                 orders = _dataService.Orders
-                    .Where(o => o.CreatedAt >= start && o.CreatedAt <= end.AddDays(1))
+                    .Where(o => 
+                    {
+                        if (o.Status == "Завершен" && o.CompletedAt.HasValue)
+                            return o.CompletedAt.Value >= start && o.CompletedAt.Value <= end.AddDays(1);
+                        return o.CreatedAt >= start && o.CreatedAt <= end.AddDays(1);
+                    })
                     .ToList();
             }
 
             return orders;
         }
 
-        private string MapStatus(int status) => status switch
-        {
-            0 => "Новый",
-            1 => "В работе",
-            2 => "Завершен",
-            3 => "Отменен",
-            _ => "Неизвестно"
-        };
+        private string MapStatus(int status) => OrderStatus.FromCode(status).DisplayName;
 
         private void CalculateStatistics(List<Order> orders, List<Order> previousOrders)
         {
-            var completedOrders = orders.Where(o => o.Status == "Завершен").ToList();
-            var previousCompleted = previousOrders.Where(o => o.Status == "Завершен").ToList();
+            var completedStatus = OrderStatus.Completed.DisplayName;
+            var completedOrders = orders.Where(o => o.Status == completedStatus).ToList();
+            var previousCompleted = previousOrders.Where(o => o.Status == completedStatus).ToList();
 
             TotalRevenue = completedOrders.Sum(o => o.TotalPrice);
             TotalOrdersInPeriod = orders.Count;
@@ -257,7 +281,8 @@ namespace HQStudio.ViewModels
 
         private void LoadRevenueChart(List<Order> orders, DateTime start, DateTime end)
         {
-            var groupedData = GetGroupedData(orders.Where(o => o.Status == "Завершен"), start, end);
+            // Передаём все заказы — группировка сама отфильтрует по CompletedAt
+            var groupedData = GetGroupedData(orders, start, end);
             var labels = groupedData.Select(g => g.Label).ToArray();
             var values = groupedData.Select(g => (double)g.Revenue).ToArray();
 
@@ -301,21 +326,26 @@ namespace HQStudio.ViewModels
             var completedValues = groupedData.Select(g => (double)g.CompletedCount).ToArray();
             var inProgressValues = groupedData.Select(g => (double)g.InProgressCount).ToArray();
 
+            // Цвет для легенды (светлый для тёмной темы)
+            var legendTextColor = new SKColor(220, 220, 220);
+
             OrdersSeries = new ISeries[]
             {
                 new ColumnSeries<double>
                 {
                     Values = completedValues,
-                    Fill = new SolidColorPaint(new SKColor(76, 175, 80)),
+                    Fill = new SolidColorPaint(ColorCompleted),
                     Name = "Завершено",
-                    MaxBarWidth = 20
+                    MaxBarWidth = 20,
+                    DataLabelsPaint = new SolidColorPaint(legendTextColor)
                 },
                 new ColumnSeries<double>
                 {
                     Values = inProgressValues,
-                    Fill = new SolidColorPaint(new SKColor(255, 193, 7)),
+                    Fill = new SolidColorPaint(ColorInProgress),
                     Name = "В работе",
-                    MaxBarWidth = 20
+                    MaxBarWidth = 20,
+                    DataLabelsPaint = new SolidColorPaint(legendTextColor)
                 }
             };
 
@@ -324,7 +354,7 @@ namespace HQStudio.ViewModels
                 new Axis
                 {
                     Labels = labels,
-                    LabelsPaint = new SolidColorPaint(new SKColor(150, 150, 150)),
+                    LabelsPaint = new SolidColorPaint(new SKColor(200, 200, 200)),
                     TextSize = 11
                 }
             };
@@ -333,7 +363,7 @@ namespace HQStudio.ViewModels
             {
                 new Axis
                 {
-                    LabelsPaint = new SolidColorPaint(new SKColor(150, 150, 150)),
+                    LabelsPaint = new SolidColorPaint(new SKColor(200, 200, 200)),
                     TextSize = 11,
                     MinLimit = 0
                 }
@@ -344,19 +374,27 @@ namespace HQStudio.ViewModels
         {
             var result = new List<GroupedOrderData>();
             var days = (end - start).TotalDays;
+            var completedStatus = OrderStatus.Completed.DisplayName;
+            var cancelledStatus = OrderStatus.Cancelled.DisplayName;
 
             if (days <= 7)
             {
                 // По дням
                 for (var d = start; d <= end; d = d.AddDays(1))
                 {
-                    var dayOrders = orders.Where(o => o.CreatedAt.Date == d).ToList();
+                    // Для выручки используем дату завершения, для остальных — дату создания
+                    var completedOnDay = orders.Where(o => 
+                        o.Status == completedStatus && 
+                        o.CompletedAt.HasValue && 
+                        o.CompletedAt.Value.Date == d).ToList();
+                    var createdOnDay = orders.Where(o => o.CreatedAt.Date == d).ToList();
+                    
                     result.Add(new GroupedOrderData
                     {
                         Label = d.ToString("dd.MM"),
-                        Revenue = dayOrders.Sum(o => o.TotalPrice),
-                        CompletedCount = dayOrders.Count(o => o.Status == "Завершен"),
-                        InProgressCount = dayOrders.Count(o => o.Status != "Завершен" && o.Status != "Отменен")
+                        Revenue = completedOnDay.Sum(o => o.TotalPrice),
+                        CompletedCount = completedOnDay.Count,
+                        InProgressCount = createdOnDay.Count(o => o.Status != completedStatus && o.Status != cancelledStatus)
                     });
                 }
             }
@@ -369,13 +407,21 @@ namespace HQStudio.ViewModels
                     var weekEnd = weekStart.AddDays(6);
                     if (weekEnd > end) weekEnd = end;
                     
-                    var weekOrders = orders.Where(o => o.CreatedAt.Date >= weekStart && o.CreatedAt.Date <= weekEnd).ToList();
+                    var completedInWeek = orders.Where(o => 
+                        o.Status == completedStatus && 
+                        o.CompletedAt.HasValue && 
+                        o.CompletedAt.Value.Date >= weekStart && 
+                        o.CompletedAt.Value.Date <= weekEnd).ToList();
+                    var createdInWeek = orders.Where(o => 
+                        o.CreatedAt.Date >= weekStart && 
+                        o.CreatedAt.Date <= weekEnd).ToList();
+                    
                     result.Add(new GroupedOrderData
                     {
                         Label = $"{weekStart:dd.MM}",
-                        Revenue = weekOrders.Sum(o => o.TotalPrice),
-                        CompletedCount = weekOrders.Count(o => o.Status == "Завершен"),
-                        InProgressCount = weekOrders.Count(o => o.Status != "Завершен" && o.Status != "Отменен")
+                        Revenue = completedInWeek.Sum(o => o.TotalPrice),
+                        CompletedCount = completedInWeek.Count,
+                        InProgressCount = createdInWeek.Count(o => o.Status != completedStatus && o.Status != cancelledStatus)
                     });
                     weekStart = weekStart.AddDays(7);
                 }
@@ -387,13 +433,22 @@ namespace HQStudio.ViewModels
                 while (monthStart <= end)
                 {
                     var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-                    var monthOrders = orders.Where(o => o.CreatedAt.Date >= monthStart && o.CreatedAt.Date <= monthEnd).ToList();
+                    
+                    var completedInMonth = orders.Where(o => 
+                        o.Status == completedStatus && 
+                        o.CompletedAt.HasValue && 
+                        o.CompletedAt.Value.Date >= monthStart && 
+                        o.CompletedAt.Value.Date <= monthEnd).ToList();
+                    var createdInMonth = orders.Where(o => 
+                        o.CreatedAt.Date >= monthStart && 
+                        o.CreatedAt.Date <= monthEnd).ToList();
+                    
                     result.Add(new GroupedOrderData
                     {
                         Label = monthStart.ToString("MMM"),
-                        Revenue = monthOrders.Sum(o => o.TotalPrice),
-                        CompletedCount = monthOrders.Count(o => o.Status == "Завершен"),
-                        InProgressCount = monthOrders.Count(o => o.Status != "Завершен" && o.Status != "Отменен")
+                        Revenue = completedInMonth.Sum(o => o.TotalPrice),
+                        CompletedCount = completedInMonth.Count,
+                        InProgressCount = createdInMonth.Count(o => o.Status != completedStatus && o.Status != cancelledStatus)
                     });
                     monthStart = monthStart.AddMonths(1);
                 }
@@ -404,12 +459,43 @@ namespace HQStudio.ViewModels
 
         private void LoadServicesPieChart(List<Order> orders)
         {
+            var completedStatus = OrderStatus.Completed.DisplayName;
+            
+            // Если нет услуг в заказах (API не возвращает ServiceIds), показываем заглушку
+            var ordersWithServices = orders.Where(o => o.ServiceIds.Any()).ToList();
+            
+            if (!ordersWithServices.Any())
+            {
+                // Показываем общую выручку как одну секцию
+                var totalRevenue = orders.Where(o => o.Status == completedStatus).Sum(o => o.TotalPrice);
+                if (totalRevenue > 0)
+                {
+                    ServicesPieSeries = new ISeries[]
+                    {
+                        new PieSeries<double>
+                        {
+                            Values = new[] { (double)totalRevenue },
+                            Name = "Общая выручка",
+                            Fill = new SolidColorPaint(ColorCompleted),
+                            DataLabelsSize = 14,
+                            DataLabelsPaint = new SolidColorPaint(new SKColor(30, 30, 30)), // Тёмный текст на зелёном
+                            DataLabelsFormatter = p => $"{totalRevenue:N0} ₽"
+                        }
+                    };
+                }
+                else
+                {
+                    ServicesPieSeries = Array.Empty<ISeries>();
+                }
+                return;
+            }
+
             var serviceStats = _dataService.Services
                 .Select(s => new
                 {
                     Service = s,
-                    Count = orders.Count(o => o.ServiceIds.Contains(s.Id)),
-                    Revenue = orders.Where(o => o.ServiceIds.Contains(s.Id) && o.Status == "Завершен")
+                    Count = ordersWithServices.Count(o => o.ServiceIds.Contains(s.Id)),
+                    Revenue = ordersWithServices.Where(o => o.ServiceIds.Contains(s.Id) && o.Status == completedStatus)
                         .Sum(o => o.TotalPrice / Math.Max(o.ServiceIds.Count, 1))
                 })
                 .Where(s => s.Count > 0)
@@ -419,11 +505,11 @@ namespace HQStudio.ViewModels
 
             var colors = new[]
             {
-                new SKColor(76, 175, 80),   // Green
-                new SKColor(255, 193, 7),   // Yellow
-                new SKColor(33, 150, 243),  // Blue
+                ColorCompleted,      // Green
+                ColorInProgress,     // Orange
+                ColorNew,            // Blue
                 new SKColor(156, 39, 176),  // Purple
-                new SKColor(255, 87, 34)    // Orange
+                ColorCancelled       // Red
             };
 
             ServicesPieSeries = serviceStats.Select((s, i) => new PieSeries<double>
@@ -440,13 +526,23 @@ namespace HQStudio.ViewModels
         private void LoadTopServices(List<Order> orders)
         {
             TopServices.Clear();
+            var completedStatus = OrderStatus.Completed.DisplayName;
+
+            // Если нет услуг в заказах (API не возвращает ServiceIds), показываем сообщение
+            var ordersWithServices = orders.Where(o => o.ServiceIds.Any()).ToList();
+            
+            if (!ordersWithServices.Any())
+            {
+                // Нет данных по услугам — ничего не показываем
+                return;
+            }
 
             var stats = _dataService.Services
                 .Select(s => new ServiceStatistic
                 {
                     Service = s,
-                    OrderCount = orders.Count(o => o.ServiceIds.Contains(s.Id)),
-                    TotalRevenue = orders.Where(o => o.ServiceIds.Contains(s.Id) && o.Status == "Завершен")
+                    OrderCount = ordersWithServices.Count(o => o.ServiceIds.Contains(s.Id)),
+                    TotalRevenue = ordersWithServices.Where(o => o.ServiceIds.Contains(s.Id) && o.Status == completedStatus)
                         .Sum(o => o.TotalPrice / Math.Max(o.ServiceIds.Count, 1))
                 })
                 .Where(s => s.OrderCount > 0)
