@@ -27,6 +27,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+    <!-- Windows Forms для NotifyIcon (системные уведомления) -->
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
     <!-- Графики -->
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-rc2" />
     <!-- PDF отчёты -->

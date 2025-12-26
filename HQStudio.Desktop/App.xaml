@@ -22,6 +22,7 @@
             <converters:BoolToOpacityConverter x:Key="BoolToOpacityConverter"/>
             <converters:GreaterThanOneToVisibilityConverter x:Key="GreaterThanOneToVisibility"/>
             <converters:EqualityConverter x:Key="EqualityConverter"/>
+            <converters:StringToVisibilityConverter x:Key="StringToVisibility"/>
             
             <!-- Dynamic Theme Brushes -->
             <SolidColorBrush x:Key="BgPrimaryBrush" Color="#0A0A0A"/>
