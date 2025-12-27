@@ -109,9 +109,10 @@ describe('lucide-react Version Compatibility', () => {
     testIcons.forEach(Icon => {
       // forwardRef компоненты имеют $$typeof Symbol
       expect(Icon).toHaveProperty('$$typeof')
-      // И render функцию
-      expect(Icon).toHaveProperty('render')
-      expect(typeof Icon.render).toBe('function')
+      // И render функцию (используем 'in' для проверки без TS ошибки)
+      expect('render' in Icon).toBe(true)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(typeof (Icon as any).render).toBe('function')
     })
   })
 
