@@ -1,3 +1,10 @@
+## [1.19.4](https://github.com/randomu3/hqstudio/compare/v1.19.3...v1.19.4) (2025-12-27)
+
+
+### Bug Fixes
+
+* **desktop:** map service price from API to PriceFrom ([7f60303](https://github.com/randomu3/hqstudio/commit/7f60303c27ac9b2db160c41df2f893d2c48177e7))
+
 ## [1.19.3](https://github.com/randomu3/hqstudio/compare/v1.19.2...v1.19.3) (2025-12-27)
 
 
