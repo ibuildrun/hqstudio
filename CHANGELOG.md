@@ -1,3 +1,10 @@
+## [1.19.2](https://github.com/randomu3/hqstudio/compare/v1.19.1...v1.19.2) (2025-12-27)
+
+
+### Bug Fixes
+
+* **desktop:** fix monthly revenue not displaying on dashboard ([b5b1d34](https://github.com/randomu3/hqstudio/commit/b5b1d345c957a4566a222ea0409f5ccadd9ecb13))
+
 ## [1.19.1](https://github.com/randomu3/hqstudio/compare/v1.19.0...v1.19.1) (2025-12-27)
 
 
