@@ -1,3 +1,10 @@
+## [1.19.3](https://github.com/randomu3/hqstudio/compare/v1.19.2...v1.19.3) (2025-12-27)
+
+
+### Bug Fixes
+
+* **desktop:** load featured services from API on dashboard ([7653e9f](https://github.com/randomu3/hqstudio/commit/7653e9fddf04a661e0c5e9ca69271a12a4e87761))
+
 ## [1.19.2](https://github.com/randomu3/hqstudio/compare/v1.19.1...v1.19.2) (2025-12-27)
 
 
