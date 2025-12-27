@@ -157,6 +157,21 @@ namespace HQStudio.ViewModels
                         });
                     }
                     
+                    // Load featured services from API
+                    FeaturedServices.Clear();
+                    var apiServices = await _apiService.GetServicesAsync(activeOnly: true);
+                    foreach (var svc in apiServices.Take(6))
+                    {
+                        FeaturedServices.Add(new Service
+                        {
+                            Id = svc.Id,
+                            Name = svc.Title,
+                            Description = svc.Description,
+                            Icon = svc.Icon,
+                            IsActive = svc.IsActive
+                        });
+                    }
+                    
                     LoadRevenueChart();
                     return;
                 }
