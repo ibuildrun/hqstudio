@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using HQStudio.API.Data;
-using HQStudio.API.Models;
+using HQStudio.API.DTOs.Dashboard;
+using HQStudio.API.Services.Interfaces;
 
 namespace HQStudio.API.Controllers;
 
@@ -11,82 +10,14 @@ namespace HQStudio.API.Controllers;
 [Authorize]
 public class DashboardController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly IDashboardService _dashboardService;
 
-    public DashboardController(AppDbContext db) => _db = db;
+    public DashboardController(IDashboardService dashboardService) => _dashboardService = dashboardService;
 
     [HttpGet]
-    public async Task<ActionResult<DashboardStats>> GetStats()
+    public async Task<ActionResult<DashboardStatsDto>> GetStats()
     {
-        var today = DateTime.Today;
-        var monthStart = new DateTime(today.Year, today.Month, 1);
-
-        // Completed orders for current month (not deleted)
-        var completedOrders = await _db.Orders
-            .Where(o => !o.IsDeleted && o.Status == OrderStatus.Completed)
-            .Where(o => o.CompletedAt.HasValue && o.CompletedAt.Value.Date >= monthStart)
-            .ToListAsync();
-
-        var stats = new DashboardStats
-        {
-            TotalClients = await _db.Clients.CountAsync(),
-            TotalOrders = await _db.Orders.CountAsync(o => !o.IsDeleted),
-            NewCallbacks = await _db.CallbackRequests.CountAsync(c => c.Status == RequestStatus.New),
-            MonthlyRevenue = completedOrders.Sum(o => o.TotalPrice),
-            OrdersInProgress = await _db.Orders.CountAsync(o => !o.IsDeleted && o.Status == OrderStatus.InProgress),
-            CompletedThisMonth = completedOrders.Count,
-            NewSubscribers = await _db.Subscriptions.CountAsync(s => s.CreatedAt >= monthStart),
-            PopularServices = await _db.OrderServices
-                .Where(os => !os.Order.IsDeleted)
-                .GroupBy(os => os.Service.Title)
-                .Select(g => new ServiceStat { Name = g.Key, Count = g.Count() })
-                .OrderByDescending(s => s.Count)
-                .Take(5)
-                .ToListAsync(),
-            RecentOrders = await _db.Orders
-                .Where(o => !o.IsDeleted)
-                .Include(o => o.Client)
-                .OrderByDescending(o => o.CreatedAt)
-                .Take(5)
-                .Select(o => new RecentOrder
-                {
-                    Id = o.Id,
-                    ClientName = o.Client.Name,
-                    Status = o.Status,
-                    TotalPrice = o.TotalPrice,
-                    CreatedAt = o.CreatedAt
-                })
-                .ToListAsync()
-        };
-
+        var stats = await _dashboardService.GetStatsAsync();
         return Ok(stats);
     }
-}
-
-public class DashboardStats
-{
-    public int TotalClients { get; set; }
-    public int TotalOrders { get; set; }
-    public int NewCallbacks { get; set; }
-    public decimal MonthlyRevenue { get; set; }
-    public int OrdersInProgress { get; set; }
-    public int CompletedThisMonth { get; set; }
-    public int NewSubscribers { get; set; }
-    public List<ServiceStat> PopularServices { get; set; } = new();
-    public List<RecentOrder> RecentOrders { get; set; } = new();
-}
-
-public class ServiceStat
-{
-    public string Name { get; set; } = string.Empty;
-    public int Count { get; set; }
-}
-
-public class RecentOrder
-{
-    public int Id { get; set; }
-    public string ClientName { get; set; } = string.Empty;
-    public OrderStatus Status { get; set; }
-    public decimal TotalPrice { get; set; }
-    public DateTime CreatedAt { get; set; }
 }

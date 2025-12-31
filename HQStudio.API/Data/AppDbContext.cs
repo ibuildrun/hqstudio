@@ -25,29 +25,7 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<OrderService>()
-            .HasKey(os => new { os.OrderId, os.ServiceId });
-
-        modelBuilder.Entity<OrderService>()
-            .HasOne(os => os.Order)
-            .WithMany(o => o.OrderServices)
-            .HasForeignKey(os => os.OrderId);
-
-        modelBuilder.Entity<OrderService>()
-            .HasOne(os => os.Service)
-            .WithMany(s => s.OrderServices)
-            .HasForeignKey(os => os.ServiceId);
-
-        modelBuilder.Entity<SiteContent>()
-            .HasIndex(sc => sc.Key)
-            .IsUnique();
-
-        modelBuilder.Entity<Subscription>()
-            .HasIndex(s => s.Email)
-            .IsUnique();
-
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Login)
-            .IsUnique();
+        // Применяем все конфигурации из текущей сборки
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 }

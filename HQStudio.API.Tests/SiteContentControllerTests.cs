@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using HQStudio.API.Controllers;
-using HQStudio.API.DTOs;
 using HQStudio.API.Models;
 using Xunit;
 

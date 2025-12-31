@@ -7,6 +7,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using HQStudio.API.Data;
 using HQStudio.API.Services;
+using HQStudio.API.Services.Interfaces;
+using HQStudio.API.Middleware;
 using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -57,6 +59,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<JwtService>();
+
+// Business services
+builder.Services.AddScoped<IOrderService, HQStudio.API.Services.OrderService>();
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
 
 // Rate Limiting - защита от брутфорса и DDoS (отключено для тестов)
 if (!builder.Environment.IsEnvironment("Testing"))
@@ -528,6 +536,10 @@ if (!app.Environment.IsEnvironment("Testing"))
 {
     app.UseRateLimiter();
 }
+
+// Desktop client detection middleware (должен быть до Authentication)
+app.UseDesktopClientDetection();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

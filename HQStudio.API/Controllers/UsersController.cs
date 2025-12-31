@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HQStudio.API.Data;
-using HQStudio.API.DTOs;
+using HQStudio.API.DTOs.Auth;
 using HQStudio.API.Models;
 
 namespace HQStudio.API.Controllers;

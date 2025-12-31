@@ -1,6 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using HQStudio.API.DTOs;
+using HQStudio.API.DTOs.Auth;
 using Xunit;
 
 namespace HQStudio.API.Tests;

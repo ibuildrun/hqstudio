@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using HQStudio.API.DTOs;
 using Xunit;
 
 namespace HQStudio.API.Tests;

@@ -1,8 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using HQStudio.API.Controllers;
-using HQStudio.API.DTOs;
+using HQStudio.API.DTOs.Dashboard;
 using Xunit;
 
 namespace HQStudio.API.Tests;
@@ -30,7 +29,7 @@ public class DashboardControllerTests : IntegrationTestBase
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var stats = await response.Content.ReadFromJsonAsync<DashboardStats>();
+        var stats = await response.Content.ReadFromJsonAsync<DashboardStatsDto>();
         stats.Should().NotBeNull();
     }
 
@@ -42,7 +41,7 @@ public class DashboardControllerTests : IntegrationTestBase
 
         // Act
         var response = await Client.GetAsync("/api/dashboard");
-        var stats = await response.Content.ReadFromJsonAsync<DashboardStats>();
+        var stats = await response.Content.ReadFromJsonAsync<DashboardStatsDto>();
 
         // Assert
         stats!.TotalClients.Should().BeGreaterThanOrEqualTo(0);

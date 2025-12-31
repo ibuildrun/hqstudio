@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using HQStudio.API.Data;
-using HQStudio.API.DTOs;
+using HQStudio.API.DTOs.Auth;
+using HQStudio.API.Extensions;
 using HQStudio.API.Models;
 using HQStudio.API.Services;
 
@@ -39,8 +40,7 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Неверный логин или пароль" });
 
         // Определяем платформу
-        var clientType = Request.Headers["X-Client-Type"].FirstOrDefault();
-        var isDesktopClient = clientType?.Equals("Desktop", StringComparison.OrdinalIgnoreCase) == true;
+        var isDesktopClient = HttpContext.IsDesktopClient();
         var platform = isDesktopClient ? "Desktop" : "Web";
 
         // Проверяем права доступа к платформе
@@ -83,7 +83,7 @@ public class AuthController : ControllerBase
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
     {
-        var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var userId = HttpContext.GetCurrentUserId();
         var user = await _db.Users.FindAsync(userId);
         
         if (user == null) return NotFound();
@@ -105,7 +105,7 @@ public class AuthController : ControllerBase
     [HttpGet("me")]
     public async Task<ActionResult<UserDto>> GetCurrentUser()
     {
-        var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var userId = HttpContext.GetCurrentUserId();
         var user = await _db.Users.FindAsync(userId);
         
         if (user == null) return NotFound();
