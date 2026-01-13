@@ -99,7 +99,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Build and push API
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./HQStudio.API
           push: true
@@ -108,7 +108,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository }}/api:latest
       
       - name: Build and push Web
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./HQStudio.Web
           push: true
