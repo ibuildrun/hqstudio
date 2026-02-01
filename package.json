@@ -10,7 +10,7 @@
     "release:dry": "semantic-release --dry-run"
   },
   "devDependencies": {
-    "@commitlint/cli": "^18.4.0",
+    "@commitlint/cli": "^20.2.0",
     "@commitlint/config-conventional": "^18.4.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/exec": "^6.0.3",
