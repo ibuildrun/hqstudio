@@ -36,7 +36,7 @@ jobs:
         run: dotnet test HQStudio.API.Tests/HQStudio.API.Tests.csproj --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
       - name: Upload API Coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: ./coverage/**/coverage.cobertura.xml
           flags: api
@@ -85,7 +85,7 @@ jobs:
         run: npm test -- --coverage
 
       - name: Upload Web Coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: ./coverage/coverage-final.json
           flags: web
