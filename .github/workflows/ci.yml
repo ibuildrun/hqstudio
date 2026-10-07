@@ -117,6 +117,9 @@ jobs:
       - name: Test
         run: dotnet test HQStudio.Desktop.Tests/HQStudio.Desktop.Tests.csproj --verbosity normal --filter "Category!=Integration"
       
+      - name: Test installer
+        run: dotnet test HQStudio.Setup.Tests/HQStudio.Setup.Tests.csproj --verbosity normal
+      
       - name: Take Screenshots
         shell: pwsh
         env:

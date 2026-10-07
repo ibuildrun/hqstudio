@@ -142,14 +142,17 @@ jobs:
           Set-Content $csproj $content
           Write-Host "Updated version to $version"
       
-      - name: Publish Desktop
-        run: dotnet publish HQStudio.Desktop/HQStudio.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:Version=${{ needs.release.outputs.new_release_version }} -o ./publish
-      
-      - name: Create ZIP
-        run: Compress-Archive -Path ./publish/* -DestinationPath HQStudio-Desktop-v${{ needs.release.outputs.new_release_version }}.zip
-      
+      - name: Build installer and server bundle
+        run: ./installer/build.ps1 -Version "${{ needs.release.outputs.new_release_version }}"
+
+      - name: Create Desktop ZIP
+        run: Compress-Archive -Path dist/publish/HQStudio.exe -DestinationPath HQStudio-Desktop-v${{ needs.release.outputs.new_release_version }}.zip
+
       - name: Upload to Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ needs.release.outputs.new_release_version }}
-          files: HQStudio-Desktop-v${{ needs.release.outputs.new_release_version }}.zip
+          files: |
+            HQStudio-Desktop-v${{ needs.release.outputs.new_release_version }}.zip
+            dist/HQStudio-Server-v${{ needs.release.outputs.new_release_version }}.zip
+            dist/HQStudio-Setup-${{ needs.release.outputs.new_release_version }}.exe

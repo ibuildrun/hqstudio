@@ -1,0 +1,110 @@
+<UserControl x:Class="HQStudio.Setup.UI.Pages.AccountPageView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:HQStudio.Setup.UI">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="0,0,0,4">
+
+            <!-- First and last name -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="ИМЯ" Style="{StaticResource TextLabel}" Margin="2,0,0,7"/>
+                    <TextBox x:Name="FirstNameBox" Style="{StaticResource InputText}" Text="{Binding FirstName, UpdateSourceTrigger=PropertyChanged}"
+                             ui:Ui.HasError="{Binding HasFirstNameError}" ui:Ui.Placeholder="Например, Иван" LostFocus="FirstName_LostFocus"/>
+                    <TextBlock Text="{Binding FirstNameError}" Style="{StaticResource TextError}" Margin="2,5,0,0"
+                               Visibility="{Binding HasFirstNameError, Converter={StaticResource BoolToVisibility}}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="ФАМИЛИЯ" Style="{StaticResource TextLabel}" Margin="2,0,0,7"/>
+                    <TextBox x:Name="LastNameBox" Style="{StaticResource InputText}" Text="{Binding LastName, UpdateSourceTrigger=PropertyChanged}"
+                             ui:Ui.HasError="{Binding HasLastNameError}" ui:Ui.Placeholder="Например, Петров" LostFocus="LastName_LostFocus"/>
+                    <TextBlock Text="{Binding LastNameError}" Style="{StaticResource TextError}" Margin="2,5,0,0"
+                               Visibility="{Binding HasLastNameError, Converter={StaticResource BoolToVisibility}}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Password -->
+            <TextBlock Text="ПАРОЛЬ" Style="{StaticResource TextLabel}" Margin="2,16,0,7"/>
+            <Grid>
+                <PasswordBox x:Name="PasswordBoxMasked" Style="{StaticResource InputPassword}" Padding="14,11,48,11"
+                             ui:Ui.HasError="{Binding HasPasswordError}" PasswordChanged="Password_Changed" LostFocus="Password_LostFocus"
+                             Visibility="{Binding ShowPassword, Converter={StaticResource InverseBoolToVisibility}}"/>
+                <TextBox x:Name="PasswordBoxPlain" Style="{StaticResource InputText}" Padding="14,11,48,11"
+                         Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}" ui:Ui.HasError="{Binding HasPasswordError}"
+                         LostFocus="Password_LostFocus"
+                         Visibility="{Binding ShowPassword, Converter={StaticResource BoolToVisibility}}"/>
+                <Button HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0" Click="TogglePassword_Click"
+                        Style="{StaticResource BtnIcon}" Width="34" Height="34" ToolTip="Показать или скрыть пароль">
+                    <Path Width="18" Height="18" Stroke="#B0B0B0">
+                        <Path.Style>
+                            <Style TargetType="Path" BasedOn="{StaticResource IconPath}">
+                                <Setter Property="Data" Value="{StaticResource IconEye}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ShowPassword}" Value="True">
+                                        <Setter Property="Data" Value="{StaticResource IconEyeOff}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
+                    </Path>
+                </Button>
+            </Grid>
+
+            <!-- Strength -->
+            <Grid Margin="2,9,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="132"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <UniformGrid Rows="1" VerticalAlignment="Center" Margin="0,0,14,0">
+                    <Border Height="5" CornerRadius="2.5" Margin="0,0,4,0" Background="{Binding Strength, Converter={StaticResource StrengthBrush}, ConverterParameter=1}"/>
+                    <Border Height="5" CornerRadius="2.5" Margin="0,0,4,0" Background="{Binding Strength, Converter={StaticResource StrengthBrush}, ConverterParameter=2}"/>
+                    <Border Height="5" CornerRadius="2.5" Background="{Binding Strength, Converter={StaticResource StrengthBrush}, ConverterParameter=3}"/>
+                </UniformGrid>
+                <TextBlock Grid.Column="1" Text="{Binding StrengthText}" Style="{StaticResource TextSmall}" VerticalAlignment="Center"
+                           Visibility="{Binding HasPasswordError, Converter={StaticResource InverseBoolToVisibility}}"/>
+                <TextBlock Grid.Column="1" Text="{Binding PasswordError}" Style="{StaticResource TextError}" VerticalAlignment="Center"
+                           Visibility="{Binding HasPasswordError, Converter={StaticResource BoolToVisibility}}"/>
+            </Grid>
+
+            <!-- Repeat -->
+            <TextBlock Text="ПОВТОРИТЕ ПАРОЛЬ" Style="{StaticResource TextLabel}" Margin="2,14,0,7"/>
+            <Grid>
+                <PasswordBox x:Name="RepeatBoxMasked" Style="{StaticResource InputPassword}"
+                             ui:Ui.HasError="{Binding HasPasswordRepeatError}" PasswordChanged="Repeat_Changed" LostFocus="Repeat_LostFocus"
+                             Visibility="{Binding ShowPassword, Converter={StaticResource InverseBoolToVisibility}}"/>
+                <TextBox x:Name="RepeatBoxPlain" Style="{StaticResource InputText}"
+                         Text="{Binding PasswordRepeat, UpdateSourceTrigger=PropertyChanged}" ui:Ui.HasError="{Binding HasPasswordRepeatError}"
+                         LostFocus="Repeat_LostFocus"
+                         Visibility="{Binding ShowPassword, Converter={StaticResource BoolToVisibility}}"/>
+            </Grid>
+            <TextBlock Text="{Binding PasswordRepeatError}" Style="{StaticResource TextError}" Margin="2,5,0,0"
+                       Visibility="{Binding HasPasswordRepeatError, Converter={StaticResource BoolToVisibility}}"/>
+
+            <!-- Explanation -->
+            <Border Margin="0,14,0,0" Padding="16,11" CornerRadius="12" Background="{StaticResource WarningBgBrush}"
+                    BorderBrush="{StaticResource WarningBorderBrush}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Path Data="{StaticResource IconKey}" Style="{StaticResource IconPath}" Stroke="#FFC107" Width="20" Height="20"
+                          VerticalAlignment="Center" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="13" LineHeight="18" Foreground="#E0D2A0">
+                        <Run Text="Главный аккаунт администратора. Логин для входа: "/><Run Text="admin" FontWeight="Bold" Foreground="#FFFFFF"/><Run Text="."/>
+                        <LineBreak/>
+                        <Run Text="Пароль восстановить нельзя: запишите его и сохраните."/>
+                    </TextBlock>
+                </Grid>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

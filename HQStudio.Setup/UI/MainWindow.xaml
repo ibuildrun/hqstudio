@@ -1,0 +1,15 @@
+<Window x:Class="HQStudio.Setup.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:HQStudio.Setup.UI"
+        Title="Установка HQ Studio"
+        Width="884" Height="624"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        UseLayoutRounding="True"
+        Icon="pack://application:,,,/Resources/app.ico">
+    <ui:ShellView x:Name="Shell"/>
+</Window>

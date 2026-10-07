@@ -1,6 +1,7 @@
 using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -114,11 +115,20 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
+        var extraOrigins = (builder.Configuration["Cors:Origins"] ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         policy.WithOrigins(
-                "http://localhost:3000",
-                "http://localhost:3001",
-                "https://hqstudio.ru",
-                "https://hqstudio.tuna.am")
+                new[]
+                {
+                    "http://localhost:3000",
+                    "http://localhost:3001",
+                    "http://localhost:8080",
+                    "https://hqstudio.ru",
+                    "https://hqstudio.tuna.am",
+                    "https://*.tuna.am"
+                }.Concat(extraOrigins).ToArray())
+            // Tuna tunnels live on subdomains of tuna.am (e.g. name.ru.tuna.am)
+            .SetIsOriginAllowedToAllowWildcardSubdomains()
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -155,7 +165,17 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // The reverse proxy (nginx container) sits on a private docker network
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 // Auto-create database and seed
 using (var scope = app.Services.CreateScope())
@@ -521,7 +541,7 @@ using (var scope = app.Services.CreateScope())
     
     // В Development создаём тестовые данные и простые пароли
     var isDevelopment = app.Environment.IsDevelopment();
-    DbSeeder.Seed(db, isDevelopment);
+    DbSeeder.Seed(db, isDevelopment, builder.Configuration["Seed:AdminPassword"], builder.Configuration["Seed:AdminName"]);
 }
 
 app.UseSwagger();

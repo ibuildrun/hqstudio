@@ -9,9 +9,13 @@ public static class DbSeeder
     /// isDevelopment = true: создаёт тестовых пользователей с простыми паролями и тестовые данные
     /// isDevelopment = false: создаёт только admin без пароля (требует установки при первом входе)
     /// </summary>
-    public static void Seed(AppDbContext context, bool isDevelopment = false)
+    /// <param name="adminPassword">
+    /// Optional production admin password (Seed:AdminPassword). When set, only the admin
+    /// account is created with this password (and optional full name) and no forced change.
+    /// </param>
+    public static void Seed(AppDbContext context, bool isDevelopment = false, string? adminPassword = null, string? adminName = null)
     {
-        SeedUsers(context, isDevelopment);
+        SeedUsers(context, isDevelopment, adminPassword, adminName);
         SeedServices(context);
         SeedSiteContent(context);
         
@@ -23,9 +27,22 @@ public static class DbSeeder
         context.SaveChanges();
     }
 
-    private static void SeedUsers(AppDbContext context, bool isDevelopment)
+    private static void SeedUsers(AppDbContext context, bool isDevelopment, string? configuredAdminPassword, string? adminName)
     {
         if (context.Users.Any()) return;
+
+        if (!isDevelopment && !string.IsNullOrWhiteSpace(configuredAdminPassword))
+        {
+            context.Users.Add(new User
+            {
+                Login = "admin",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(configuredAdminPassword),
+                Name = string.IsNullOrWhiteSpace(adminName) ? "Администратор" : adminName.Trim(),
+                Role = UserRole.Admin,
+                MustChangePassword = false
+            });
+            return;
+        }
 
         if (isDevelopment)
         {

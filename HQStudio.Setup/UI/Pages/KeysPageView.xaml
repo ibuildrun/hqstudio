@@ -1,0 +1,160 @@
+<UserControl x:Class="HQStudio.Setup.UI.Pages.KeysPageView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:HQStudio.Setup.UI">
+    <UserControl.Resources>
+        <Style x:Key="OptionalChip" TargetType="Border">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="9,4"/>
+            <Setter Property="Background" Value="{StaticResource BgHoverBrush}"/>
+        </Style>
+        <Style x:Key="KeyIconBox" TargetType="Border">
+            <Setter Property="Width" Value="34"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Background" Value="{StaticResource BgHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style x:Key="WhereButton" TargetType="Button" BasedOn="{StaticResource BtnLink}">
+            <Setter Property="Width" Value="156"/>
+            <Setter Property="Padding" Value="12,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="0,0,0,4">
+
+            <!-- Gemini -->
+            <Border Style="{StaticResource Card}" Padding="20,15,20,16">
+                <StackPanel>
+                    <Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource KeyIconBox}">
+                                <Path Data="{StaticResource IconSpark}" Style="{StaticResource IconPath}" Width="16" Height="16" StrokeThickness="1.8"/>
+                            </Border>
+                            <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Ключ Gemini" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock Text="ИИ на сайте" Style="{StaticResource TextSmall}"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Border Style="{StaticResource OptionalChip}">
+                            <TextBlock Text="МОЖНО ПРОПУСТИТЬ" FontSize="10" FontWeight="SemiBold" Foreground="#B0B0B0"/>
+                        </Border>
+                    </Grid>
+                    <TextBlock Style="{StaticResource TextBody}" FontSize="13" LineHeight="18" Margin="0,10,0,0"
+                               Text="Включает на сайте помощника с искусственным интеллектом."/>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Style="{StaticResource InputText}" Text="{Binding GeminiKey, UpdateSourceTrigger=PropertyChanged}"
+                                 ui:Ui.HasError="{Binding HasGeminiError}" ui:Ui.Placeholder="Вставьте ключ сюда"/>
+                        <Button Grid.Column="2" Style="{StaticResource WhereButton}" Command="{Binding OpenGeminiCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Где взять ключ" VerticalAlignment="Center"/>
+                                <Path Data="{StaticResource IconExternal}" Style="{StaticResource IconPath}" Width="13" Height="13"
+                                      Stroke="#B0B0B0" StrokeThickness="2" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <TextBlock Text="{Binding GeminiError}" Style="{StaticResource TextError}" Margin="2,5,0,0"
+                               Visibility="{Binding HasGeminiError, Converter={StaticResource BoolToVisibility}}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Tuna -->
+            <Border Style="{StaticResource Card}" Padding="20,15,20,16" Margin="0,10,0,0">
+                <StackPanel>
+                    <Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource KeyIconBox}">
+                                <Path Data="{StaticResource IconGlobe}" Style="{StaticResource IconPath}" Width="16" Height="16" StrokeThickness="1.8"/>
+                            </Border>
+                            <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Токен Tuna" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock Text="адрес сайта для всех в интернете" Style="{StaticResource TextSmall}"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Border Style="{StaticResource OptionalChip}">
+                            <TextBlock Text="МОЖНО ПРОПУСТИТЬ" FontSize="10" FontWeight="SemiBold" Foreground="#B0B0B0"/>
+                        </Border>
+                    </Grid>
+                    <TextBlock Style="{StaticResource TextBody}" FontSize="13" LineHeight="18" Margin="0,10,0,0"
+                               Text="Даёт сайту ссылку, по которой его откроют клиенты из любого места."/>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Style="{StaticResource InputText}" Text="{Binding TunaToken, UpdateSourceTrigger=PropertyChanged}"
+                                 ui:Ui.HasError="{Binding HasTunaTokenError}" ui:Ui.Placeholder="Вставьте токен сюда"/>
+                        <Button Grid.Column="2" Style="{StaticResource WhereButton}" Command="{Binding OpenTunaCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Где взять токен" VerticalAlignment="Center"/>
+                                <Path Data="{StaticResource IconExternal}" Style="{StaticResource IconPath}" Width="13" Height="13"
+                                      Stroke="#B0B0B0" StrokeThickness="2" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <TextBlock Text="{Binding TunaTokenError}" Style="{StaticResource TextError}" Margin="2,5,0,0"
+                               Visibility="{Binding HasTunaTokenError, Converter={StaticResource BoolToVisibility}}"/>
+
+                    <!-- Own address: the free Tuna plan assigns the name itself, anything else is paid -->
+                    <Expander Style="{StaticResource SetupExpander}" Header="Своё имя или домен для адреса (по подписке Tuna)"
+                              Margin="-4,8,0,0" IsExpanded="{Binding ShowAdvanced, Mode=TwoWay}"
+                              Expanded="OwnAddress_Expanded">
+                        <StackPanel Margin="4,8,0,0">
+                            <TextBlock Text="ИМЯ АДРЕСА" Style="{StaticResource TextLabel}" Margin="2,0,0,7"/>
+                            <TextBox Style="{StaticResource InputText}" Text="{Binding TunaSubdomain, UpdateSourceTrigger=PropertyChanged}"
+                                     IsEnabled="{Binding SubdomainEnabled}"
+                                     ui:Ui.HasError="{Binding HasTunaSubdomainError}" ui:Ui.Placeholder="Например, brave-otter-4821"/>
+                            <TextBlock Text="{Binding TunaSubdomainError}" Style="{StaticResource TextError}" Margin="2,5,0,0"
+                                       Visibility="{Binding HasTunaSubdomainError, Converter={StaticResource BoolToVisibility}}"/>
+                            <TextBlock Text="{Binding SubdomainHintText}" Style="{StaticResource TextSmall}" LineHeight="17" Margin="2,7,0,0"/>
+                            <Button Style="{StaticResource BtnLink}" Command="{Binding OpenTunaDomainsCommand}" HorizontalAlignment="Left"
+                                    Margin="0,8,0,0" Padding="12,7">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Открыть my.tuna.am/domains" VerticalAlignment="Center"/>
+                                    <Path Data="{StaticResource IconExternal}" Style="{StaticResource IconPath}" Width="13" Height="13"
+                                          Stroke="#B0B0B0" StrokeThickness="2" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Border BorderBrush="{StaticResource BorderDefaultBrush}" BorderThickness="0,1,0,0" Margin="0,16,0,14"/>
+
+                            <TextBlock Text="СВОЙ ДОМЕН" Style="{StaticResource TextLabel}" Margin="2,0,0,7"/>
+                            <TextBox Style="{StaticResource InputText}" Text="{Binding TunaDomain, UpdateSourceTrigger=PropertyChanged}"
+                                     ui:Ui.HasError="{Binding HasTunaDomainError}" ui:Ui.Placeholder="Например, crm.example.ru"/>
+                            <TextBlock Text="{Binding TunaDomainError}" Style="{StaticResource TextError}" Margin="2,5,0,0"
+                                       Visibility="{Binding HasTunaDomainError, Converter={StaticResource BoolToVisibility}}"/>
+                            <Button Style="{StaticResource BtnLink}" Command="{Binding OpenPunycodeCommand}" HorizontalAlignment="Left"
+                                    Margin="0,8,0,0" Padding="12,7"
+                                    Visibility="{Binding DomainNeedsPunycode, Converter={StaticResource BoolToVisibility}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Преобразовать на reg.ru" VerticalAlignment="Center"/>
+                                    <Path Data="{StaticResource IconExternal}" Style="{StaticResource IconPath}" Width="13" Height="13"
+                                          Stroke="#B0B0B0" StrokeThickness="2" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Text="{Binding DomainHintText}" Style="{StaticResource TextSmall}" LineHeight="17" Margin="2,7,0,0"/>
+                            <Button Style="{StaticResource BtnLink}" Command="{Binding OpenOwnDomainGuideCommand}" HorizontalAlignment="Left"
+                                    Margin="0,8,0,0" Padding="12,7">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Как подключить свой домен" VerticalAlignment="Center"/>
+                                    <Path Data="{StaticResource IconExternal}" Style="{StaticResource IconPath}" Width="13" Height="13"
+                                          Stroke="#B0B0B0" StrokeThickness="2" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

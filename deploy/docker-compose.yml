@@ -1,0 +1,91 @@
+# HQ Studio - local stack for a single PC (database + API + site + proxy + optional Tuna tunnel).
+# Everything is configured through the .env file next to this file (created by the installer).
+
+name: hqstudio
+
+services:
+  db:
+    image: ${POSTGRES_IMAGE:-postgres:16-alpine}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hqstudio
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set in .env}
+      POSTGRES_DB: hqstudio
+    volumes:
+      - hqstudio-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hqstudio -d hqstudio"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  api:
+    image: ghcr.io/ibuildrun/hqstudio/api:${HQSTUDIO_VERSION:-latest}
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:5000
+      ConnectionStrings__DefaultConnection: Host=db;Database=hqstudio;Username=hqstudio;Password=${POSTGRES_PASSWORD}
+      Jwt__Key: ${JWT_KEY:?JWT_KEY is not set in .env}
+      Jwt__Issuer: HQStudio
+      Jwt__Audience: HQStudioClients
+      Seed__AdminPassword: ${ADMIN_PASSWORD:-}
+      Seed__AdminName: ${ADMIN_NAME:-}
+      Cors__Origins: ${PUBLIC_URL:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:5000/api/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  web:
+    image: ghcr.io/ibuildrun/hqstudio/web:${HQSTUDIO_VERSION:-latest}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # Single entry point: the site on / and the API on /api. Listens on this PC only.
+  proxy:
+    image: ${NGINX_IMAGE:-nginx:1.27-alpine}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${HQ_PORT:-8080}:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+
+  # Public address through the Russian Tuna service (https://tuna.am). Started only with --profile tunnel.
+  tuna:
+    image: ${TUNA_IMAGE:-yuccastream/tuna:latest}
+    profiles: ["tunnel"]
+    restart: unless-stopped
+    command: ["http", "proxy:80", "--inspect=false"]
+    environment:
+      TUNA_TOKEN: ${TUNA_TOKEN:-}
+      TUNA_SUBDOMAIN: ${TUNA_SUBDOMAIN:-}
+      TUNA_DOMAIN: ${TUNA_DOMAIN:-}
+    depends_on:
+      - proxy
+
+volumes:
+  hqstudio-db:
+    name: hqstudio-db

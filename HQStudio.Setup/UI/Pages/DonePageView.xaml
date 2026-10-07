@@ -1,0 +1,122 @@
+<UserControl x:Class="HQStudio.Setup.UI.Pages.DonePageView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.Triggers>
+            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetName="CheckScale" Storyboard.TargetProperty="ScaleX"
+                                         From="0.6" To="1" Duration="0:0:0.45">
+                            <DoubleAnimation.EasingFunction>
+                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetName="CheckScale" Storyboard.TargetProperty="ScaleY"
+                                         From="0.6" To="1" Duration="0:0:0.45">
+                            <DoubleAnimation.EasingFunction>
+                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetName="CheckCircle" Storyboard.TargetProperty="Opacity"
+                                         From="0" To="1" Duration="0:0:0.3"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Grid.Triggers>
+        <Ellipse Width="440" Height="440" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-110,0,0"
+                 IsHitTestVisible="False">
+            <Ellipse.Fill>
+                <RadialGradientBrush>
+                    <GradientStop Color="#1A4CAF50" Offset="0"/>
+                    <GradientStop Color="#004CAF50" Offset="1"/>
+                </RadialGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
+
+        <StackPanel VerticalAlignment="Center" Margin="0,-4,0,0">
+            <Border x:Name="CheckCircle" Width="88" Height="88" CornerRadius="44" HorizontalAlignment="Center"
+                    Background="{StaticResource SuccessBgBrush}" BorderBrush="{StaticResource AccentGreenBrush}" BorderThickness="2"
+                    Effect="{StaticResource GlowGreen}" RenderTransformOrigin="0.5,0.5">
+                <Border.RenderTransform>
+                    <ScaleTransform x:Name="CheckScale" ScaleX="1" ScaleY="1"/>
+                </Border.RenderTransform>
+                <Path Data="{StaticResource IconCheck}" Style="{StaticResource IconPath}" Stroke="#4CAF50" Width="40" Height="40"
+                      StrokeThickness="3"/>
+            </Border>
+
+            <TextBlock Text="{Binding Headline}" Style="{StaticResource TextTitle}" FontSize="28" HorizontalAlignment="Center" Margin="0,22,0,0"/>
+            <TextBlock Text="{Binding Lead}" Style="{StaticResource TextBody}" HorizontalAlignment="Center" TextAlignment="Center"
+                       MaxWidth="460" Margin="0,6,0,0"/>
+
+            <!-- Site addresses -->
+            <StackPanel Margin="0,22,0,0" Visibility="{Binding SiteReady, Converter={StaticResource BoolToVisibility}}">
+                <Border Style="{StaticResource Card}" Padding="18,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="САЙТ НА ЭТОМ КОМПЬЮТЕРЕ" Style="{StaticResource TextLabel}"/>
+                            <TextBlock Text="{Binding LocalUrl}" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="Открыть сайт" Command="{Binding OpenSiteCommand}" Style="{StaticResource BtnLink}"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Padding="18,12" Margin="0,10,0,0"
+                        Visibility="{Binding HasPublicUrl, Converter={StaticResource BoolToVisibility}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="АДРЕС ДЛЯ ВСЕХ В ИНТЕРНЕТЕ" Style="{StaticResource TextLabel}"/>
+                            <TextBlock Text="{Binding PublicUrl}" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,3,0,0"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
+                            <Button Content="{Binding CopyText}" Command="{Binding CopyPublicCommand}" Style="{StaticResource BtnLink}" MinWidth="104"/>
+                            <Button Content="Открыть" Command="{Binding OpenPublicCommand}" Style="{StaticResource BtnLink}" Margin="8,0,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Margin="0,10,0,0" Padding="16,10" CornerRadius="12" Background="{StaticResource WarningBgBrush}"
+                        BorderBrush="{StaticResource WarningBorderBrush}" BorderThickness="1"
+                        Visibility="{Binding HasPublicUrlNote, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{Binding PublicUrlNote}" FontSize="13" Foreground="#FFE082" TextWrapping="Wrap"/>
+                </Border>
+            </StackPanel>
+
+            <!-- Site not installed yet -->
+            <Border Margin="0,22,0,0" Padding="18,14" CornerRadius="14" Background="{StaticResource WarningBgBrush}"
+                    BorderBrush="{StaticResource WarningBorderBrush}" BorderThickness="1"
+                    Visibility="{Binding SiteSkipped, Converter={StaticResource BoolToVisibility}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Path Data="{StaticResource IconWarning}" Style="{StaticResource IconPath}" Stroke="#FFC107" Width="20" Height="20"
+                          VerticalAlignment="Top" Margin="0,1,14,0"/>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Как достроить сайт позже" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                        <TextBlock Text="{Binding SkippedHint}" FontSize="13" LineHeight="19" Foreground="#E0D2A0" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Login reminder -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,18,0,0"
+                        Visibility="{Binding SiteReady, Converter={StaticResource BoolToVisibility}}">
+                <Path Data="{StaticResource IconKey}" Style="{StaticResource IconPath}" Stroke="#B0B0B0" Width="16" Height="16"
+                      StrokeThickness="1.8" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding LoginHint}" Style="{StaticResource TextBody}" FontSize="13" Margin="10,0,0,0" VerticalAlignment="Center"
+                           MaxWidth="480"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

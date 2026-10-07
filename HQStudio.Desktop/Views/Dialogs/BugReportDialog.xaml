@@ -1,0 +1,295 @@
+<Window x:Class="HQStudio.Views.Dialogs.BugReportDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Сообщить об ошибке"
+        Width="620" Height="680"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        KeyDown="Window_KeyDown">
+
+    <Window.Resources>
+        <!-- Многострочное поле: текст прижат к верху, а не по центру как в InputText -->
+        <Style x:Key="TextArea" TargetType="TextBox" BasedOn="{StaticResource InputText}">
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource TextPrimaryBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PreviewArea" TargetType="TextBox" BasedOn="{StaticResource TextArea}">
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="12,10"/>
+        </Style>
+
+        <Style x:Key="PanelText" TargetType="TextBlock" BasedOn="{StaticResource TextBody}">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="LineHeight" Value="21"/>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="{DynamicResource BgDialogBrush}" CornerRadius="16"
+            BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Шапка -->
+            <Border Grid.Row="0" Background="{DynamicResource BgDialogHeaderBrush}"
+                    CornerRadius="16,16,0,0" Padding="24,16"
+                    MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Text="Сообщить об ошибке" FontSize="16" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="{Binding StepTitle}" FontSize="13" Margin="0,4,0,0"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                    <Button Content="✕" Style="{DynamicResource BtnIcon}"
+                            HorizontalAlignment="Right" VerticalAlignment="Top"
+                            Command="{Binding CancelCommand}" IsTabStop="False"/>
+                </Grid>
+            </Border>
+
+            <!-- Содержимое: одна из панелей по текущему шагу -->
+            <Grid Grid.Row="1" Margin="24,20,24,12">
+
+                <!-- Шаг 1: форма -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              Visibility="{Binding IsFormStage, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource PanelText}" Margin="0,0,0,16"
+                                   Text="Расскажите своими словами, что случилось и что вы делали перед этим. Писать по-научному не нужно - так разработчикам проще понять и быстрее всё исправить."/>
+
+                        <TextBlock Text="КРАТКО (НЕОБЯЗАТЕЛЬНО)" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                        <TextBox x:Name="TitleBox" Style="{StaticResource InputText}" MaxLength="150"
+                                 Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="ЧТО СЛУЧИЛОСЬ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                        <TextBox x:Name="DescriptionBox" Style="{StaticResource TextArea}" Height="170" MaxLength="5000"
+                                 Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16"/>
+
+                        <CheckBox IsChecked="{Binding IncludeDiagnostics}" Margin="0,0,0,6">
+                            <TextBlock Text="Приложить диагностику (без паролей и ключей)" FontSize="14"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </CheckBox>
+                        <TextBlock Style="{StaticResource PanelText}" FontSize="12" Margin="30,0,0,0"
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   Text="Версия программы, версия Windows и последние записи журнала ошибок. Пароли и ключи скрываются автоматически, а весь текст вы увидите на следующем шаге до отправки."/>
+
+                        <TextBlock Text="{Binding ValidationMessage}" Margin="0,12,0,0" FontSize="13"
+                                   TextWrapping="Wrap" Foreground="{DynamicResource AccentRedBrush}"
+                                   Visibility="{Binding ValidationMessage, Converter={StaticResource StringToVisibility}}"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Шаг 2: проверка текста -->
+                <Grid Visibility="{Binding IsReviewStage, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Style="{StaticResource PanelText}" Margin="0,0,0,14"
+                               Text="Это точный текст, который уйдёт на GitHub. Пароли и ключи скрыты автоматически. Если что-то лишнее - вернитесь назад и снимите галочку «Приложить диагностику»."/>
+
+                    <TextBlock Grid.Row="1" Text="ЗАГОЛОВОК" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                    <TextBox Grid.Row="2" Style="{StaticResource PreviewArea}" IsReadOnly="True" AcceptsReturn="False"
+                             TextWrapping="NoWrap" VerticalScrollBarVisibility="Disabled"
+                             Text="{Binding PreviewTitle, Mode=OneWay}" Margin="0,0,0,14"/>
+
+                    <Grid Grid.Row="3">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="ТЕКСТ ОБРАЩЕНИЯ" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
+                        <TextBox Grid.Row="1" Style="{StaticResource PreviewArea}"
+                                 Text="{Binding PreviewBody, Mode=OneWay}"/>
+                    </Grid>
+
+                    <TextBlock Grid.Row="4" Style="{StaticResource PanelText}" FontSize="12" Margin="0,12,0,0"
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               Text="{Binding SendModeHint}"/>
+                </Grid>
+
+                <!-- Шаг 3: вход в GitHub -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              Visibility="{Binding IsSigningInStage, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource PanelText}" Margin="0,0,0,6"
+                                   Text="Чтобы отправить отчёт, нужно войти в GitHub. Если у вас ещё нет аккаунта - зарегистрируйтесь, это бесплатно, понадобится только адрес электронной почты."/>
+                        <TextBlock Style="{StaticResource PanelText}" Margin="0,10,0,0"
+                                   Text="1. Нажмите «Открыть страницу GitHub». Код скопируется сам."/>
+                        <TextBlock Style="{StaticResource PanelText}"
+                                   Text="2. Войдите в аккаунт или зарегистрируйтесь."/>
+                        <TextBlock Style="{StaticResource PanelText}"
+                                   Text="3. Вставьте код (Ctrl+V) в поле на странице и подтвердите доступ."/>
+
+                        <Border Style="{DynamicResource Card}" Margin="0,18,0,0" Padding="18">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="ВАШ КОД" Style="{DynamicResource TextLabel}"/>
+                                    <TextBlock Text="{Binding UserCode}" FontFamily="Consolas" FontSize="34" FontWeight="Bold"
+                                               Margin="0,4,0,0" Foreground="{DynamicResource TextPrimaryBrush}"
+                                               TextOptions.TextFormattingMode="Display"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <Button Content="Скопировать код" Style="{DynamicResource BtnSecondary}" Padding="16,10"
+                                            Command="{Binding CopyCodeCommand}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Button Content="Открыть страницу GitHub" Style="{DynamicResource BtnPrimary}" Margin="0,14,0,0"
+                                Command="{Binding OpenVerificationCommand}"/>
+
+                        <TextBlock Text="{Binding CopyHint}" FontSize="12" Margin="0,8,0,0"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Visibility="{Binding CopyHint, Converter={StaticResource StringToVisibility}}"/>
+
+                        <ProgressBar IsIndeterminate="True" Height="4" Margin="0,18,0,8"/>
+                        <TextBlock Style="{StaticResource PanelText}" FontSize="12"
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   Text="Ждём, пока вы подтвердите вход на странице GitHub. Это окно продолжит само."/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Отправка -->
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="320"
+                            Visibility="{Binding IsSendingStage, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <ProgressBar IsIndeterminate="True" Height="4"/>
+                    <TextBlock Text="{Binding StatusText}" HorizontalAlignment="Center" Margin="0,14,0,0"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                </StackPanel>
+
+                <!-- Готово -->
+                <StackPanel VerticalAlignment="Center"
+                            Visibility="{Binding IsSuccessStage, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock Text="{Binding SuccessTitle}" FontSize="26" FontWeight="Bold"
+                               Foreground="{DynamicResource AccentGreenBrush}" Margin="0,0,0,12"/>
+                    <TextBlock Text="{Binding SuccessMessage}" Style="{StaticResource PanelText}"/>
+                    <TextBlock Margin="0,14,0,0" FontSize="14" TextWrapping="Wrap"
+                               Visibility="{Binding IsIssueLinkVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Hyperlink Command="{Binding OpenIssueCommand}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}">
+                            <Run Text="{Binding IssueUrl, Mode=OneWay}"/>
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Ошибка -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              Visibility="{Binding IsErrorStage, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Не получилось отправить" FontSize="22" FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentRedBrush}" Margin="0,0,0,12"/>
+                        <TextBlock Text="{Binding ErrorMessage}" Style="{StaticResource PanelText}" FontSize="15"/>
+                        <TextBlock Text="Ваш текст не потерян: можно отправить его через браузер, он откроется на странице GitHub уже заполненным."
+                                   Style="{StaticResource PanelText}" Margin="0,12,0,0"/>
+                        <TextBlock Text="{Binding ErrorDetails, StringFormat='Подробности для разработчиков: {0}'}"
+                                   Style="{StaticResource PanelText}" FontSize="11" Margin="0,16,0,0"
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   Visibility="{Binding ErrorDetails, Converter={StaticResource StringToVisibility}}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Кнопки -->
+            <Border Grid.Row="2" Padding="24,16" BorderBrush="{DynamicResource BorderDefaultBrush}"
+                    BorderThickness="0,1,0,0">
+                <Grid>
+                    <!-- Шаг 1 -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                                Visibility="{Binding IsFormStage, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Button Content="Отмена" Style="{DynamicResource BtnSecondary}" Padding="22,12" Margin="0,0,10,0"
+                                Command="{Binding CancelCommand}"/>
+                        <Button Content="Далее: проверить текст" Style="{DynamicResource BtnPrimary}" Padding="22,12"
+                                Command="{Binding NextCommand}"/>
+                    </StackPanel>
+
+                    <!-- Шаг 2 -->
+                    <Grid Visibility="{Binding IsReviewStage, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Button Content="Назад" Style="{DynamicResource BtnSecondary}" Padding="22,12"
+                                HorizontalAlignment="Left" Command="{Binding BackCommand}"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Отправить через браузер" Style="{DynamicResource BtnSecondary}"
+                                    Padding="18,12" Margin="0,0,10,0" Command="{Binding SendViaBrowserCommand}"
+                                    Visibility="{Binding IsAutomaticAvailable, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <Button Content="Отправить" Style="{DynamicResource BtnPrimary}" Padding="26,12"
+                                    Command="{Binding SendCommand}"
+                                    Visibility="{Binding IsAutomaticAvailable, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <Button Content="Отправить через браузер" Style="{DynamicResource BtnPrimary}"
+                                    Padding="22,12" Command="{Binding SendViaBrowserCommand}"
+                                    Visibility="{Binding IsAutomaticAvailable, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Шаг 3 -->
+                    <Grid Visibility="{Binding IsSigningInStage, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Button Content="Назад" Style="{DynamicResource BtnSecondary}" Padding="22,12"
+                                HorizontalAlignment="Left" Command="{Binding CancelSendCommand}"/>
+                        <Button Content="Отправить через браузер" Style="{DynamicResource BtnSecondary}" Padding="18,12"
+                                HorizontalAlignment="Right" Command="{Binding SendViaBrowserCommand}"/>
+                    </Grid>
+
+                    <!-- Отправка -->
+                    <Button Content="Отмена" Style="{DynamicResource BtnSecondary}" Padding="22,12"
+                            HorizontalAlignment="Right" Command="{Binding CancelSendCommand}"
+                            Visibility="{Binding IsSendingStage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <!-- Готово -->
+                    <Button Content="Закрыть" Style="{DynamicResource BtnPrimary}" Padding="26,12"
+                            HorizontalAlignment="Right" Command="{Binding CancelCommand}"
+                            Visibility="{Binding IsSuccessStage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <!-- Ошибка -->
+                    <Grid Visibility="{Binding IsErrorStage, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Button Content="Закрыть" Style="{DynamicResource BtnSecondary}" Padding="22,12"
+                                HorizontalAlignment="Left" Command="{Binding CancelCommand}"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Повторить" Style="{DynamicResource BtnSecondary}" Padding="22,12"
+                                    Margin="0,0,10,0" Command="{Binding RetryCommand}"
+                                    Visibility="{Binding IsAutomaticAvailable, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <Button Content="Отправить через браузер" Style="{DynamicResource BtnPrimary}" Padding="22,12"
+                                    Command="{Binding SendViaBrowserCommand}"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

@@ -33,7 +33,10 @@ namespace HQStudio.ViewModels
 
         public string UserDisplayName => _dataService.CurrentUser?.DisplayName ?? "Гость";
         public string UserRole => _dataService.CurrentUser?.Role ?? "";
-        
+
+        /// <summary>Страница «Сайт» управляет сервером, поэтому видна только администратору.</summary>
+        public bool IsAdmin => string.Equals(UserRole, "Admin", StringComparison.OrdinalIgnoreCase);
+
         public string AppVersion
         {
             get
@@ -69,6 +72,7 @@ namespace HQStudio.ViewModels
         private void Navigate(object? parameter)
         {
             if (parameter is not string viewName) return;
+            if (viewName == "Site" && !IsAdmin) return;
 
             // Для ActiveOrders используем Orders для подсветки меню
             CurrentViewName = viewName == "ActiveOrders" ? "Orders" : viewName;
@@ -86,6 +90,7 @@ namespace HQStudio.ViewModels
                     "Staff" => new StaffViewModel(),
                     "ActivityLog" => new ActivityLogViewModel(),
                     "Settings" => new SettingsViewModel(),
+                    "Site" => new SiteViewModel(),
                     _ => CurrentView
                 };
             }

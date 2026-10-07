@@ -10,6 +10,7 @@ namespace HQStudio.Services
         public string Language { get; set; } = "ru";
         public string ApiUrl { get; set; } = "http://localhost:5000";
         public bool UseApi { get; set; } = true;
+        public bool AutoCheckUpdates { get; set; } = true;
     }
 
     public class SettingsService

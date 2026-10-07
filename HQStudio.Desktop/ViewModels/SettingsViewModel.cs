@@ -9,14 +9,9 @@ namespace HQStudio.ViewModels
     {
         private readonly SettingsService _settingsService = SettingsService.Instance;
         private readonly DataService _dataService = DataService.Instance;
-        private readonly UpdateService _updateService = UpdateService.Instance;
 
         private bool _isDarkTheme;
         private bool _showSplash;
-        private string _updateStatus = "Нажмите для проверки обновлений";
-        private bool _isUpdateAvailable;
-        private string _newVersion = "";
-        private string _updateReleaseNotes = "";
 
         public string AppVersion
         {
@@ -52,29 +47,8 @@ namespace HQStudio.ViewModels
             }
         }
 
-        public string UpdateStatus
-        {
-            get => _updateStatus;
-            set => SetProperty(ref _updateStatus, value);
-        }
-
-        public bool IsUpdateAvailable
-        {
-            get => _isUpdateAvailable;
-            set => SetProperty(ref _isUpdateAvailable, value);
-        }
-
-        public string NewVersion
-        {
-            get => _newVersion;
-            set => SetProperty(ref _newVersion, value);
-        }
-
-        public string UpdateReleaseNotes
-        {
-            get => _updateReleaseNotes;
-            set => SetProperty(ref _updateReleaseNotes, value);
-        }
+        /// <summary>State and commands of the "Updates" section.</summary>
+        public UpdateViewModel Updates { get; } = new();
 
         public string CurrentUserName => _dataService.CurrentUser?.DisplayName ?? "Гость";
         public string CurrentUserRole => _dataService.CurrentUser?.Role == "Admin" ? "Администратор" : "Работник";
@@ -84,8 +58,7 @@ namespace HQStudio.ViewModels
 
         public ICommand ResetDataCommand { get; }
         public ICommand ExportDataCommand { get; }
-        public ICommand CheckUpdatesCommand { get; }
-        public ICommand InstallUpdateCommand { get; }
+        public ICommand OpenUpdateDetailsCommand { get; }
 
         public SettingsViewModel()
         {
@@ -94,45 +67,7 @@ namespace HQStudio.ViewModels
 
             ResetDataCommand = new RelayCommand(_ => ResetData());
             ExportDataCommand = new RelayCommand(_ => ExportData());
-            CheckUpdatesCommand = new RelayCommand(async _ => await CheckUpdatesAsync());
-            InstallUpdateCommand = new RelayCommand(async _ => await InstallUpdateAsync());
-
-            _updateService.UpdateStatusChanged += (s, msg) => UpdateStatus = msg;
-            _updateService.UpdateAvailable += OnUpdateAvailable;
-        }
-
-        private void OnUpdateAvailable(object? sender, UpdateInfo update)
-        {
-            IsUpdateAvailable = true;
-            NewVersion = update.Version;
-            UpdateReleaseNotes = update.ReleaseNotes;
-        }
-
-        private async Task CheckUpdatesAsync()
-        {
-            IsUpdateAvailable = false;
-            UpdateStatus = "Проверка обновлений...";
-
-            var update = await _updateService.CheckForUpdatesAsync();
-
-            if (update == null)
-            {
-                UpdateStatus = $"У вас последняя версия ({_updateService.CurrentVersion})";
-            }
-        }
-
-        private async Task InstallUpdateAsync()
-        {
-            var result = ConfirmDialog.Show(
-                "Установка обновления",
-                $"Установить обновление до версии {NewVersion}?\n\nПриложение будет перезапущено.",
-                ConfirmDialog.DialogType.Question,
-                "Установить", "Отмена");
-
-            if (result)
-            {
-                await _updateService.DownloadAndInstallAsync();
-            }
+            OpenUpdateDetailsCommand = new RelayCommand(_ => UpdateDialog.ShowFor());
         }
 
         private void ResetData()
