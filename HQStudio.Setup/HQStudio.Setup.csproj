@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>..\HQStudio.Desktop\Resources\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>HQStudio-Setup</AssemblyName>
+    <RootNamespace>HQStudio.Setup</RootNamespace>
+    <Version>0.0.0-dev</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Company>HQ Studio</Company>
+    <Product>HQ Studio Setup</Product>
+    <Description>Установщик HQ Studio</Description>
+    <Copyright>© $([System.DateTime]::Now.Year) HQ Studio. Все права защищены.</Copyright>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!-- Publish-only settings (dotnet publish) -->
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <SelfContained>true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+
+  <!-- Archive with the program and site files; created by the build script (dist\payload.zip) -->
+  <PropertyGroup>
+    <PayloadZip Condition="'$(PayloadZip)' == ''">$(MSBuildProjectDirectory)\..\dist\payload.zip</PayloadZip>
+  </PropertyGroup>
+
+  <ItemGroup Condition="Exists('$(PayloadZip)')">
+    <EmbeddedResource Include="$(PayloadZip)" LogicalName="payload.zip" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\HQStudio.Desktop\Resources\app.ico" Link="Resources\app.ico" />
+    <Resource Include="..\HQStudio.Desktop\Resources\app.png" Link="Resources\app.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="System.IO" />
+    <Using Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="HQStudio.Setup.Tests" />
+  </ItemGroup>
+
+</Project>

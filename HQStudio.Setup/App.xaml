@@ -1,0 +1,20 @@
+<Application x:Class="HQStudio.Setup.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:HQStudio.Setup.UI"
+             ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/Theme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+            <ui:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+            <ui:InverseBoolConverter x:Key="InverseBool"/>
+            <ui:NullOrEmptyToCollapsedConverter x:Key="TextToVisibility"/>
+            <ui:IconConverter x:Key="Icon"/>
+            <ui:StrengthSegmentBrushConverter x:Key="StrengthBrush"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
