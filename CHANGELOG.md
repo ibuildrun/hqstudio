@@ -1,3 +1,17 @@
+## [1.20.0](https://github.com/randomu3/hqstudio/compare/v1.19.6...v1.20.0) (2026-10-07)
+
+
+### Features
+
+* **api:** configurable first admin account and proxy headers ([1984748](https://github.com/randomu3/hqstudio/commit/198474826128d49bc6327993aa475d53d6eebc14))
+* **desktop:** graphical installer ([5c9cf93](https://github.com/randomu3/hqstudio/commit/5c9cf93d962a0b1a61051334b8aabb0296b56117))
+* **desktop:** one-click updates for the app and the site ([97f70cd](https://github.com/randomu3/hqstudio/commit/97f70cd0bd90b404cb605bee72869d5ac651588a))
+* **desktop:** own Tuna domain in installer and site keys ([a644675](https://github.com/randomu3/hqstudio/commit/a64467549c836f16244cf48c28a15cf0db6ac8ee))
+* **desktop:** own Tuna domain in site keys dialog ([30bacd4](https://github.com/randomu3/hqstudio/commit/30bacd4852ad9b07884a934afcefcaa9d8f3a55b))
+* **desktop:** report bugs as GitHub issues ([c73377a](https://github.com/randomu3/hqstudio/commit/c73377ad42aff858c1951a67eb5e738a10922678))
+* **desktop:** site manager page and GUI uninstall ([21df27f](https://github.com/randomu3/hqstudio/commit/21df27f0783ff603f4d1aa9d9d6cad97d25db66e))
+* **docker:** single-PC stack with nginx proxy and optional Tuna tunnel ([8f019ce](https://github.com/randomu3/hqstudio/commit/8f019ce896fc4ecfa090e1d90df13a2c5dfa45a2))
+
 ## [1.19.6](https://github.com/randomu3/hqstudio/compare/v1.19.5...v1.19.6) (2025-12-31)
 
 
