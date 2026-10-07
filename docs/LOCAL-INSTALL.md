@@ -80,3 +80,15 @@ version whose images exist.
 - `HQStudio-Setup.exe --simulate` runs the whole installer UI against a fake backend;
   `--simulate-fail=<stage>` forces a failure to check the retry flow.
 - Unit tests: `dotnet test HQStudio.Setup.Tests`, `dotnet test HQStudio.Desktop.Tests`.
+
+## Public address options (Tuna)
+
+| Option | `.env` | Plan |
+| --- | --- | --- |
+| Temporary address (changes on restart) | `TUNA_TOKEN` only | free |
+| The permanent free subdomain Tuna assigns to the account (random name like `brave-otter-4821`, shown at <https://my.tuna.am/domains>) | `TUNA_TOKEN` + `TUNA_SUBDOMAIN` | free |
+| Any chosen subdomain name | `TUNA_TOKEN` + `TUNA_SUBDOMAIN` | paid |
+| Own domain (CNAME/A record at the registrar, verified in the Tuna cabinet) | `TUNA_TOKEN` + `TUNA_DOMAIN` (`TUNA_SUBDOMAIN` is left empty) | paid |
+
+The end-user guide ([INSTALL.ru.html](INSTALL.ru.html)) walks through buying a domain at reg.ru and the
+DNS record to create there and in Tuna.
