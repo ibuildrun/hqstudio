@@ -1,0 +1,278 @@
+<Window x:Class="HQStudio.Views.UninstallWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Удаление HQ Studio"
+        Width="580" SizeToContent="Height" MaxHeight="760"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Icon="/Resources/app.ico"
+        KeyDown="Window_KeyDown">
+
+    <Window.Resources>
+        <Style x:Key="UninstallBtnSecondary" TargetType="Button" BasedOn="{StaticResource BtnSecondary}">
+            <Setter Property="Padding" Value="20,12"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.4"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="UninstallBtnDanger" TargetType="Button" BasedOn="{StaticResource BtnDanger}">
+            <Setter Property="Padding" Value="20,12"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.4"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="UninstallBtnPrimary" TargetType="Button" BasedOn="{StaticResource BtnPrimary}">
+            <Setter Property="Padding" Value="20,12"/>
+        </Style>
+
+        <Style x:Key="UninstallProgressBar" TargetType="ProgressBar">
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Grid>
+                            <Border x:Name="PART_Track" Background="{DynamicResource BgInputBrush}" CornerRadius="4"/>
+                            <Border x:Name="PART_Indicator" HorizontalAlignment="Left"
+                                    Background="{DynamicResource TextPrimaryBrush}" CornerRadius="4"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Флажок в стиле приложения -->
+        <Style x:Key="UninstallCheckBox" TargetType="CheckBox">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal">
+                            <Border x:Name="Box" Width="22" Height="22" CornerRadius="6" BorderThickness="1.5"
+                                    Background="Transparent" BorderBrush="{DynamicResource BorderLightBrush}"
+                                    VerticalAlignment="Top" Margin="0,1,12,0">
+                                <TextBlock x:Name="Mark" Text="✓" FontSize="14" FontWeight="Bold" Visibility="Collapsed"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource BgPrimaryBrush}"/>
+                            </Border>
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="#F44336"/>
+                                <Setter TargetName="Box" Property="BorderBrush" Value="#F44336"/>
+                                <Setter TargetName="Mark" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="Mark" Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource TextPrimaryBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Кружок состояния этапа -->
+        <Style x:Key="StageDot" TargetType="Border">
+            <Setter Property="Width" Value="22"/>
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="CornerRadius" Value="11"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource TextMutedBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State}" Value="Running">
+                    <Setter Property="BorderBrush" Value="#FFB300"/>
+                    <Setter Property="Background" Value="#26FFB300"/>
+                    <Setter Property="TextElement.Foreground" Value="#FFB300"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="Done">
+                    <Setter Property="BorderBrush" Value="#4CAF50"/>
+                    <Setter Property="Background" Value="#4CAF50"/>
+                    <Setter Property="TextElement.Foreground" Value="White"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="Skipped">
+                    <Setter Property="BorderBrush" Value="#FFB300"/>
+                    <Setter Property="Background" Value="#26FFB300"/>
+                    <Setter Property="TextElement.Foreground" Value="#FFB300"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="Failed">
+                    <Setter Property="BorderBrush" Value="#F44336"/>
+                    <Setter Property="Background" Value="#F44336"/>
+                    <Setter Property="TextElement.Foreground" Value="White"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="StageGlyph" TargetType="TextBlock">
+            <Setter Property="Text" Value=""/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State}" Value="Running">
+                    <Setter Property="Text" Value="…"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="Done">
+                    <Setter Property="Text" Value="✓"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="Skipped">
+                    <Setter Property="Text" Value="–"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="Failed">
+                    <Setter Property="Text" Value="✕"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="{DynamicResource BgPrimaryBrush}" CornerRadius="16"
+            BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="{DynamicResource BgSecondaryBrush}" CornerRadius="16,16,0,0"
+                    Padding="24,14" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="HQ" FontSize="18" FontWeight="Bold" FontFamily="Segoe UI Black"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text=" STUDIO" FontSize="18" FontWeight="Light" Foreground="{DynamicResource TextMutedBrush}"/>
+                        <TextBlock Text="Удаление" FontSize="14" Foreground="{DynamicResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" Margin="16,2,0,0"/>
+                    </StackPanel>
+                    <Button Content="✕" Click="CloseButton_Click" Style="{DynamicResource BtnIcon}"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Width="32" Height="32"
+                            Visibility="{Binding IsRunning, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                </Grid>
+            </Border>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="28,24,28,12">
+
+                    <!-- Подтверждение -->
+                    <StackPanel Visibility="{Binding IsConfirm, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="Удалить HQ Studio с этого компьютера?" FontSize="20" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>
+                        <TextBlock Style="{DynamicResource TextBody}" TextWrapping="Wrap" Margin="0,12,0,0" LineHeight="22"
+                                   Text="Будут удалены программа, её ярлыки и сайт HQ Studio, который работает на этом компьютере. Настройки программы и журнал ошибок останутся."/>
+
+                        <Border Style="{DynamicResource Card}" Padding="20" Margin="0,22,0,0">
+                            <StackPanel>
+                                <CheckBox IsChecked="{Binding DeleteData}" Style="{StaticResource UninstallCheckBox}">
+                                    <TextBlock Text="Удалить также данные сайта (клиенты, заказы)" FontSize="15" FontWeight="Medium"
+                                               Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>
+                                </CheckBox>
+                                <TextBlock Style="{DynamicResource TextSmall}" TextWrapping="Wrap" Margin="34,8,0,0" LineHeight="18"
+                                           Text="Если не отмечать, данные останутся на компьютере и пригодятся при повторной установке."/>
+
+                                <Border Background="#1FF44336" BorderBrush="#66F44336" BorderThickness="1" CornerRadius="10"
+                                        Padding="14,12" Margin="0,16,0,0"
+                                        Visibility="{Binding ShowDataWarning, Converter={StaticResource BoolToVisibility}}">
+                                    <StackPanel>
+                                        <TextBlock Text="Данные будут удалены насовсем" FontSize="13" FontWeight="SemiBold"
+                                                   Foreground="#F44336"/>
+                                        <TextBlock Text="Все клиенты, заказы и заявки с сайта исчезнут без возможности восстановления. Если они ещё нужны, сначала сделайте их копию или не отмечайте этот пункт."
+                                                   FontSize="13" Foreground="#F44336" TextWrapping="Wrap" Margin="0,4,0,0" LineHeight="19"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Ход удаления -->
+                    <StackPanel Visibility="{Binding ShowStages, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{Binding Headline}" FontSize="20" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>
+                        <ProgressBar Style="{StaticResource UninstallProgressBar}" Value="{Binding Progress, Mode=OneWay}"
+                                     Margin="0,16,0,0"/>
+
+                        <ItemsControl ItemsSource="{Binding Stages}" Margin="0,18,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,14">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Style="{StaticResource StageDot}" VerticalAlignment="Top" Margin="0,1,14,0">
+                                            <TextBlock Style="{StaticResource StageGlyph}"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Title}" FontSize="14" Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding Note}" Style="{DynamicResource TextSmall}" TextWrapping="Wrap"
+                                                       Margin="0,3,0,0" LineHeight="17"
+                                                       Visibility="{Binding HasNote, Converter={StaticResource BoolToVisibility}}"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2" Text="{Binding StateText}" Style="{DynamicResource TextSmall}"
+                                                   Margin="14,3,0,0" VerticalAlignment="Top"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Border CornerRadius="12" BorderThickness="1" Padding="16,14" Margin="0,6,0,0"
+                                Visibility="{Binding IsDone, Converter={StaticResource BoolToVisibility}}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#1F4CAF50"/>
+                                    <Setter Property="BorderBrush" Value="#664CAF50"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasProblems}" Value="True">
+                                            <Setter Property="Background" Value="#1FFFB300"/>
+                                            <Setter Property="BorderBrush" Value="#66FFB300"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock Text="{Binding Summary}" FontSize="13" TextWrapping="Wrap" LineHeight="20"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Padding="28,16" BorderBrush="{DynamicResource BorderDefaultBrush}" BorderThickness="0,1,0,0">
+                <Grid>
+                    <Grid Visibility="{Binding IsConfirm, Converter={StaticResource BoolToVisibility}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="Отмена" Style="{StaticResource UninstallBtnSecondary}"
+                                Command="{Binding CancelCommand}" IsCancel="True" Margin="0,0,8,0"/>
+                        <Button Grid.Column="1" Content="Удалить" Style="{StaticResource UninstallBtnDanger}"
+                                Command="{Binding StartCommand}" Margin="8,0,0,0"/>
+                    </Grid>
+                    <TextBlock Text="Не выключайте компьютер, пока идёт удаление."
+                               Style="{DynamicResource TextSmall}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Padding="0,10"
+                               Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibility}}"/>
+                    <Button Content="Закрыть" Style="{StaticResource UninstallBtnPrimary}" Click="CloseButton_Click"
+                            Visibility="{Binding IsDone, Converter={StaticResource BoolToVisibility}}"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

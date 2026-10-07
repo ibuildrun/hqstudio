@@ -136,6 +136,18 @@
                                     Command="{Binding NavigateCommand}" CommandParameter="ActivityLog"/>
                             <Button Content="⚙️  Настройки" Style="{DynamicResource BtnNav}"
                                     Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
+                            <Button Content="◈  Сайт" Style="{DynamicResource BtnNav}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="Site"
+                                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}"/>
+                            <Button Style="{DynamicResource BtnNav}" Click="UpdatesButton_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="↻  Обновления"/>
+                                    <Border x:Name="UpdateBadge" Background="#1A2A1A" CornerRadius="4" Padding="6,1"
+                                            Margin="10,0,0,0" VerticalAlignment="Center" Visibility="Collapsed">
+                                        <TextBlock Text="Доступно" FontSize="10" Foreground="#4CAF50"/>
+                                    </Border>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </ScrollViewer>
 
@@ -187,6 +199,9 @@
                         </DataTemplate>
                         <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
                             <views:SettingsView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type vm:SiteViewModel}">
+                            <views:SiteView/>
                         </DataTemplate>
                     </ContentControl.Resources>
                 </ContentControl>

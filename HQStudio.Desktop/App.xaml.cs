@@ -14,6 +14,13 @@ namespace HQStudio
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // Режим удаления (--uninstall) работает без API, сессии, темы и главного окна
+            if (Services.Site.UninstallBootstrap.TryHandle(this, e.Args))
+            {
+                base.OnStartup(e);
+                return;
+            }
+
             try
             {
                 // Создаём папку для логов
@@ -141,25 +148,67 @@ namespace HQStudio
 
         private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            Log($"UI Exception: {e.Exception}");
-            System.Diagnostics.Debug.WriteLine($"UI Exception: {e.Exception}");
-            MessageBox.Show($"Произошла ошибка: {e.Exception.Message}", "Ошибка", 
-                MessageBoxButton.OK, MessageBoxImage.Error);
             e.Handled = true;
+
+            try
+            {
+                Log($"UI Exception: {e.Exception}");
+                System.Diagnostics.Debug.WriteLine($"UI Exception: {e.Exception}");
+
+                // Пока открыто окно с вопросом, новые ошибки не плодят новые окна.
+                if (!Services.BugReport.CrashPromptGuard.TryEnter()) return;
+                try
+                {
+                    var message = e.Exception.Message.TrimEnd('.');
+                    if (message.Length > 200) message = message[..200] + "...";
+
+                    var answer = MessageBox.Show(
+                        $"Произошла ошибка: {message}. Отправить отчёт разработчику?",
+                        "Ошибка", MessageBoxButton.YesNo, MessageBoxImage.Error);
+
+                    if (answer == MessageBoxResult.Yes)
+                        Views.Dialogs.BugReportDialog.ShowFor(MainWindow, e.Exception);
+                }
+                finally
+                {
+                    Services.BugReport.CrashPromptGuard.Leave();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"Crash report dialog failed: {ex.Message}");
+            }
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            var ex = e.ExceptionObject as Exception;
-            Log($"Domain Exception: {ex}");
-            System.Diagnostics.Debug.WriteLine($"Domain Exception: {ex}");
+            try
+            {
+                var ex = e.ExceptionObject as Exception;
+                Log($"Domain Exception (terminating={e.IsTerminating}): {ex ?? e.ExceptionObject}");
+                System.Diagnostics.Debug.WriteLine($"Domain Exception: {ex ?? e.ExceptionObject}");
+            }
+            catch
+            {
+                // Обработчик последней надежды не должен падать сам.
+            }
         }
 
         private void TaskScheduler_UnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         {
-            Log($"Task Exception: {e.Exception}");
-            System.Diagnostics.Debug.WriteLine($"Task Exception: {e.Exception}");
-            e.SetObserved();
+            try
+            {
+                Log($"Task Exception: {e.Exception}");
+                System.Diagnostics.Debug.WriteLine($"Task Exception: {e.Exception}");
+            }
+            catch
+            {
+                // Логирование не должно мешать пометить исключение как обработанное.
+            }
+            finally
+            {
+                e.SetObserved();
+            }
         }
     }
 }

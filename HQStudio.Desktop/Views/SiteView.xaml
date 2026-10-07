@@ -1,0 +1,402 @@
+<UserControl x:Class="HQStudio.Views.SiteView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Loaded="UserControl_Loaded"
+             Unloaded="UserControl_Unloaded">
+
+    <UserControl.Resources>
+        <!-- Недоступная кнопка бледнеет, чтобы было видно, что действие сейчас невозможно -->
+        <Style x:Key="SiteBtnPrimary" TargetType="Button" BasedOn="{StaticResource BtnPrimary}">
+            <Setter Property="Padding" Value="22,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.45"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SiteBtnSecondary" TargetType="Button" BasedOn="{StaticResource BtnSecondary}">
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.4"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SiteBtnSmall" TargetType="Button" BasedOn="{StaticResource BtnSecondary}">
+            <Setter Property="Padding" Value="14,7"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.4"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SiteBtnDanger" TargetType="Button" BasedOn="{StaticResource BtnDanger}">
+            <Setter Property="Padding" Value="22,12"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.4"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Большая плашка состояния сайта -->
+        <Style x:Key="SitePill" TargetType="Border">
+            <Setter Property="CornerRadius" Value="22"/>
+            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#1F808080"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Pill}" Value="Running">
+                    <Setter Property="Background" Value="#1F4CAF50"/>
+                    <Setter Property="BorderBrush" Value="#4CAF50"/>
+                    <Setter Property="TextElement.Foreground" Value="#4CAF50"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Pill}" Value="Starting">
+                    <Setter Property="Background" Value="#1FFFB300"/>
+                    <Setter Property="BorderBrush" Value="#FFB300"/>
+                    <Setter Property="TextElement.Foreground" Value="#FFB300"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Pill}" Value="Stopping">
+                    <Setter Property="Background" Value="#1FFFB300"/>
+                    <Setter Property="BorderBrush" Value="#FFB300"/>
+                    <Setter Property="TextElement.Foreground" Value="#FFB300"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Pill}" Value="DockerDown">
+                    <Setter Property="Background" Value="#1FFF9800"/>
+                    <Setter Property="BorderBrush" Value="#FF9800"/>
+                    <Setter Property="TextElement.Foreground" Value="#FF9800"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Pill}" Value="Error">
+                    <Setter Property="Background" Value="#1FF44336"/>
+                    <Setter Property="BorderBrush" Value="#F44336"/>
+                    <Setter Property="TextElement.Foreground" Value="#F44336"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Значок состояния службы -->
+        <Style x:Key="SiteBadge" TargetType="Border">
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Background" Value="#1F808080"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Level}" Value="Ok">
+                    <Setter Property="Background" Value="#1F4CAF50"/>
+                    <Setter Property="BorderBrush" Value="#4CAF50"/>
+                    <Setter Property="TextElement.Foreground" Value="#4CAF50"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Starting">
+                    <Setter Property="Background" Value="#1FFFB300"/>
+                    <Setter Property="BorderBrush" Value="#FFB300"/>
+                    <Setter Property="TextElement.Foreground" Value="#FFB300"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Error">
+                    <Setter Property="Background" Value="#1FF44336"/>
+                    <Setter Property="BorderBrush" Value="#F44336"/>
+                    <Setter Property="TextElement.Foreground" Value="#F44336"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Бегущая полоска «идёт работа» -->
+        <Style x:Key="SiteBusyRunner" TargetType="Border">
+            <Setter Property="Width" Value="140"/>
+            <Setter Property="Height" Value="6"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Background" Value="{DynamicResource TextPrimaryBrush}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="980">
+
+            <!-- Header -->
+            <StackPanel Margin="0,0,0,28">
+                <TextBlock Style="{DynamicResource TextH1}">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="White" BlurRadius="15" ShadowDepth="0" Opacity="0.2"/>
+                    </TextBlock.Effect>
+                    САЙТ
+                </TextBlock>
+                <TextBlock Text="Управление сайтом HQ Studio, который работает на этом компьютере"
+                           Style="{DynamicResource TextBody}" Margin="0,8,0,0"/>
+            </StackPanel>
+
+            <!-- Не установлен -->
+            <Border Style="{DynamicResource Card}" Padding="32"
+                    Visibility="{Binding ShowNotInstalled, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel>
+                    <Border Style="{StaticResource SitePill}" HorizontalAlignment="Left">
+                        <TextBlock Text="Не установлен" FontSize="16" FontWeight="SemiBold"/>
+                    </Border>
+                    <TextBlock Text="Сайт ещё не установлен на этом компьютере" FontSize="18" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,22,0,0"/>
+                    <TextBlock Style="{DynamicResource TextBody}" TextWrapping="Wrap" Margin="0,10,0,0" LineHeight="22"
+                               Text="Сайт, база данных и личный кабинет клиентов устанавливаются отдельно, установщиком HQ Studio. Запустите установщик, и здесь появится управление сайтом: запуск, остановка, ключи и журналы."/>
+                    <TextBlock Style="{DynamicResource TextSmall}" TextWrapping="Wrap" Margin="0,14,0,0"
+                               Text="Программа для работы с клиентами и заказами при этом работает как обычно."/>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Visibility="{Binding ShowSiteContent, Converter={StaticResource BoolToVisibility}}">
+
+                <!-- Состояние -->
+                <Border Style="{DynamicResource Card}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="СОСТОЯНИЕ" Style="{DynamicResource TextLabel}" Margin="0,0,0,16"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Style="{StaticResource SitePill}" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="10" Height="10" Margin="0,0,10,0" VerticalAlignment="Center"
+                                             Fill="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                                    <TextBlock Text="{Binding PillText}" FontSize="18" FontWeight="SemiBold"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Grid.Column="1" Text="{Binding Explanation}" Style="{DynamicResource TextBody}"
+                                       TextWrapping="Wrap" VerticalAlignment="Center" Margin="20,0,0,0" LineHeight="21"/>
+                        </Grid>
+
+                        <Button Content="Запустить Docker" Style="{StaticResource SiteBtnPrimary}"
+                                Command="{Binding StartDockerCommand}" HorizontalAlignment="Left" Margin="0,18,0,0"
+                                Visibility="{Binding ShowStartDockerBanner, Converter={StaticResource BoolToVisibility}}"/>
+
+                        <!-- Идёт действие -->
+                        <Border Background="{DynamicResource BgInputBrush}" CornerRadius="12" Padding="18,14" Margin="0,18,0,0"
+                                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding BusyText}" FontSize="14" FontWeight="Medium"
+                                               Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                    <Border Height="6" CornerRadius="3" Margin="0,10,0,0" ClipToBounds="True"
+                                            Background="{DynamicResource BorderDefaultBrush}">
+                                        <Border>
+                                            <Border.RenderTransform>
+                                                <TranslateTransform X="-140"/>
+                                            </Border.RenderTransform>
+                                            <Border.Style>
+                                                <Style TargetType="Border" BasedOn="{StaticResource SiteBusyRunner}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                                            <DataTrigger.EnterActions>
+                                                                <BeginStoryboard x:Name="BusyRun">
+                                                                    <Storyboard RepeatBehavior="Forever">
+                                                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                                                         From="-140" To="900" Duration="0:0:1.8"/>
+                                                                    </Storyboard>
+                                                                </BeginStoryboard>
+                                                            </DataTrigger.EnterActions>
+                                                            <DataTrigger.ExitActions>
+                                                                <StopStoryboard BeginStoryboardName="BusyRun"/>
+                                                            </DataTrigger.ExitActions>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                        </Border>
+                                    </Border>
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="Отмена" Style="{StaticResource SiteBtnSmall}"
+                                        Command="{Binding CancelCommand}" Margin="18,0,0,0" VerticalAlignment="Center"
+                                        Visibility="{Binding CanCancel, Converter={StaticResource BoolToVisibility}}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Height="1" Background="{DynamicResource BorderDefaultBrush}" Margin="0,22,0,18"/>
+
+                        <!-- Версия и адреса -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="190"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="ВЕРСИЯ" Style="{DynamicResource TextLabel}"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Version}" FontSize="14"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="НА ЭТОМ КОМПЬЮТЕРЕ" Style="{DynamicResource TextLabel}"
+                                       VerticalAlignment="Center" Margin="0,16,0,0"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding LocalUrl}" FontSize="14"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" Margin="0,16,0,0"/>
+                            <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Margin="12,16,0,0">
+                                <Button Content="Копировать" Style="{StaticResource SiteBtnSmall}" Command="{Binding CopyLocalCommand}"/>
+                                <Button Content="Открыть" Style="{StaticResource SiteBtnSmall}" Command="{Binding OpenLocalCommand}"/>
+                            </StackPanel>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="В ИНТЕРНЕТЕ" Style="{DynamicResource TextLabel}"
+                                       VerticalAlignment="Center" Margin="0,16,0,0"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PublicUrlText}" FontSize="14"
+                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,16,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasPublicUrl}" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Margin="12,16,0,0"
+                                        Visibility="{Binding HasPublicUrl, Converter={StaticResource BoolToVisibility}}">
+                                <Button Content="Копировать" Style="{StaticResource SiteBtnSmall}" Command="{Binding CopyPublicCommand}"/>
+                                <Button Content="Открыть" Style="{StaticResource SiteBtnSmall}" Command="{Binding OpenPublicCommand}"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Ошибка -->
+                <Border Background="#1FF44336" BorderBrush="#66F44336" BorderThickness="1" CornerRadius="12"
+                        Padding="18,16" Margin="0,0,0,20"
+                        Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{Binding ErrorTitle}" FontWeight="SemiBold" Foreground="#F44336" FontSize="15"/>
+                            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Margin="0,6,0,0"
+                                       Foreground="#F44336" FontSize="13" LineHeight="20"/>
+                            <ToggleButton x:Name="DetailsToggle" Margin="0,10,0,0" HorizontalAlignment="Left" Cursor="Hand"
+                                          Visibility="{Binding HasErrorDetails, Converter={StaticResource BoolToVisibility}}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <TextBlock x:Name="Label" Text="Показать подробности" FontSize="12"
+                                                   Foreground="#F44336" TextDecorations="Underline"/>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="Label" Property="Text" Value="Скрыть подробности"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <TextBox Text="{Binding ErrorDetails, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
+                                     FontFamily="Consolas" FontSize="12" Margin="0,8,0,0" MaxHeight="180"
+                                     Style="{DynamicResource InputText}" Padding="10,8"
+                                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                     Visibility="{Binding IsChecked, ElementName=DetailsToggle, Converter={StaticResource BoolToVisibility}}"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="✕" Style="{DynamicResource BtnIcon}" Width="30" Height="30"
+                                VerticalAlignment="Top" Click="DismissError_Click"/>
+                    </Grid>
+                </Border>
+
+                <!-- Службы -->
+                <TextBlock Text="СЛУЖБЫ" Style="{DynamicResource TextLabel}" Margin="2,0,0,12"/>
+                <ItemsControl ItemsSource="{Binding Services}" Margin="-5,0,-5,15">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="5"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{DynamicResource Card}" Padding="16" Margin="5">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>
+                                    <Border Style="{StaticResource SiteBadge}" Margin="0,12,0,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse Width="7" Height="7" Margin="0,0,7,0" VerticalAlignment="Center"
+                                                     Fill="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                                            <TextBlock Text="{Binding BadgeText}" FontSize="12" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock Text="{Binding RawText}" Style="{DynamicResource TextSmall}"
+                                               TextWrapping="Wrap" Margin="0,10,0,0" MaxHeight="48"
+                                               TextTrimming="CharacterEllipsis" ToolTip="{Binding RawText}"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Действия -->
+                <Border Style="{DynamicResource Card}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="ДЕЙСТВИЯ" Style="{DynamicResource TextLabel}" Margin="0,0,0,16"/>
+                        <WrapPanel>
+                            <Button Content="Запустить" Style="{StaticResource SiteBtnPrimary}" Command="{Binding StartCommand}"
+                                    Margin="0,0,10,10"/>
+                            <Button Content="Остановить" Style="{StaticResource SiteBtnSecondary}" Command="{Binding StopCommand}"
+                                    Margin="0,0,10,10"/>
+                            <Button Content="Перезапустить" Style="{StaticResource SiteBtnSecondary}" Command="{Binding RestartCommand}"
+                                    Margin="0,0,10,10"/>
+                            <Button Content="Открыть сайт в браузере" Style="{StaticResource SiteBtnSecondary}"
+                                    Command="{Binding OpenSiteCommand}" Margin="0,0,10,10"/>
+                        </WrapPanel>
+                        <Border Height="1" Background="{DynamicResource BorderDefaultBrush}" Margin="0,6,0,16"/>
+                        <WrapPanel>
+                            <Button Content="Ключи" Style="{StaticResource SiteBtnSecondary}" Command="{Binding KeysCommand}"
+                                    Margin="0,0,10,10"/>
+                            <Button Content="Логи" Style="{StaticResource SiteBtnSecondary}" Command="{Binding LogsCommand}"
+                                    Margin="0,0,10,10"/>
+                            <Button Content="Обновления" Style="{StaticResource SiteBtnSecondary}" Command="{Binding UpdatesCommand}"
+                                    Margin="0,0,10,10"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Опасная зона -->
+                <Border Background="{DynamicResource BgCardBrush}" BorderBrush="#66F44336" BorderThickness="1"
+                        CornerRadius="16" Padding="24" Margin="0,0,0,24">
+                    <StackPanel>
+                        <TextBlock Text="ОПАСНАЯ ЗОНА" FontSize="11" FontWeight="SemiBold" Foreground="#F44336" Margin="0,0,0,12"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Удалить HQ Studio" FontSize="15" FontWeight="Medium"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Style="{DynamicResource TextSmall}" TextWrapping="Wrap" Margin="0,4,18,0" LineHeight="18"
+                                           Text="Программа закроется и откроется окно удаления. Там можно выбрать, оставить ли данные сайта (клиенты, заказы)."/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="Удалить HQ Studio" Style="{StaticResource SiteBtnDanger}"
+                                    Command="{Binding UninstallCommand}" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

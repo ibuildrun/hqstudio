@@ -1,4 +1,5 @@
 using HQStudio.Services;
+using HQStudio.Services.Updates;
 using HQStudio.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,12 +20,51 @@ namespace HQStudio.Views
                 InitializeSystemNotifications();
                 InitializeNotifications();
                 InitializeHotkeys();
+                InitializeUpdates();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка инициализации MainWindow: {ex.Message}\n\n{ex.StackTrace}",
                     "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private EventHandler? _updateStatusHandler;
+
+        /// <summary>
+        /// "Available" badge on the Updates entry and the silent startup check
+        /// </summary>
+        private void InitializeUpdates()
+        {
+            // Screenshot mode must not hit the network or show toasts
+            if (ScreenshotService.IsScreenshotMode)
+                return;
+
+            try
+            {
+                var coordinator = UpdateCoordinator.Instance;
+                _updateStatusHandler = (_, _) => Dispatcher.BeginInvoke(RefreshUpdateBadge);
+                coordinator.StatusChanged += _updateStatusHandler;
+                RefreshUpdateBadge();
+
+                Loaded += async (_, _) => await coordinator.RunStartupCheckAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"InitializeUpdates error: {ex.Message}");
+            }
+        }
+
+        private void RefreshUpdateBadge()
+        {
+            UpdateBadge.Visibility = UpdateCoordinator.Instance.Status.AnyUpdateAvailable
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private void UpdatesButton_Click(object sender, RoutedEventArgs e)
+        {
+            Dialogs.UpdateDialog.ShowFor(this);
         }
 
         /// <summary>
@@ -296,6 +336,8 @@ namespace HQStudio.Views
         protected override void OnClosed(EventArgs e)
         {
             NotificationService.Instance.StopPolling();
+            if (_updateStatusHandler != null)
+                UpdateCoordinator.Instance.StatusChanged -= _updateStatusHandler;
             _hotkeyService.UnregisterHotkeys();
             _systemNotificationService.Dispose();
             base.OnClosed(e);
