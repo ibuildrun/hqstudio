@@ -106,6 +106,7 @@
 
         <!-- Technical details -->
         <Expander Grid.Row="2" x:Name="LogExpander" Style="{StaticResource SetupExpander}" Margin="0,6,0,0"
+                  Header="Технические подробности"
                   IsExpanded="{Binding IsLogExpanded, Mode=TwoWay}">
             <Border Style="{StaticResource Card}" Padding="12,10" Margin="0,4,0,0" Height="118" Background="{StaticResource BgSecondaryBrush}">
                 <TextBox x:Name="LogBox" IsReadOnly="True" Background="Transparent" BorderThickness="0" Foreground="#B0B0B0"

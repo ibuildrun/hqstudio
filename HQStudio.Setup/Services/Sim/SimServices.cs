@@ -90,8 +90,12 @@ public sealed class SimDockerClient : IDockerClient
     private string FakeTunnelUrl()
     {
         var env = EnvFile.ReadAllTextOrNull(_paths.EnvFile);
+        var domain = env == null ? null : EnvFile.Get(env, "TUNA_DOMAIN");
+        if (!string.IsNullOrWhiteSpace(domain))
+            return $"https://{domain}";
+
         var sub = env == null ? null : EnvFile.Get(env, "TUNA_SUBDOMAIN");
-        return $"https://{(string.IsNullOrWhiteSpace(sub) ? "hq-demo" : sub)}.ru.tuna.am";
+        return $"https://{(string.IsNullOrWhiteSpace(sub) ? "brave-otter-4821" : sub)}.ru.tuna.am";
     }
 
     private static async Task FakePullAsync(Action<string> emit, bool tunnel, CancellationToken ct)
@@ -291,6 +295,7 @@ public sealed class SimPayloadSource : IPayloadSource
         "GEMINI_API_KEY=\n" +
         "TUNA_TOKEN=\n" +
         "TUNA_SUBDOMAIN=\n" +
+        "TUNA_DOMAIN=\n" +
         "PUBLIC_URL=\n";
 }
 

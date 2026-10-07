@@ -39,6 +39,8 @@ public sealed class InstallContext
         var existing = ExistingEnv?.Text;
         TunnelEnabled = !answers.SkipSite
             && !string.IsNullOrWhiteSpace(EnvPlanner.EffectiveTunaToken(existing, answers));
+        var domain = EnvPlanner.EffectiveTunaDomain(existing, answers);
+        TunaDomain = TunnelEnabled && domain.Length > 0 ? domain : null;
         if (existing != null)
         {
             foreach (var key in new[] { "TUNA_TOKEN", "GEMINI_API_KEY", "POSTGRES_PASSWORD", "JWT_KEY" })
@@ -76,6 +78,12 @@ public sealed class InstallContext
 
     public bool SiteRequested => !Answers.SkipSite;
     public bool TunnelEnabled { get; }
+
+    /// <summary>Own domain of the tunnel (only when the tunnel is on), or null.</summary>
+    public string? TunaDomain { get; }
+
+    /// <summary>The address the site is expected at with an own domain; the tunnel log still has the last word.</summary>
+    public string? ExpectedPublicUrl => TunaDomain == null ? null : EnvPlanner.PublicUrlFor(TunaDomain);
 
     public string ImageTag => VersionInfo.ImageTag(Services.Version);
 

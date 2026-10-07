@@ -102,6 +102,54 @@ public static class Validators
         return null;
     }
 
+    public const int MaxDomainLength = 253;
+    public const int MaxDomainLabelLength = 63;
+
+    public const string PunycodeMessage =
+        "Домен нужно ввести латиницей (в виде xn--...). Преобразовать русское имя можно на сайте reg.ru.";
+
+    /// <summary>Lower-cased, trimmed host name as it is stored.</summary>
+    public static string NormalizeDomain(string? value) => (value ?? "").Trim().ToLowerInvariant();
+
+    /// <summary>True when the text has non-ASCII letters, i.e. it needs the punycode form.</summary>
+    public static bool IsNonAsciiDomain(string? value) => (value ?? "").Any(c => c > 127);
+
+    /// <summary>
+    /// Empty is fine (optional). A host name with at least one dot: letters, digits and inner dashes, no scheme,
+    /// path, port or spaces. Upper case is accepted here and lowered when saved.
+    /// </summary>
+    public static string? Domain(string? value)
+    {
+        var v = (value ?? "").Trim();
+        if (v.Length == 0)
+            return null;
+
+        if (v.Any(char.IsWhiteSpace) || v.Contains("://") || v.IndexOfAny(new[] { '/', '\\', '?', '#', ':', '@' }) >= 0)
+            return "Укажите только имя домена, например crm.example.ru: без http://, пути и пробелов";
+        if (IsNonAsciiDomain(v))
+            return PunycodeMessage;
+
+        v = v.ToLowerInvariant();
+        if (v.Length > MaxDomainLength)
+            return "Слишком длинное имя домена";
+        if (!v.Contains('.'))
+            return "Нужно полное имя с точкой, например crm.example.ru";
+
+        var labels = v.Split('.');
+        foreach (var label in labels)
+        {
+            if (label.Length is 0 or > MaxDomainLabelLength || !DomainLabel.IsMatch(label))
+                return "Только латинские буквы, цифры, дефис и точки, например crm.example.ru";
+        }
+
+        // 192.168.0.1 and similar are addresses, not domains
+        if (labels[^1].All(char.IsDigit))
+            return "Это не похоже на домен. Пример: crm.example.ru";
+        return null;
+    }
+
+    private static readonly Regex DomainLabel = new(@"^[a-z0-9]+(-+[a-z0-9]+)*$", RegexOptions.Compiled);
+
     public static string? Key(string? value, string what)
     {
         var v = value?.Trim() ?? "";

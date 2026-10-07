@@ -24,7 +24,7 @@
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="0,0,0,4">
 
             <!-- Gemini -->
@@ -105,11 +105,54 @@
                     <TextBlock Text="{Binding TunaTokenError}" Style="{StaticResource TextError}" Margin="2,5,0,0"
                                Visibility="{Binding HasTunaTokenError, Converter={StaticResource BoolToVisibility}}"/>
 
-                    <TextBox Style="{StaticResource InputText}" Margin="0,10,0,0" Text="{Binding TunaSubdomain, UpdateSourceTrigger=PropertyChanged}"
-                             ui:Ui.HasError="{Binding HasTunaSubdomainError}"
-                             ui:Ui.Placeholder="Имя адреса, например my-studio (необязательно)"/>
-                    <TextBlock Text="{Binding TunaSubdomainError}" Style="{StaticResource TextError}" Margin="2,5,0,0"
-                               Visibility="{Binding HasTunaSubdomainError, Converter={StaticResource BoolToVisibility}}"/>
+                    <!-- Own address: the free Tuna plan assigns the name itself, anything else is paid -->
+                    <Expander Style="{StaticResource SetupExpander}" Header="Своё имя или домен для адреса (по подписке Tuna)"
+                              Margin="-4,8,0,0" IsExpanded="{Binding ShowAdvanced, Mode=TwoWay}"
+                              Expanded="OwnAddress_Expanded">
+                        <StackPanel Margin="4,8,0,0">
+                            <TextBlock Text="ИМЯ АДРЕСА" Style="{StaticResource TextLabel}" Margin="2,0,0,7"/>
+                            <TextBox Style="{StaticResource InputText}" Text="{Binding TunaSubdomain, UpdateSourceTrigger=PropertyChanged}"
+                                     IsEnabled="{Binding SubdomainEnabled}"
+                                     ui:Ui.HasError="{Binding HasTunaSubdomainError}" ui:Ui.Placeholder="Например, brave-otter-4821"/>
+                            <TextBlock Text="{Binding TunaSubdomainError}" Style="{StaticResource TextError}" Margin="2,5,0,0"
+                                       Visibility="{Binding HasTunaSubdomainError, Converter={StaticResource BoolToVisibility}}"/>
+                            <TextBlock Text="{Binding SubdomainHintText}" Style="{StaticResource TextSmall}" LineHeight="17" Margin="2,7,0,0"/>
+                            <Button Style="{StaticResource BtnLink}" Command="{Binding OpenTunaDomainsCommand}" HorizontalAlignment="Left"
+                                    Margin="0,8,0,0" Padding="12,7">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Открыть my.tuna.am/domains" VerticalAlignment="Center"/>
+                                    <Path Data="{StaticResource IconExternal}" Style="{StaticResource IconPath}" Width="13" Height="13"
+                                          Stroke="#B0B0B0" StrokeThickness="2" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Border BorderBrush="{StaticResource BorderDefaultBrush}" BorderThickness="0,1,0,0" Margin="0,16,0,14"/>
+
+                            <TextBlock Text="СВОЙ ДОМЕН" Style="{StaticResource TextLabel}" Margin="2,0,0,7"/>
+                            <TextBox Style="{StaticResource InputText}" Text="{Binding TunaDomain, UpdateSourceTrigger=PropertyChanged}"
+                                     ui:Ui.HasError="{Binding HasTunaDomainError}" ui:Ui.Placeholder="Например, crm.example.ru"/>
+                            <TextBlock Text="{Binding TunaDomainError}" Style="{StaticResource TextError}" Margin="2,5,0,0"
+                                       Visibility="{Binding HasTunaDomainError, Converter={StaticResource BoolToVisibility}}"/>
+                            <Button Style="{StaticResource BtnLink}" Command="{Binding OpenPunycodeCommand}" HorizontalAlignment="Left"
+                                    Margin="0,8,0,0" Padding="12,7"
+                                    Visibility="{Binding DomainNeedsPunycode, Converter={StaticResource BoolToVisibility}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Преобразовать на reg.ru" VerticalAlignment="Center"/>
+                                    <Path Data="{StaticResource IconExternal}" Style="{StaticResource IconPath}" Width="13" Height="13"
+                                          Stroke="#B0B0B0" StrokeThickness="2" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Text="{Binding DomainHintText}" Style="{StaticResource TextSmall}" LineHeight="17" Margin="2,7,0,0"/>
+                            <Button Style="{StaticResource BtnLink}" Command="{Binding OpenOwnDomainGuideCommand}" HorizontalAlignment="Left"
+                                    Margin="0,8,0,0" Padding="12,7">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Как подключить свой домен" VerticalAlignment="Center"/>
+                                    <Path Data="{StaticResource IconExternal}" Style="{StaticResource IconPath}" Width="13" Height="13"
+                                          Stroke="#B0B0B0" StrokeThickness="2" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Expander>
                 </StackPanel>
             </Border>
         </StackPanel>

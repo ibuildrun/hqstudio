@@ -42,7 +42,14 @@ public static class EnvPlanner
         text = EnvFile.Set(text, "ADMIN_NAME", answers.AdminName);
         text = EnvFile.Set(text, "GEMINI_API_KEY", EffectiveGemini(baseText, answers));
         text = EnvFile.Set(text, "TUNA_TOKEN", EffectiveTunaToken(baseText, answers));
+
+        // An own domain replaces the Tuna subdomain, and is also the address the site will be reached at.
+        var domain = EffectiveTunaDomain(baseText, answers);
+        text = EnvFile.Set(text, "TUNA_DOMAIN", domain);
         text = EnvFile.Set(text, "TUNA_SUBDOMAIN", EffectiveTunaSubdomain(baseText, answers));
+        if (domain.Length > 0)
+            text = SetPublicUrl(text, PublicUrlFor(domain));
+
         if (!string.IsNullOrWhiteSpace(version))
             text = EnvFile.Set(text, "HQSTUDIO_VERSION", version);
 
@@ -56,8 +63,16 @@ public static class EnvPlanner
     public static string EffectiveTunaToken(string? envText, InstallAnswers answers) =>
         Pick(answers.TunaToken, envText, "TUNA_TOKEN");
 
+    public static string EffectiveTunaDomain(string? envText, InstallAnswers answers) =>
+        Validators.NormalizeDomain(Pick(answers.TunaDomain, envText, "TUNA_DOMAIN"));
+
+    /// <summary>Empty whenever an own domain is in force.</summary>
     public static string EffectiveTunaSubdomain(string? envText, InstallAnswers answers) =>
-        Pick(answers.TunaSubdomain, envText, "TUNA_SUBDOMAIN").ToLowerInvariant();
+        EffectiveTunaDomain(envText, answers).Length > 0
+            ? ""
+            : Pick(answers.TunaSubdomain, envText, "TUNA_SUBDOMAIN").ToLowerInvariant();
+
+    public static string PublicUrlFor(string domain) => "https://" + domain;
 
     public static string BlankAdminPassword(string text) => EnvFile.Set(text, "ADMIN_PASSWORD", "");
 

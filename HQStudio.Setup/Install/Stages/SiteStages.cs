@@ -109,6 +109,23 @@ public sealed class PublicUrlStage : StageBase
             await ctx.Services.Delay.DelayAsync(TimeSpan.FromSeconds(PollSeconds), ct);
         }
 
+        if (ctx.ExpectedPublicUrl is { } expected)
+        {
+            // Own domain: Tuna may still be waiting for the domain to be added and verified, so the expected address is used.
+            ctx.PublicUrl = expected;
+            var envPath = ctx.Paths.EnvFile;
+            var text = EnvFile.ReadAllTextOrNull(envPath);
+            await Task.Run(() =>
+            {
+                if (text != null)
+                    EnvFile.WriteAtomic(envPath, EnvPlanner.SetPublicUrl(text, expected));
+                File.WriteAllText(ctx.Paths.PublicUrlFile, expected);
+            }, ct);
+
+            ctx.PublicUrlNote = "Свой домен заработает, когда вы добавите его на my.tuna.am/domains и подтвердите DNS.";
+            return StageOutcome.Warning(ctx.PublicUrlNote);
+        }
+
         ctx.PublicUrlNote = "Публичный адрес пока не получен. Проверьте токен Tuna.";
         return StageOutcome.Warning(ctx.PublicUrlNote);
     }

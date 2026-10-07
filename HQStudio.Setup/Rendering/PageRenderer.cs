@@ -17,6 +17,13 @@ public static class PageRenderer
 
     private sealed record Scenario(string Name, Action<WizardViewModel> Setup);
 
+    // Pages taller than the window are shown scrolled to the bottom, to review the part that is below the fold.
+    private static readonly HashSet<string> ScrolledToEnd = new()
+    {
+        "12b-keys-own-address-open", "13-keys-filled-error", "13b-keys-domain-valid",
+        "13c-keys-domain-non-ascii", "13d-keys-domain-without-token"
+    };
+
     public static int RenderAll(string directory)
     {
         Ui.AnimationsEnabled = false;
@@ -34,7 +41,7 @@ public static class PageRenderer
                 var services = ServiceFactory.CreateSimulated(options, _ => { }, sandbox);
                 var vm = new WizardViewModel(services, options, () => { });
                 scenario.Setup(vm);
-                Save(vm, Path.Combine(directory, scenario.Name + ".png"));
+                Save(vm, Path.Combine(directory, scenario.Name + ".png"), ScrolledToEnd.Contains(scenario.Name));
             }
             catch (Exception ex)
             {
@@ -47,7 +54,20 @@ public static class PageRenderer
         return failures == 0 ? 0 : 1;
     }
 
-    private static void Save(WizardViewModel vm, string path)
+    private static ScrollViewer? FindScroller(DependencyObject root)
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is ScrollViewer { ScrollableHeight: > 0 } viewer)
+                return viewer;
+            if (FindScroller(child) is { } nested)
+                return nested;
+        }
+        return null;
+    }
+
+    private static void Save(WizardViewModel vm, string path, bool scrollToEnd = false)
     {
         var shell = new ShellView { DataContext = vm, Width = Width, Height = Height };
         var host = new Border
@@ -62,6 +82,12 @@ public static class PageRenderer
         host.Measure(size);
         host.Arrange(new Rect(size));
         host.UpdateLayout();
+
+        if (scrollToEnd && FindScroller(host) is { } viewer)
+        {
+            viewer.ScrollToVerticalOffset(viewer.ScrollableHeight);
+            host.UpdateLayout();
+        }
 
         var bitmap = new RenderTargetBitmap(Width, Height, 96, 96, PixelFormats.Pbgra32);
         bitmap.Render(host);
@@ -194,6 +220,44 @@ public static class PageRenderer
             vm.ShowForPreview(vm.Keys);
         });
 
+        yield return new("12b-keys-own-address-open", vm =>
+        {
+            vm.Keys.ShowAdvanced = true;
+            vm.ShowForPreview(vm.Keys);
+        });
+        yield return new("13b-keys-domain-valid", vm =>
+        {
+            vm.Keys.TunaToken = "tuna_example_token";
+            vm.Keys.TunaDomain = "crm.example.ru";
+            vm.ShowForPreview(vm.Keys);
+        });
+        yield return new("13c-keys-domain-non-ascii", vm =>
+        {
+            vm.Keys.TunaToken = "tuna_example_token";
+            vm.Keys.TunaDomain = "кафе.рф";
+            vm.ShowForPreview(vm.Keys);
+        });
+        yield return new("13d-keys-domain-without-token", vm =>
+        {
+            vm.Keys.TunaDomain = "https://crm.example.ru/login";
+            vm.ShowForPreview(vm.Keys);
+        });
+
+        yield return new("13e-keys-domain-needs-token", vm =>
+        {
+            vm.Keys.TunaDomain = "crm.example.ru";
+            vm.Keys.ShowAdvanced = false;
+            vm.ShowForPreview(vm.Keys);
+        });
+
+        yield return new("14b-summary-own-domain", vm =>
+        {
+            Fill(vm.Answers);
+            vm.Answers.TunaDomain = "crm.example.ru";
+            vm.Answers.TunaSubdomain = "";
+            vm.ShowForPreview(vm.Summary);
+        });
+
         yield return new("14-summary", vm =>
         {
             Fill(vm.Answers);
@@ -265,6 +329,12 @@ public static class PageRenderer
         yield return new("22-done-public", vm =>
         {
             vm.Done.LoadPreview(true, "http://localhost:8081", "https://mystudio.ru.tuna.am", null, false);
+            vm.ShowForPreview(vm.Done);
+        });
+        yield return new("22b-done-own-domain", vm =>
+        {
+            vm.Done.LoadPreview(true, "http://localhost:8080", "https://crm.example.ru",
+                "Свой домен заработает, когда вы добавите его на my.tuna.am/domains и подтвердите DNS.", false);
             vm.ShowForPreview(vm.Done);
         });
         yield return new("23-done-site-later", vm =>

@@ -9,6 +9,9 @@ public sealed class InstallAnswers
     public string GeminiKey { get; set; } = "";
     public string TunaToken { get; set; } = "";
     public string TunaSubdomain { get; set; } = "";
+
+    /// <summary>Own domain for the tunnel (full host name, punycode); when set the subdomain is not used.</summary>
+    public string TunaDomain { get; set; } = "";
     public bool DesktopShortcut { get; set; } = true;
 
     /// <summary>The user chose to install Docker later: only the program is installed now.</summary>
