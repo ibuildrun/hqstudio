@@ -1,0 +1,23 @@
+name: Issue triage
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  label-app-reports:
+    name: Label reports sent from the desktop app
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.body, '<!-- hqstudio-app-report -->')
+    steps:
+      - name: Add labels and acknowledge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh issue edit "$ISSUE" --repo "$REPO" --add-label "from-app,needs-triage"
+          gh issue comment "$ISSUE" --repo "$REPO" --body "Thanks for the report. It was sent from the HQ Studio app and is queued for triage. Please reply here if you can add steps to reproduce or a screenshot."
