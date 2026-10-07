@@ -310,6 +310,7 @@ internal sealed class SiteTestEnv
         "GEMINI_API_KEY=\r\n" +
         "TUNA_TOKEN=\r\n" +
         "TUNA_SUBDOMAIN=\r\n" +
+        "TUNA_DOMAIN=\r\n" +
         "PUBLIC_URL=\r\n";
 
     public SiteFakeFiles Files { get; } = new();
@@ -329,8 +330,10 @@ internal sealed class SiteTestEnv
         Manager = new SiteManager(Install, Files, Runner, Locator, Probe, timings);
     }
 
-    public static string EnvWithToken(string token = "tunatoken1234", string subdomain = "hq") =>
-        BaseEnv.Replace("TUNA_TOKEN=\r\n", $"TUNA_TOKEN={token}\r\n").Replace("TUNA_SUBDOMAIN=\r\n", $"TUNA_SUBDOMAIN={subdomain}\r\n");
+    public static string EnvWithToken(string token = "tunatoken1234", string subdomain = "hq", string domain = "") =>
+        BaseEnv.Replace("TUNA_TOKEN=\r\n", $"TUNA_TOKEN={token}\r\n")
+            .Replace("TUNA_SUBDOMAIN=\r\n", $"TUNA_SUBDOMAIN={subdomain}\r\n")
+            .Replace("TUNA_DOMAIN=\r\n", $"TUNA_DOMAIN={domain}\r\n");
 
     public string Env => Files.Files[EnvPath];
 

@@ -123,12 +123,12 @@ namespace HQStudio.Services.Site
     }
 
     /// <summary>Что показывать в окне ключей: значения секретов наружу не отдаются.</summary>
-    public sealed record SiteKeysState(bool HasGeminiKey, bool HasTunaToken, string TunaSubdomain);
+    public sealed record SiteKeysState(bool HasGeminiKey, bool HasTunaToken, string TunaSubdomain, string TunaDomain = "");
 
     /// <summary>Изменения ключей. <c>null</c> - не менять, пустая строка - удалить значение.</summary>
-    public sealed record SiteKeysUpdate(string? GeminiKey, string? TunaToken, string? TunaSubdomain)
+    public sealed record SiteKeysUpdate(string? GeminiKey, string? TunaToken, string? TunaSubdomain, string? TunaDomain = null)
     {
-        public bool IsEmpty => GeminiKey == null && TunaToken == null && TunaSubdomain == null;
+        public bool IsEmpty => GeminiKey == null && TunaToken == null && TunaSubdomain == null && TunaDomain == null;
     }
 
     public sealed record SiteLogsResult(bool Success, string Text, SiteFailure? Failure);

@@ -136,6 +136,30 @@ namespace HQStudio.Services.Site
                 return Task.CompletedTask;
             });
 
+            // Ключи: свой домен сохранён, имя Tuna недоступно
+            await CaptureKeysAsync(dir, "keys-domain-saved", new SiteKeysState(true, true, "", "crm.example.ru"), null);
+
+            // Ключи: домен вводят, имя Tuna стало недоступным
+            await CaptureKeysAsync(dir, "keys-domain-typed", new SiteKeysState(true, true, "hq-studio"), (vm, _) =>
+            {
+                vm.Domain = "crm.example.ru";
+                return Task.CompletedTask;
+            });
+
+            // Ключи: домен кириллицей, нужна ссылка на punycode
+            await CaptureKeysAsync(dir, "keys-domain-nonascii", new SiteKeysState(true, true, ""), (vm, _) =>
+            {
+                vm.Domain = "црм.пример.рф";
+                return Task.CompletedTask;
+            });
+
+            // Ключи: домен с адресом и путём
+            await CaptureKeysAsync(dir, "keys-domain-invalid", new SiteKeysState(true, true, ""), (vm, _) =>
+            {
+                vm.Domain = "https://crm.example.ru/page";
+                return Task.CompletedTask;
+            });
+
             // Ключи: идёт применение
             await CaptureKeysAsync(dir, "keys-busy", new SiteKeysState(true, false, ""), async (vm, service) =>
             {
@@ -177,7 +201,7 @@ namespace HQStudio.Services.Site
         {
             var service = new PreviewService { Keys = state, Snapshot = Snapshot(Running(true), true) };
             var vm = new SiteKeysViewModel(service, new PreviewShell());
-            var dialog = new SiteKeysDialog(vm);
+            var dialog = new SiteKeysDialog(vm) { MaxHeight = 1300 };
             ShowOffscreen(dialog);
             if (prepare != null)
                 await prepare(vm, service);

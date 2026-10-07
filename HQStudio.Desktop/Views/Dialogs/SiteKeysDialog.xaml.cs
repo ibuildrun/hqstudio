@@ -11,6 +11,8 @@ namespace HQStudio.Views.Dialogs
         public SiteKeysDialog(SiteKeysViewModel vm)
         {
             InitializeComponent();
+            // Диалог стал длиннее: на невысоком экране он не должен вылезать за рабочую область.
+            MaxHeight = Math.Min(MaxHeight, SystemParameters.WorkArea.Height - 40);
             _vm = vm;
             DataContext = vm;
 

@@ -14,6 +14,7 @@ namespace HQStudio.Services.Site
         public const string GeminiKey = "GEMINI_API_KEY";
         public const string TunaToken = "TUNA_TOKEN";
         public const string TunaSubdomain = "TUNA_SUBDOMAIN";
+        public const string TunaDomain = "TUNA_DOMAIN";
         public const string PublicUrl = "PUBLIC_URL";
 
         public const int DefaultPort = 8080;
@@ -23,6 +24,14 @@ namespace HQStudio.Services.Site
         {
             PostgresPassword, JwtKey, AdminPassword, GeminiKey, TunaToken
         };
+    }
+
+    public enum DomainCheck
+    {
+        Ok,
+        Invalid,
+        /// <summary>Есть не латинские символы: домен нужно записать в punycode.</summary>
+        NonAscii
     }
 
     /// <summary>Чтение и точечная правка .env: чужие строки, комментарии и стиль переводов строк остаются как были.</summary>
@@ -116,6 +125,29 @@ namespace HQStudio.Services.Site
         /// <summary>Имя адреса Tuna: латиница в нижнем регистре, цифры и дефис; пустое значение допустимо.</summary>
         public static bool IsValidSubdomain(string value) =>
             value.Length == 0 || SubdomainPattern.IsMatch(value);
+
+        /// <summary>
+        /// Собственный домен для Tuna: имя хоста из строчных латинских меток через точки (минимум две),
+        /// без схемы, пути и пробелов. Пустое значение допустимо.
+        /// </summary>
+        public static DomainCheck CheckDomain(string value)
+        {
+            if (value.Length == 0)
+                return DomainCheck.Ok;
+            if (value.Any(c => c > 0x7F))
+                return DomainCheck.NonAscii;
+            if (value.Length > 253)
+                return DomainCheck.Invalid;
+
+            var labels = value.Split('.');
+            if (labels.Length < 2 || !labels.All(l => SubdomainPattern.IsMatch(l)))
+                return DomainCheck.Invalid;
+
+            // Четыре числа через точки это IP-адрес, а не домен.
+            return labels[^1].All(char.IsAsciiDigit) ? DomainCheck.Invalid : DomainCheck.Ok;
+        }
+
+        public static bool IsValidDomain(string value) => CheckDomain(value) == DomainCheck.Ok;
 
         private static string Unquote(string raw)
         {

@@ -536,6 +536,9 @@ namespace HQStudio.ViewModels
     {
         public const string GeminiHelpUrl = "https://aistudio.google.com/apikey";
         public const string TunaHelpUrl = "https://tuna.am";
+        public const string TunaDomainsUrl = "https://my.tuna.am/domains";
+        public const string DomainHelpUrl = "https://tuna.am/docs/tunnels/guides/connect-self-domain";
+        public const string PunycodeUrl = "https://www.reg.ru/web-tools/punycode";
 
         private readonly ISiteService _service;
         private readonly ISiteShell _shell;
@@ -545,11 +548,13 @@ namespace HQStudio.ViewModels
         private bool _hasGemini;
         private bool _hasToken;
         private string _originalSubdomain = "";
+        private string _originalDomain = "";
         private SiteSecretMode _geminiMode;
         private SiteSecretMode _tunaMode;
         private string _geminiInput = "";
         private string _tunaInput = "";
         private string _subdomain = "";
+        private string _domain = "";
         private bool _isBusy;
         private string _statusText = "";
         private string _resultMessage = "";
@@ -570,6 +575,9 @@ namespace HQStudio.ViewModels
             KeepTunaCommand = new RelayCommand(_ => { TunaInput = ""; TunaMode = SiteSecretMode.Keep; }, _ => !IsBusy);
             OpenGeminiHelpCommand = new RelayCommand(_ => _shell.OpenUrl(GeminiHelpUrl));
             OpenTunaHelpCommand = new RelayCommand(_ => _shell.OpenUrl(TunaHelpUrl));
+            OpenTunaDomainsCommand = new RelayCommand(_ => _shell.OpenUrl(TunaDomainsUrl));
+            OpenDomainHelpCommand = new RelayCommand(_ => _shell.OpenUrl(DomainHelpUrl));
+            OpenPunycodeCommand = new RelayCommand(_ => _shell.OpenUrl(PunycodeUrl));
             SaveCommand = new SiteAsyncCommand(SaveAsync, () => CanSave);
 
             Load();
@@ -581,11 +589,13 @@ namespace HQStudio.ViewModels
             _hasGemini = state?.HasGeminiKey ?? false;
             _hasToken = state?.HasTunaToken ?? false;
             _originalSubdomain = state?.TunaSubdomain ?? "";
+            _originalDomain = state?.TunaDomain ?? "";
             _geminiMode = _hasGemini ? SiteSecretMode.Keep : SiteSecretMode.Edit;
             _tunaMode = _hasToken ? SiteSecretMode.Keep : SiteSecretMode.Edit;
             _geminiInput = "";
             _tunaInput = "";
             _subdomain = _originalSubdomain;
+            _domain = _originalDomain;
             RaiseAll();
         }
 
@@ -651,16 +661,40 @@ namespace HQStudio.ViewModels
             }
         }
 
+        public string Domain
+        {
+            get => _domain;
+            set
+            {
+                if (SetProperty(ref _domain, value))
+                    RaiseState();
+            }
+        }
+
+        /// <summary>Пока указан свой домен, имя адреса Tuna не используется и поле недоступно.</summary>
+        public bool SubdomainEnabled => _domain.Trim().Length == 0;
+
         public string SubdomainError
         {
             get
             {
+                if (!SubdomainEnabled)
+                    return "";
                 var value = _subdomain.Trim();
                 return SiteEnvFile.IsValidSubdomain(value)
                     ? ""
                     : "Можно использовать только латинские буквы в нижнем регистре, цифры и дефис.";
             }
         }
+
+        public string DomainError => SiteEnvFile.CheckDomain(_domain.Trim()) switch
+        {
+            DomainCheck.NonAscii => "Домен нужно записать латиницей (punycode). Перевести его можно по кнопке ниже.",
+            DomainCheck.Invalid => "Запишите домен так: crm.example.ru. Только строчные латинские буквы, цифры, дефис и точки, без http:// и без пути.",
+            _ => ""
+        };
+
+        public bool ShowPunycodeLink => SiteEnvFile.CheckDomain(_domain.Trim()) == DomainCheck.NonAscii;
 
         public string GeminiInputError => _geminiMode == SiteSecretMode.Edit && !SiteEnvFile.IsSafeValue(_geminiInput.Trim())
             ? "В ключе не должно быть пробелов и необычных символов."
@@ -724,7 +758,7 @@ namespace HQStudio.ViewModels
 
         public bool HasChanges => BuildUpdate().IsEmpty == false;
 
-        public bool CanSave => !IsBusy && HasChanges && SubdomainError.Length == 0 &&
+        public bool CanSave => !IsBusy && HasChanges && SubdomainError.Length == 0 && DomainError.Length == 0 &&
                                GeminiInputError.Length == 0 && TunaInputError.Length == 0;
 
         public ICommand ChangeGeminiCommand { get; }
@@ -735,6 +769,9 @@ namespace HQStudio.ViewModels
         public ICommand KeepTunaCommand { get; }
         public ICommand OpenGeminiHelpCommand { get; }
         public ICommand OpenTunaHelpCommand { get; }
+        public ICommand OpenTunaDomainsCommand { get; }
+        public ICommand OpenDomainHelpCommand { get; }
+        public ICommand OpenPunycodeCommand { get; }
         public ICommand SaveCommand { get; }
 
         public SiteKeysUpdate BuildUpdate()
@@ -751,9 +788,22 @@ namespace HQStudio.ViewModels
                 SiteSecretMode.Edit when _tunaInput.Trim().Length > 0 => _tunaInput.Trim(),
                 _ => null
             };
-            var sub = _subdomain.Trim();
-            string? subdomain = sub != _originalSubdomain ? sub : null;
-            return new SiteKeysUpdate(gemini, token, subdomain);
+            var dom = _domain.Trim();
+            string? domain;
+            string? subdomain;
+            if (dom.Length > 0)
+            {
+                // При домене имя Tuna не меняем: сохранение само запишет его пустым.
+                domain = dom != _originalDomain ? dom : null;
+                subdomain = null;
+            }
+            else
+            {
+                domain = _originalDomain.Length > 0 ? "" : null;
+                var sub = _subdomain.Trim();
+                subdomain = sub != _originalSubdomain ? sub : null;
+            }
+            return new SiteKeysUpdate(gemini, token, subdomain, domain);
         }
 
         public void Cancel()
@@ -816,7 +866,7 @@ namespace HQStudio.ViewModels
             foreach (var name in new[]
                      {
                          nameof(HasGemini), nameof(HasToken), nameof(GeminiMode), nameof(TunaMode), nameof(GeminiInput),
-                         nameof(TunaInput), nameof(Subdomain)
+                         nameof(TunaInput), nameof(Subdomain), nameof(Domain)
                      })
                 OnPropertyChanged(name);
             RaiseState();
@@ -828,7 +878,7 @@ namespace HQStudio.ViewModels
                      {
                          nameof(ShowGeminiSaved), nameof(ShowGeminiInput), nameof(ShowGeminiCleared), nameof(CanCancelGeminiEdit),
                          nameof(ShowTunaSaved), nameof(ShowTunaInput), nameof(ShowTunaCleared), nameof(CanCancelTunaEdit),
-                         nameof(SubdomainError), nameof(GeminiInputError), nameof(TunaInputError), nameof(HasChanges), nameof(CanSave)
+                         nameof(SubdomainError), nameof(SubdomainEnabled), nameof(DomainError), nameof(ShowPunycodeLink), nameof(GeminiInputError), nameof(TunaInputError), nameof(HasChanges), nameof(CanSave)
                      })
                 OnPropertyChanged(name);
             CommandManager.InvalidateRequerySuggested();

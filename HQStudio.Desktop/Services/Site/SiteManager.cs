@@ -152,7 +152,8 @@ namespace HQStudio.Services.Site
             return new SiteKeysState(
                 !string.IsNullOrEmpty(SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.GeminiKey)),
                 !string.IsNullOrEmpty(SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.TunaToken)),
-                SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.TunaSubdomain) ?? "");
+                SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.TunaSubdomain) ?? "",
+                SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.TunaDomain) ?? "");
         }
 
         // ------------------------------------------------------------------ запуск, остановка
@@ -307,6 +308,7 @@ namespace HQStudio.Services.Site
             var gemini = update.GeminiKey?.Trim();
             var token = update.TunaToken?.Trim();
             var subdomain = update.TunaSubdomain?.Trim();
+            var domain = update.TunaDomain?.Trim();
 
             if (gemini != null && !SiteEnvFile.IsSafeValue(gemini))
                 return SiteOperationResult.Fail(SiteErrorMapper.InvalidInput("Ключ Gemini содержит пробелы или недопустимые символы. Скопируйте его заново."));
@@ -314,6 +316,16 @@ namespace HQStudio.Services.Site
                 return SiteOperationResult.Fail(SiteErrorMapper.InvalidInput("Токен Tuna содержит пробелы или недопустимые символы. Скопируйте его заново."));
             if (subdomain != null && !SiteEnvFile.IsValidSubdomain(subdomain))
                 return SiteOperationResult.Fail(SiteErrorMapper.InvalidInput("Имя адреса может состоять только из латинских букв в нижнем регистре, цифр и дефиса."));
+            if (domain != null)
+            {
+                var check = SiteEnvFile.CheckDomain(domain);
+                if (check == DomainCheck.NonAscii)
+                    return SiteOperationResult.Fail(SiteErrorMapper.InvalidInput("Домен нужно записать латиницей (punycode), например xn--80aswg.xn--p1ai."));
+                if (check == DomainCheck.Invalid)
+                    return SiteOperationResult.Fail(SiteErrorMapper.InvalidInput("Домен записывается так: crm.example.ru. Только строчные латинские буквы, цифры, дефис и точки, без http:// и без пути."));
+                if (domain.Length > 0 && !string.IsNullOrEmpty(subdomain))
+                    return SiteOperationResult.Fail(SiteErrorMapper.InvalidInput("Укажите что-то одно: имя адреса Tuna или свой домен."));
+            }
 
             var (ctx, failure) = LoadContext();
             if (ctx == null)
@@ -322,9 +334,22 @@ namespace HQStudio.Services.Site
             if (gemini != null) changes[SiteEnvKeys.GeminiKey] = gemini;
             if (token != null) changes[SiteEnvKeys.TunaToken] = token;
             if (subdomain != null) changes[SiteEnvKeys.TunaSubdomain] = subdomain;
+            if (domain != null)
+            {
+                changes[SiteEnvKeys.TunaDomain] = domain;
+                // Свой домен и имя от Tuna исключают друг друга: при домене имя записывается пустым.
+                if (domain.Length > 0)
+                    changes[SiteEnvKeys.TunaSubdomain] = "";
+            }
+            else if (!string.IsNullOrEmpty(subdomain) &&
+                     !string.IsNullOrEmpty(SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.TunaDomain)))
+            {
+                // Новое имя заменяет прежний домен.
+                changes[SiteEnvKeys.TunaDomain] = "";
+            }
 
             var hadToken = !string.IsNullOrEmpty(SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.TunaToken));
-            var tunnelChanged = token != null || subdomain != null;
+            var tunnelChanged = token != null || subdomain != null || domain != null;
 
             try
             {
@@ -379,7 +404,7 @@ namespace HQStudio.Services.Site
                 var address = await SyncTunnelAddressAsync(docker, ctx, ct).ConfigureAwait(false);
                 return SiteOperationResult.Ok(address.Found
                     ? $"Настройки сохранены и применены. Адрес в интернете: {address.Url}"
-                    : "Настройки сохранены и применены, но адрес в интернете пока не получен. Проверьте токен Tuna и повторите.");
+                    : "Настройки сохранены и применены, но адрес в интернете пока не получен. Проверьте токен Tuna и, если указан свой домен, что он добавлен и подтверждён в my.tuna.am/domains.");
             }
             catch (Exception ex) when (ex is OperationCanceledException or Win32Exception)
             {
