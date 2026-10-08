@@ -4,6 +4,7 @@ using FluentAssertions;
 using HQStudio.Setup.Core;
 using HQStudio.Setup.Services;
 using HQStudio.Setup.Services.Real;
+using HQStudio.Setup.Services.Sim;
 using Xunit;
 
 namespace HQStudio.Setup.Tests;
@@ -68,28 +69,6 @@ public class ValidatorsTests
         Validators.Strength(password).Should().Be(expected);
     }
 
-    [Theory]
-    [InlineData("", true)]
-    [InlineData("mysite", true)]
-    [InlineData("my-site-2", true)]
-    [InlineData("MySite", true)]
-    [InlineData("-mysite", false)]
-    [InlineData("mysite-", false)]
-    [InlineData("my_site", false)]
-    [InlineData("my site", false)]
-    [InlineData("мой-сайт", false)]
-    [InlineData("a--b", false)]
-    public void Subdomain_AcceptsLatinLettersDigitsAndInnerDashes(string value, bool ok)
-    {
-        (Validators.Subdomain(value) == null).Should().Be(ok);
-    }
-
-    [Fact]
-    public void Subdomain_TooLongIsRejected()
-    {
-        Validators.Subdomain(new string('a', Validators.MaxSubdomainLength + 1)).Should().NotBeNull();
-    }
-
     [Fact]
     public void Key_WithSpacesIsRejected()
     {
@@ -110,12 +89,23 @@ public class PayloadExtractorTests
         var result = PayloadExtractor.Extract(stream, temp.Combine("app"), temp.Combine("server"));
 
         File.ReadAllText(temp.Combine("app", "HQStudio.exe")).Should().Be("exe");
-        File.Exists(temp.Combine("app", "ИНСТРУКЦИЯ.html")).Should().BeTrue();
         File.Exists(temp.Combine("server", "docker-compose.yml")).Should().BeTrue();
         File.Exists(temp.Combine("server", ".env.example")).Should().BeTrue();
         File.Exists(temp.Combine("server", "nginx", "default.conf")).Should().BeTrue();
-        result.AppFiles.Should().BeEquivalentTo("HQStudio.exe", "ИНСТРУКЦИЯ.html");
+        result.AppFiles.Should().BeEquivalentTo("HQStudio.exe");
         result.ServerFiles.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public void SimulatedPayload_CarriesOnlyTheProgramAndNoHtmlGuide()
+    {
+        using var temp = new TempDir();
+        using var stream = new SimPayloadSource().Open()!;
+
+        var result = PayloadExtractor.Extract(stream, temp.Combine("app"), temp.Combine("server"));
+
+        result.AppFiles.Should().Equal("HQStudio.exe");
+        Directory.GetFiles(temp.Combine("app"), "*.html").Should().BeEmpty();
     }
 
     [Theory]

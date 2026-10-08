@@ -4,7 +4,7 @@ HQ Studio can be installed on one Windows PC by a non-technical user: the deskto
 site, API and database running in Docker, optionally published to the internet through
 [Tuna](https://tuna.am) (a Russian ngrok-like tunnel service).
 
-End-user guide (Russian, plain language): [INSTALL.ru.html](INSTALL.ru.html).
+The step-by-step guide for the administrator (Russian, plain language) is built into the desktop app: section "Сайт" -> "Инструкция", visible to administrators only.
 
 ## Architecture
 
@@ -44,7 +44,7 @@ Browser / Desktop app
 | Project | Purpose |
 | --- | --- |
 | `HQStudio.Setup` | GUI installer (single-file exe, payload embedded): Docker check/auto-install, main account, optional keys, install with live stages, uninstall entry |
-| `HQStudio.Desktop` page "Сайт" | status of every service, start/stop/restart, keys, logs, uninstall |
+| `HQStudio.Desktop` page "Сайт" | status of every service, start/stop/restart, keys (Tuna token, own domain), logs, in-app guide (admin only), uninstall |
 | `HQStudio.Desktop` updates | one-click "Обновить приложение / сайт / всё" from the latest GitHub release |
 | `HQStudio.Desktop` bug report | creates a GitHub issue (device flow sign-in, or prefilled browser fallback) |
 | `.github/workflows/issue-triage.yml` | labels issues created by the app (`from-app`, `needs-triage`) |
@@ -81,14 +81,14 @@ version whose images exist.
   `--simulate-fail=<stage>` forces a failure to check the retry flow.
 - Unit tests: `dotnet test HQStudio.Setup.Tests`, `dotnet test HQStudio.Desktop.Tests`.
 
-## Public address options (Tuna)
+## Public address (Tuna, own domain)
 
-| Option | `.env` | Plan |
-| --- | --- | --- |
-| Temporary address (changes on restart) | `TUNA_TOKEN` only | free |
-| The permanent free subdomain Tuna assigns to the account (random name like `brave-otter-4821`, shown at <https://my.tuna.am/domains>) | `TUNA_TOKEN` + `TUNA_SUBDOMAIN` | free |
-| Any chosen subdomain name | `TUNA_TOKEN` + `TUNA_SUBDOMAIN` | paid |
-| Own domain (CNAME/A record at the registrar, verified in the Tuna cabinet) | `TUNA_TOKEN` + `TUNA_DOMAIN` (`TUNA_SUBDOMAIN` is left empty) | paid |
+The site is published only on the customer's own domain; the free/temporary Tuna address is not used.
 
-The end-user guide ([INSTALL.ru.html](INSTALL.ru.html)) walks through buying a domain at reg.ru and the
-DNS record to create there and in Tuna.
+| Step | Where |
+| --- | --- |
+| Buy a domain | reg.ru |
+| Add the domain in Tuna (type "own domain"), create the shown CNAME/A record at the registrar | my.tuna.am/domains, reg.ru DNS |
+| Put `TUNA_TOKEN` + `TUNA_DOMAIN` into the app ("Сайт" -> "Ключи") or into the installer keys page | desktop app / installer |
+
+Without a domain the site works only on this PC (`http://localhost:8080`). The in-app guide walks through every step.

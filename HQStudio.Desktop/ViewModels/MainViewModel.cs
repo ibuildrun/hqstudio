@@ -35,7 +35,7 @@ namespace HQStudio.ViewModels
         public string UserRole => _dataService.CurrentUser?.Role ?? "";
 
         /// <summary>Страница «Сайт» управляет сервером, поэтому видна только администратору.</summary>
-        public bool IsAdmin => string.Equals(UserRole, "Admin", StringComparison.OrdinalIgnoreCase);
+        public bool IsAdmin => AdminAccess.IsAdmin(UserRole);
 
         public string AppVersion
         {

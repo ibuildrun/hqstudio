@@ -21,7 +21,7 @@ public class SiteDomainValidatorTests
     }
 
     [Fact]
-    public void Empty_IsAccepted_BecauseTheDomainIsOptional()
+    public void Empty_IsAccepted_BecauseTheSiteWorksLocallyWithoutADomain()
     {
         SiteEnvFile.CheckDomain("").Should().Be(DomainCheck.Ok);
     }
@@ -75,25 +75,27 @@ public class SiteDomainValidatorTests
 
         result.Should().StartWith(text).And.EndWith("TUNA_DOMAIN=crm.example.ru\r\n");
     }
+
+    [Fact]
+    public void PublicUrlOf_AddsHttps()
+    {
+        SiteEnvFile.PublicUrlOf("crm.example.ru").Should().Be("https://crm.example.ru");
+    }
 }
 
 public class SiteDomainApplyTests
 {
     private static string Dir => SiteTestEnv.ServerDir;
-    private const string TunnelLog = "tuna-1  | Forwarding https://crm.example.ru -> proxy:80";
 
     [Fact]
-    public async Task Domain_IsWritten_AndSubdomainBecomesEmpty_OtherLinesStayIntact()
+    public async Task Domain_IsWritten_OtherLinesStayIntact()
     {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", "hq"));
-        env.Runner.When("logs --no-color tuna", 0, TunnelLog);
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", ""));
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, null, "crm.example.ru"), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, "crm.example.ru"), null, CancellationToken.None);
 
         result.Success.Should().BeTrue();
         SiteEnvFile.GetValue(env.Env, "TUNA_DOMAIN").Should().Be("crm.example.ru");
-        SiteEnvFile.GetValue(env.Env, "TUNA_SUBDOMAIN").Should().Be("");
-        env.Env.Should().Contain("TUNA_SUBDOMAIN=\r\n").And.NotContain("TUNA_SUBDOMAIN=hq");
         env.Env.Should().Contain("# HQ Studio settings\r\n")
             .And.Contain("POSTGRES_PASSWORD=pgsecret123\r\n")
             .And.Contain("JWT_KEY=jwtsecret456789\r\n")
@@ -102,77 +104,15 @@ public class SiteDomainApplyTests
     }
 
     [Fact]
-    public async Task Domain_SubdomainEmptyLineIsWritten_EvenWhenItWasAlreadyEmpty()
-    {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", ""));
-        env.Runner.When("logs --no-color tuna", 0, TunnelLog);
-
-        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, null, "crm.example.ru"), null, CancellationToken.None);
-
-        env.Env.Should().Contain("TUNA_SUBDOMAIN=\r\n");
-    }
-
-    [Fact]
-    public async Task Domain_AndSubdomainTogether_AreRejectedBeforeAnyWrite()
-    {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken());
-
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, "hq", "crm.example.ru"), null, CancellationToken.None);
-
-        result.Success.Should().BeFalse();
-        result.Failure!.Kind.Should().Be(SiteFailureKind.InvalidInput);
-        env.Files.Log.Should().BeEmpty();
-        env.Runner.Calls.Should().BeEmpty();
-    }
-
-    [Fact]
     public async Task ClearingDomain_WritesExplicitEmptyValue_AndKeepsTheRest()
     {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", "", "crm.example.ru"));
-        env.Runner.When("logs --no-color tuna", 0, "Forwarding https://random-name.tuna.am -> proxy:80");
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", "crm.example.ru"));
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, null, ""), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, ""), null, CancellationToken.None);
 
         result.Success.Should().BeTrue();
         env.Env.Should().Contain("TUNA_DOMAIN=\r\n").And.NotContain("crm.example.ru");
         env.Env.Should().Contain("TUNA_TOKEN=tunatoken1234\r\n").And.Contain("POSTGRES_PASSWORD=pgsecret123\r\n");
-    }
-
-    [Fact]
-    public async Task ClearingDomain_AndTypingSubdomain_InOneSave_WritesBoth()
-    {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", "", "crm.example.ru"));
-        env.Runner.When("logs --no-color tuna", 0, "Forwarding https://brave-otter-4821.tuna.am -> proxy:80");
-
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, "brave-otter-4821", ""), null, CancellationToken.None);
-
-        result.Success.Should().BeTrue();
-        SiteEnvFile.GetValue(env.Env, "TUNA_DOMAIN").Should().Be("");
-        SiteEnvFile.GetValue(env.Env, "TUNA_SUBDOMAIN").Should().Be("brave-otter-4821");
-    }
-
-    [Fact]
-    public async Task NewSubdomain_ReplacesAnExistingDomain()
-    {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", "", "crm.example.ru"));
-        env.Runner.When("logs --no-color tuna", 0, "Forwarding https://my-name.tuna.am -> proxy:80");
-
-        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, "my-name"), null, CancellationToken.None);
-
-        SiteEnvFile.GetValue(env.Env, "TUNA_SUBDOMAIN").Should().Be("my-name");
-        SiteEnvFile.GetValue(env.Env, "TUNA_DOMAIN").Should().Be("");
-    }
-
-    [Fact]
-    public async Task NewSubdomain_WithNoDomain_DoesNotTouchTheDomainKey()
-    {
-        var withoutKey = SiteTestEnv.EnvWithToken("tunatoken1234", "").Replace("TUNA_DOMAIN=\r\n", "");
-        var env = new SiteTestEnv(withoutKey);
-        env.Runner.When("logs --no-color tuna", 0, "Forwarding https://my-name.tuna.am -> proxy:80");
-
-        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, "my-name"), null, CancellationToken.None);
-
-        env.Env.Should().NotContain("TUNA_DOMAIN");
     }
 
     [Theory]
@@ -185,7 +125,7 @@ public class SiteDomainApplyTests
     {
         var env = new SiteTestEnv();
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, null, domain), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, domain), null, CancellationToken.None);
 
         result.Failure!.Kind.Should().Be(SiteFailureKind.InvalidInput);
         result.Message.Should().Contain("crm.example.ru");
@@ -198,7 +138,7 @@ public class SiteDomainApplyTests
     {
         var env = new SiteTestEnv();
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, null, "црм.пример.рф"), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, "црм.пример.рф"), null, CancellationToken.None);
 
         result.Failure!.Kind.Should().Be(SiteFailureKind.InvalidInput);
         result.Message.Should().Contain("punycode");
@@ -206,55 +146,58 @@ public class SiteDomainApplyTests
     }
 
     [Fact]
+    public async Task PunycodeDomain_IsAccepted()
+    {
+        var env = new SiteTestEnv();
+
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, "xn--80aswg.xn--p1ai"), null, CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        SiteEnvFile.GetValue(env.Env, "TUNA_DOMAIN").Should().Be("xn--80aswg.xn--p1ai");
+        SiteEnvFile.GetValue(env.Env, "PUBLIC_URL").Should().Be("https://xn--80aswg.xn--p1ai");
+    }
+
+    [Fact]
     public async Task Domain_IsTrimmedBeforeSaving()
     {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken());
-        env.Runner.When("logs --no-color tuna", 0, TunnelLog);
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", ""));
 
-        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, null, "  crm.example.ru "), null, CancellationToken.None);
+        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, "  crm.example.ru "), null, CancellationToken.None);
 
         SiteEnvFile.GetValue(env.Env, "TUNA_DOMAIN").Should().Be("crm.example.ru");
     }
 
-    [Fact]
-    public async Task Apply_WithDomain_WritesEnvThenUpThenReadsTunnelLogThenWritesPublicUrl()
+    [Theory]
+    [InlineData("tunatoken1234", "crm.example.ru", true)]
+    [InlineData("tunatoken1234", "", false)]
+    [InlineData("", "crm.example.ru", false)]
+    [InlineData("", "", false)]
+    public async Task TunnelProfile_NeedsBothTokenAndDomain(string token, string domain, bool tunnel)
     {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken());
-        env.Runner.When("logs --no-color tuna", 0, TunnelLog);
-        var timeline = new List<string>();
-        env.Files.Timeline = timeline;
-        var prefix = $"compose --project-directory {Dir} -f {Dir}\\docker-compose.yml ";
-        env.Runner.OnCall = call =>
-        {
-            var text = call.StartsWith(prefix, StringComparison.Ordinal) ? call[prefix.Length..] : call;
-            text = text.StartsWith("--profile tunnel ") ? "[tunnel] " + text["--profile tunnel ".Length..] : text;
-            timeline.Add("run:" + text);
-        };
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken(token, domain));
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, null, "crm.example.ru"), null, CancellationToken.None);
+        var result = await env.Manager.StopAsync(null, CancellationToken.None);
 
         result.Success.Should().BeTrue();
-        result.Message.Should().Contain("https://crm.example.ru");
-        timeline.Where(e => e is "write:.env" or "write:public-url.txt" || e.StartsWith("run:version")
-                            || e.StartsWith("run:[tunnel] up") || e.StartsWith("run:[tunnel] logs"))
-            .Should().StartWith(new[]
-            {
-                "write:.env",
-                "run:version --format {{.Server.Version}}",
-                "run:[tunnel] up -d --remove-orphans",
-                "run:[tunnel] logs --no-color tuna",
-                "write:public-url.txt"
-            });
-        env.Files.Files[SiteTestEnv.PublicUrlPath].Should().Be("https://crm.example.ru");
-        SiteEnvFile.GetValue(env.Env, "PUBLIC_URL").Should().Be("https://crm.example.ru");
+        env.Runner.ComposeCommands(Dir).Should().Equal(tunnel ? "[tunnel] stop" : "stop");
     }
 
     [Fact]
-    public async Task TunnelProfile_DependsOnTheTokenOnly_NotOnTheDomain()
+    public async Task Domain_WithTokenAlreadySaved_UsesTunnelProfile()
+    {
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", ""));
+
+        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, "crm.example.ru"), null, CancellationToken.None);
+
+        env.Runner.ComposeCommands(Dir).Should().StartWith("[tunnel] up -d --remove-orphans");
+    }
+
+    [Fact]
+    public async Task Domain_WithoutAToken_NeverStartsTheTunnel()
     {
         var env = new SiteTestEnv();
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, null, "crm.example.ru"), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, "crm.example.ru"), null, CancellationToken.None);
 
         result.Success.Should().BeTrue();
         SiteEnvFile.GetValue(env.Env, "TUNA_DOMAIN").Should().Be("crm.example.ru");
@@ -262,53 +205,23 @@ public class SiteDomainApplyTests
     }
 
     [Fact]
-    public async Task Domain_WithTokenAlreadySaved_UsesTunnelProfile()
+    public void KeysUpdate_WithOnlyDomain_IsNotEmpty()
     {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken());
-        env.Runner.When("logs --no-color tuna", 0, TunnelLog);
-
-        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, null, "crm.example.ru"), null, CancellationToken.None);
-
-        env.Runner.ComposeCommands(Dir).Should().StartWith("[tunnel] up -d --remove-orphans", "[tunnel] logs --no-color tuna");
+        new SiteKeysUpdate(null, "crm.example.ru").IsEmpty.Should().BeFalse();
+        new SiteKeysUpdate(null, "").IsEmpty.Should().BeFalse();
+        new SiteKeysUpdate("", null).IsEmpty.Should().BeFalse();
+        new SiteKeysUpdate(null, null).IsEmpty.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Domain_AddressNotYetKnown_HintsAtTheTunaAccount()
+    public async Task Refresh_ShowsTheDomainAddress()
     {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken());
-
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, null, "crm.example.ru"), null, CancellationToken.None);
-
-        result.Success.Should().BeTrue();
-        result.Message.Should().Contain("пока не получен").And.Contain("my.tuna.am/domains");
-    }
-
-    [Fact]
-    public void ReadKeysState_ReportsTheSavedDomain()
-    {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", "", "crm.example.ru"));
-
-        env.Manager.ReadKeysState().Should().Be(new SiteKeysState(false, true, "", "crm.example.ru"));
-    }
-
-    [Fact]
-    public async Task Refresh_ShowsTheDomainAddressFromThePublicUrlFile()
-    {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", "", "crm.example.ru")).WithPs(SiteTestEnv.AllRunning(tunnel: true));
-        env.Files.Add(SiteTestEnv.PublicUrlPath, "https://crm.example.ru");
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", "crm.example.ru")).WithPs(SiteTestEnv.AllRunning(tunnel: true));
 
         var snapshot = await env.Manager.RefreshAsync(SiteOperation.None, CancellationToken.None);
 
         snapshot.PublicUrl.Should().Be("https://crm.example.ru");
         snapshot.Overview.Pill.Should().Be(SitePill.Running);
-    }
-
-    [Fact]
-    public void KeysUpdate_WithOnlyDomain_IsNotEmpty()
-    {
-        new SiteKeysUpdate(null, null, null, "crm.example.ru").IsEmpty.Should().BeFalse();
-        new SiteKeysUpdate(null, null, null, "").IsEmpty.Should().BeFalse();
-        new SiteKeysUpdate(null, null, null).IsEmpty.Should().BeTrue();
     }
 }
 
@@ -316,45 +229,29 @@ public class SiteDomainKeysViewModelTests
 {
     private static (SiteKeysViewModel Vm, SiteFakeService Service, SiteFakeShell Shell) Make(SiteKeysState? state = null)
     {
-        var service = new SiteFakeService { Keys = state ?? new SiteKeysState(true, true, "") };
+        var service = new SiteFakeService { Keys = state ?? new SiteKeysState(true, "") };
         var shell = new SiteFakeShell();
         return (new SiteKeysViewModel(service, shell), service, shell);
     }
 
     [Fact]
-    public void SavedDomain_IsShown_AndDisablesTheSubdomainField()
+    public void SavedDomain_IsShown_AndNothingToSave()
     {
-        var (vm, _, _) = Make(new SiteKeysState(true, true, "", "crm.example.ru"));
+        var (vm, _, _) = Make(new SiteKeysState(true, "crm.example.ru"));
 
         vm.Domain.Should().Be("crm.example.ru");
-        vm.SubdomainEnabled.Should().BeFalse();
         vm.BuildUpdate().IsEmpty.Should().BeTrue();
         vm.CanSave.Should().BeFalse();
     }
 
     [Fact]
-    public void TypingADomain_ProducesAnUpdate_AndIgnoresTheSubdomain()
+    public void TypingADomain_ProducesAnUpdate()
     {
-        var (vm, _, _) = Make(new SiteKeysState(true, true, "hq"));
+        var (vm, _, _) = Make();
 
         vm.Domain = "  crm.example.ru ";
 
-        vm.SubdomainEnabled.Should().BeFalse();
-        vm.SubdomainError.Should().BeEmpty();
-        vm.BuildUpdate().Should().Be(new SiteKeysUpdate(null, null, null, "crm.example.ru"));
-        vm.CanSave.Should().BeTrue();
-    }
-
-    [Fact]
-    public void InvalidSubdomainText_DoesNotBlockSaving_WhileADomainIsUsed()
-    {
-        var (vm, _, _) = Make();
-        vm.Subdomain = "Bad Name";
-        vm.SubdomainError.Should().NotBeEmpty();
-
-        vm.Domain = "crm.example.ru";
-
-        vm.SubdomainError.Should().BeEmpty();
+        vm.BuildUpdate().Should().Be(new SiteKeysUpdate(null, "crm.example.ru"));
         vm.CanSave.Should().BeTrue();
     }
 
@@ -398,26 +295,14 @@ public class SiteDomainKeysViewModelTests
     }
 
     [Fact]
-    public void ClearingASavedDomain_SendsExplicitEmpty_AndReEnablesTheSubdomain()
+    public void ClearingASavedDomain_SendsExplicitEmpty()
     {
-        var (vm, _, _) = Make(new SiteKeysState(true, true, "", "crm.example.ru"));
+        var (vm, _, _) = Make(new SiteKeysState(true, "crm.example.ru"));
 
         vm.Domain = "";
 
-        vm.SubdomainEnabled.Should().BeTrue();
-        vm.BuildUpdate().Should().Be(new SiteKeysUpdate(null, null, null, ""));
+        vm.BuildUpdate().Should().Be(new SiteKeysUpdate(null, ""));
         vm.CanSave.Should().BeTrue();
-    }
-
-    [Fact]
-    public void ClearingDomain_AndTypingSubdomain_SendsBoth()
-    {
-        var (vm, _, _) = Make(new SiteKeysState(true, true, "", "crm.example.ru"));
-
-        vm.Domain = "";
-        vm.Subdomain = "brave-otter-4821";
-
-        vm.BuildUpdate().Should().Be(new SiteKeysUpdate(null, null, "brave-otter-4821", ""));
     }
 
     [Fact]
@@ -432,22 +317,32 @@ public class SiteDomainKeysViewModelTests
     }
 
     [Fact]
+    public void TokenAndDomain_TogetherGoIntoOneUpdate()
+    {
+        var (vm, _, _) = Make(new SiteKeysState(false, ""));
+
+        vm.TunaInput = "  tunatoken1234 ";
+        vm.Domain = "crm.example.ru";
+
+        vm.BuildUpdate().Should().Be(new SiteKeysUpdate("tunatoken1234", "crm.example.ru"));
+    }
+
+    [Fact]
     public async Task Save_SendsTheDomain_AndReloadsTheSavedState()
     {
         var (vm, service, _) = Make();
         service.ApplyHandler = (update, _, _) =>
         {
-            service.Keys = new SiteKeysState(true, true, "", update.TunaDomain ?? "");
+            service.Keys = new SiteKeysState(true, update.TunaDomain ?? "");
             return Task.FromResult(SiteOperationResult.Ok("Настройки сохранены и применены."));
         };
         vm.Domain = "crm.example.ru";
 
         await vm.SaveAsync();
 
-        service.Applied.Should().ContainSingle().Which.Should().Be(new SiteKeysUpdate(null, null, null, "crm.example.ru"));
+        service.Applied.Should().ContainSingle().Which.Should().Be(new SiteKeysUpdate(null, "crm.example.ru"));
         vm.Completed.Should().BeTrue();
         vm.Domain.Should().Be("crm.example.ru");
-        vm.SubdomainEnabled.Should().BeFalse();
         vm.CanSave.Should().BeFalse();
     }
 
@@ -456,13 +351,33 @@ public class SiteDomainKeysViewModelTests
     {
         var (vm, _, shell) = Make();
 
-        vm.OpenDomainHelpCommand.Execute(null);
         vm.OpenPunycodeCommand.Execute(null);
         vm.OpenTunaDomainsCommand.Execute(null);
+        vm.OpenTunaHelpCommand.Execute(null);
 
         shell.Opened.Should().Equal(
-            "https://tuna.am/docs/tunnels/guides/connect-self-domain",
             "https://www.reg.ru/web-tools/punycode",
-            "https://my.tuna.am/domains");
+            "https://my.tuna.am/domains",
+            "https://my.tuna.am");
+    }
+
+    [Fact]
+    public void GuideButton_IsOnlyThereWhenTheCallerAllowsTheGuide()
+    {
+        var service = new SiteFakeService();
+        var opened = 0;
+
+        var withGuide = new SiteKeysViewModel(service, new SiteFakeShell(), () => opened++);
+        var withoutGuide = new SiteKeysViewModel(service, new SiteFakeShell());
+
+        withGuide.CanOpenGuide.Should().BeTrue();
+        withGuide.OpenGuideCommand.CanExecute(null).Should().BeTrue();
+        withGuide.OpenGuideCommand.Execute(null);
+        opened.Should().Be(1);
+
+        withoutGuide.CanOpenGuide.Should().BeFalse();
+        withoutGuide.OpenGuideCommand.CanExecute(null).Should().BeFalse();
+        withoutGuide.OpenGuideCommand.Execute(null);
+        opened.Should().Be(1);
     }
 }

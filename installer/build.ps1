@@ -35,7 +35,6 @@ Invoke-Checked { dotnet publish $desktopProj -c Release -r win-x64 --self-contai
 if (Test-Path $stage) { Remove-Item -Recurse -Force $stage }
 New-Item -ItemType Directory -Force -Path (Join-Path $stage 'app'), (Join-Path $stage 'server\nginx') | Out-Null
 Copy-Item (Join-Path $publish 'HQStudio.exe') (Join-Path $stage 'app\HQStudio.exe')
-Copy-Item (Join-Path $root 'docs\INSTALL.ru.html') (Join-Path $stage 'app\ИНСТРУКЦИЯ.html')
 Copy-Item (Join-Path $root 'deploy\docker-compose.yml') (Join-Path $stage 'server\docker-compose.yml')
 Copy-Item (Join-Path $root 'deploy\.env.example') (Join-Path $stage 'server\.env.example')
 Copy-Item (Join-Path $root 'deploy\nginx\default.conf') (Join-Path $stage 'server\nginx\default.conf')

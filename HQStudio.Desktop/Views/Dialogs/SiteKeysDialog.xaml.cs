@@ -11,7 +11,7 @@ namespace HQStudio.Views.Dialogs
         public SiteKeysDialog(SiteKeysViewModel vm)
         {
             InitializeComponent();
-            // Диалог стал длиннее: на невысоком экране он не должен вылезать за рабочую область.
+            // На невысоком экране диалог не должен вылезать за рабочую область.
             MaxHeight = Math.Min(MaxHeight, SystemParameters.WorkArea.Height - 40);
             _vm = vm;
             DataContext = vm;
@@ -19,24 +19,13 @@ namespace HQStudio.Views.Dialogs
             // PasswordBox не умеет привязку, поэтому значение переносится вручную.
             vm.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(SiteKeysViewModel.GeminiInput) && GeminiPassword.Password != vm.GeminiInput)
-                    GeminiPassword.Password = vm.GeminiInput;
-                else if (e.PropertyName == nameof(SiteKeysViewModel.TunaInput) && TunaPassword.Password != vm.TunaInput)
+                if (e.PropertyName == nameof(SiteKeysViewModel.TunaInput) && TunaPassword.Password != vm.TunaInput)
                     TunaPassword.Password = vm.TunaInput;
             };
         }
 
-        private void GeminiPassword_PasswordChanged(object sender, RoutedEventArgs e) =>
-            _vm.GeminiInput = GeminiPassword.Password;
-
         private void TunaPassword_PasswordChanged(object sender, RoutedEventArgs e) =>
             _vm.TunaInput = TunaPassword.Password;
-
-        private void GeminiShow_Changed(object sender, RoutedEventArgs e)
-        {
-            if (GeminiShow.IsChecked != true)
-                GeminiPassword.Password = _vm.GeminiInput;
-        }
 
         private void TunaShow_Changed(object sender, RoutedEventArgs e)
         {

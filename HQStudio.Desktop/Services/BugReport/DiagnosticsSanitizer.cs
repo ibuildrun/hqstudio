@@ -11,7 +11,7 @@ namespace HQStudio.Services.BugReport
 
         private static readonly TimeSpan MatchTimeout = TimeSpan.FromSeconds(3);
 
-        // Подстроки покрывают и JWT_KEY, TUNA_TOKEN, GEMINI_API_KEY, POSTGRES_PASSWORD (ключ с префиксом/суффиксом).
+        // Подстроки покрывают и JWT_KEY, TUNA_TOKEN, POSTGRES_PASSWORD и любой другой ..._API_KEY (ключ с префиксом/суффиксом).
         private const string Keywords = @"password|passwd|pwd|secret|token|api[_-]?key|jwt[_-]?key";
 
         private static Regex Make(string pattern, RegexOptions extra = RegexOptions.None) =>

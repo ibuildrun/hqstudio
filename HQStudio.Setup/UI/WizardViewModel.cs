@@ -81,7 +81,7 @@ public sealed class WizardViewModel : ViewModelBase, IWizardHost
         Done = new DonePageViewModel(this);
         Pages = new PageViewModel[] { Welcome, Docker, Account, Keys, Summary, Install, Done };
 
-        var names = new[] { "Приветствие", "Docker", "Аккаунт", "Ключи", "Проверка", "Установка", "Готово" };
+        var names = new[] { "Приветствие", "Docker", "Аккаунт", "Адрес сайта", "Проверка", "Установка", "Готово" };
         for (var i = 0; i < names.Length; i++)
             Steps.Add(new StepItem(i + 1, names[i]) { IsLast = i == names.Length - 1 });
 

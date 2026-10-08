@@ -48,7 +48,6 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     depends_on:
       api:
         condition: service_healthy
@@ -81,7 +80,6 @@ services:
     command: ["http", "proxy:80", "--inspect=false"]
     environment:
       TUNA_TOKEN: ${TUNA_TOKEN:-}
-      TUNA_SUBDOMAIN: ${TUNA_SUBDOMAIN:-}
       TUNA_DOMAIN: ${TUNA_DOMAIN:-}
     depends_on:
       - proxy

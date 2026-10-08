@@ -42,7 +42,7 @@ public class EngineTests
         started.Should().Equal(AllStages);
         engine.Stages.Select(s => s.State).Should().OnlyContain(s => s == StageState.Done);
         context.SiteInstalled.Should().BeTrue();
-        context.PublicUrl.Should().Be("https://mystudio.ru.tuna.am");
+        context.PublicUrl.Should().Be("https://crm.example.ru");
     }
 
     [Fact]
@@ -60,9 +60,9 @@ public class EngineTests
         EnvFile.Get(env, "JWT_KEY").Should().HaveLength(48);
         EnvFile.Get(env, "HQ_PORT").Should().Be("8080");
         EnvFile.Get(env, "HQSTUDIO_VERSION").Should().Be("1.20.0");
-        EnvFile.Get(env, "TUNA_SUBDOMAIN").Should().Be("mystudio");
-        EnvFile.Get(env, "PUBLIC_URL").Should().Be("https://mystudio.ru.tuna.am");
-        File.ReadAllText(rig.Paths.PublicUrlFile).Should().Be("https://mystudio.ru.tuna.am");
+        EnvFile.Get(env, "TUNA_DOMAIN").Should().Be("crm.example.ru");
+        EnvFile.Get(env, "PUBLIC_URL").Should().Be("https://crm.example.ru");
+        File.ReadAllText(rig.Paths.PublicUrlFile).Should().Be("https://crm.example.ru");
     }
 
     [Fact]
@@ -135,7 +135,7 @@ public class EngineTests
     }
 
     [Fact]
-    public async Task Compose_IsCalledWithTheTunnelProfileOnlyWhenATokenWasGiven()
+    public async Task Compose_IsCalledWithTheTunnelProfileOnlyWhenATokenAndADomainWereGiven()
     {
         using var withTuna = new Rig();
         var (engineA, _, _) = Create(withTuna, Rig.Answers(tuna: true));
@@ -152,24 +152,47 @@ public class EngineTests
     }
 
     [Fact]
-    public void TunnelStage_IsListedOnlyWhenATokenWasGiven()
+    public void TunnelStage_IsListedOnlyWhenBothATokenAndADomainWereGiven()
     {
         using var rig = new Rig();
+        var tokenOnly = Rig.Answers(tuna: true);
+        tokenOnly.TunaDomain = "";
+        var domainOnly = Rig.Answers(tuna: true);
+        domainOnly.TunaToken = "";
 
-        new InstallEngine(rig.Context(Rig.Answers(tuna: true))).Stages.Select(s => s.Id).Should().Contain(StageId.PublicUrl);
-        new InstallEngine(rig.Context(Rig.Answers(tuna: false))).Stages.Select(s => s.Id).Should().NotContain(StageId.PublicUrl);
+        StageIds(rig, Rig.Answers(tuna: true)).Should().Contain(StageId.PublicUrl);
+        StageIds(rig, tokenOnly).Should().NotContain(StageId.PublicUrl);
+        StageIds(rig, domainOnly).Should().NotContain(StageId.PublicUrl);
+        StageIds(rig, Rig.Answers(tuna: false)).Should().NotContain(StageId.PublicUrl);
+    }
+
+    private static IEnumerable<StageId> StageIds(Rig rig, InstallAnswers answers) =>
+        new InstallEngine(rig.Context(answers)).Stages.Select(s => s.Id).ToList();
+
+    [Fact]
+    public void ExistingTokenAndDomainInEnv_KeepTheTunnelStageOnReinstall()
+    {
+        using var rig = new Rig();
+        Directory.CreateDirectory(rig.Paths.ServerDir);
+        File.WriteAllText(rig.Paths.EnvFile, "TUNA_TOKEN=saved-token-12345\nTUNA_DOMAIN=saved.example.ru\n");
+
+        var context = rig.Context(Rig.Answers(tuna: false));
+
+        new InstallEngine(context).Stages.Select(s => s.Id).Should().Contain(StageId.PublicUrl);
+        context.ExpectedPublicUrl.Should().Be("https://saved.example.ru");
     }
 
     [Fact]
-    public void ExistingTunaTokenInEnv_KeepsTheTunnelStageOnReinstall()
+    public void ExistingTokenWithoutADomainInEnv_DoesNotStartTheTunnel()
     {
         using var rig = new Rig();
         Directory.CreateDirectory(rig.Paths.ServerDir);
         File.WriteAllText(rig.Paths.EnvFile, "TUNA_TOKEN=saved-token-12345\n");
 
-        var engine = new InstallEngine(rig.Context(Rig.Answers(tuna: false)));
+        var context = rig.Context(Rig.Answers(tuna: false));
 
-        engine.Stages.Select(s => s.Id).Should().Contain(StageId.PublicUrl);
+        context.TunnelEnabled.Should().BeFalse();
+        new InstallEngine(context).Stages.Select(s => s.Id).Should().NotContain(StageId.PublicUrl);
     }
 
     [Fact]
@@ -298,7 +321,7 @@ public class EngineTests
     {
         using var rig = new Rig();
         rig.Docker.Handler = call => call.Verb == "up"
-            ? new CommandResult(0, "creating db with password Sunny-Day-2026 and token tuna-secret-token-777 key AIzaSyTestKey123456")
+            ? new CommandResult(0, "creating db with password Sunny-Day-2026 and token tuna-secret-token-777")
             : new CommandResult(0, "");
         var log = new SetupLog(rig.Paths.SetupLog);
         var answers = Rig.Answers(tuna: true);
@@ -309,7 +332,7 @@ public class EngineTests
 
         var fileText = File.ReadAllText(rig.Paths.SetupLog);
         var env = File.ReadAllText(rig.Paths.EnvFile);
-        foreach (var secret in new[] { "Sunny-Day-2026", "AIzaSyTestKey123456", "tuna-secret-token-777", EnvFile.Get(env, "POSTGRES_PASSWORD")!, EnvFile.Get(env, "JWT_KEY")! })
+        foreach (var secret in new[] { "Sunny-Day-2026", "tuna-secret-token-777", EnvFile.Get(env, "POSTGRES_PASSWORD")!, EnvFile.Get(env, "JWT_KEY")! })
         {
             fileText.Should().NotContain(secret);
             string.Join("\n", log.Snapshot()).Should().NotContain(secret);
@@ -538,7 +561,7 @@ public class StageBehaviourTests
     }
 
     [Fact]
-    public async Task TunnelAddressMissing_IsAWarningNotAFailure()
+    public async Task TunnelAddressMissing_IsAWarningNotAFailure_AndTheExpectedDomainIsShown()
     {
         using var rig = new Rig();
         rig.Docker.Handler = call => call.Verb == "logs" ? new CommandResult(0, "tuna-1 | connecting...") : new CommandResult(0, "");
@@ -548,8 +571,8 @@ public class StageBehaviourTests
         engine.LastFailure.Should().BeNull();
         engine.Stages.Single(s => s.Id == StageId.PublicUrl).State.Should().Be(StageState.Warning);
         engine.Stages.Single(s => s.Id == StageId.Shortcuts).State.Should().Be(StageState.Done);
-        context.PublicUrl.Should().BeNull();
-        context.PublicUrlNote.Should().Contain("токен");
+        context.PublicUrl.Should().Be("https://crm.example.ru", "the expected address of the own domain is shown");
+        context.PublicUrlNote.Should().Contain("my.tuna.am/domains");
     }
 
     [Fact]

@@ -88,33 +88,47 @@ public class EnvBackupTests
     }
 
     [Fact]
-    public async Task Install_BlankKeysKeepGeminiAndTunaFromTheBackup_AndTheTunnelStageAppears()
+    public async Task Install_BlankKeysKeepTunaTokenAndDomainFromTheBackup_AndTheTunnelStageAppears()
     {
         using var rig = new Rig();
-        WriteBackup(rig, BackupText("GEMINI_API_KEY=old-gemini-key\nTUNA_TOKEN=old-tuna-token\nTUNA_SUBDOMAIN=oldsub\n"));
+        WriteBackup(rig, BackupText("TUNA_TOKEN=old-tuna-token\nTUNA_DOMAIN=old.example.ru\n"));
         var answers = Rig.Answers(tuna: false);
-        answers.GeminiKey = "";
 
         var (engine, context) = await Run(rig, answers);
 
         engine.LastFailure.Should().BeNull();
         engine.Stages.Select(s => s.Id).Should().Contain(StageId.PublicUrl);
         var env = File.ReadAllText(rig.Paths.EnvFile);
-        EnvFile.Get(env, "GEMINI_API_KEY").Should().Be("old-gemini-key");
         EnvFile.Get(env, "TUNA_TOKEN").Should().Be("old-tuna-token");
-        EnvFile.Get(env, "TUNA_SUBDOMAIN").Should().Be("oldsub");
+        EnvFile.Get(env, "TUNA_DOMAIN").Should().Be("old.example.ru");
         context.TunnelEnabled.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Install_BackupWithATokenButNoDomain_DoesNotStartTheTunnel()
+    {
+        using var rig = new Rig();
+        WriteBackup(rig, BackupText("TUNA_TOKEN=old-tuna-token\n"));
+
+        var (engine, context) = await Run(rig, Rig.Answers(tuna: false));
+
+        engine.LastFailure.Should().BeNull();
+        engine.Stages.Select(s => s.Id).Should().NotContain(StageId.PublicUrl);
+        EnvFile.Get(File.ReadAllText(rig.Paths.EnvFile), "TUNA_TOKEN").Should().Be("old-tuna-token");
+        context.TunnelEnabled.Should().BeFalse();
     }
 
     [Fact]
     public async Task Install_TypedKeysOverrideTheBackup()
     {
         using var rig = new Rig();
-        WriteBackup(rig, BackupText("GEMINI_API_KEY=old-gemini-key\n"));
+        WriteBackup(rig, BackupText("TUNA_TOKEN=old-tuna-token\nTUNA_DOMAIN=old.example.ru\n"));
 
-        await Run(rig, Rig.Answers());
+        await Run(rig, Rig.Answers(tuna: true));
 
-        EnvFile.Get(File.ReadAllText(rig.Paths.EnvFile), "GEMINI_API_KEY").Should().Be("AIzaSyTestKey123456");
+        var env = File.ReadAllText(rig.Paths.EnvFile);
+        EnvFile.Get(env, "TUNA_TOKEN").Should().Be("tuna-secret-token-777");
+        EnvFile.Get(env, "TUNA_DOMAIN").Should().Be("crm.example.ru");
     }
 
     [Fact]
@@ -154,20 +168,19 @@ public class EnvBackupTests
         var realJwt = new string('r', 48);
         Directory.CreateDirectory(rig.Paths.ServerDir);
         File.WriteAllText(rig.Paths.EnvFile, $"POSTGRES_PASSWORD={realPostgres}\nJWT_KEY={realJwt}\n");
-        var backupText = BackupText("GEMINI_API_KEY=backup-gemini\n");
+        var backupText = BackupText("TUNA_TOKEN=backup-tuna-token\nTUNA_DOMAIN=backup.example.ru\n");
         WriteBackup(rig, backupText);
 
-        var answers = Rig.Answers();
-        answers.GeminiKey = "";
-
-        var (engine, context) = await Run(rig, answers);
+        var (engine, context) = await Run(rig, Rig.Answers());
 
         engine.LastFailure.Should().BeNull();
         context.UsesEnvBackup.Should().BeFalse();
         var env = File.ReadAllText(rig.Paths.EnvFile);
         EnvFile.Get(env, "POSTGRES_PASSWORD").Should().Be(realPostgres);
         EnvFile.Get(env, "JWT_KEY").Should().Be(realJwt);
-        EnvFile.Get(env, "GEMINI_API_KEY").Should().BeEmpty("nothing from the backup leaks into the real settings");
+        EnvFile.Get(env, "TUNA_TOKEN").Should().BeEmpty("nothing from the backup leaks into the real settings");
+        EnvFile.Get(env, "TUNA_DOMAIN").Should().BeEmpty();
+        context.TunnelEnabled.Should().BeFalse();
         File.ReadAllText(rig.Paths.EnvBackup).Should().Be(backupText);
     }
 

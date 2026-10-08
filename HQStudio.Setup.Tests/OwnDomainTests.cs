@@ -85,51 +85,50 @@ public class DomainPlannerTests
 {
     private static readonly string Example = SimPayloadSource.DefaultEnvExample;
 
-    private static InstallAnswers Answers(string token = "tok-1", string sub = "", string domain = "") => new()
+    private static InstallAnswers Answers(string token = "tok-1", string domain = "") => new()
     {
         FirstName = "Иван", LastName = "Петров", Password = "Sunny-Day-2026",
-        TunaToken = token, TunaSubdomain = sub, TunaDomain = domain
+        TunaToken = token, TunaDomain = domain
     };
 
     [Fact]
-    public void DomainGiven_WritesTheDomainAndClearsTheSubdomain()
+    public void DomainGiven_WritesTheDomainAndThePublicUrl()
     {
-        var plan = EnvPlanner.Build(null, Example, Answers(sub: "mystudio", domain: "CRM.Example.ru"), 8080, "1.0.0");
+        var plan = EnvPlanner.Build(null, Example, Answers(domain: "CRM.Example.ru"), 8080, "1.0.0");
 
         EnvFile.Get(plan.Text, "TUNA_DOMAIN").Should().Be("crm.example.ru");
-        EnvFile.Get(plan.Text, "TUNA_SUBDOMAIN").Should().BeEmpty();
         EnvFile.Get(plan.Text, "PUBLIC_URL").Should().Be("https://crm.example.ru", "the API learns its public address at the first start");
     }
 
     [Fact]
-    public void SubdomainOnly_LeavesTheDomainEmpty()
+    public void TokenWithoutADomain_KeepsTheDomainAndThePublicUrlEmpty()
     {
-        var plan = EnvPlanner.Build(null, Example, Answers(sub: "MyStudio"), 8080, "1.0.0");
+        var plan = EnvPlanner.Build(null, Example, Answers(), 8080, "1.0.0");
 
+        EnvFile.Get(plan.Text, "TUNA_TOKEN").Should().Be("tok-1");
         EnvFile.Get(plan.Text, "TUNA_DOMAIN").Should().BeEmpty();
-        EnvFile.Get(plan.Text, "TUNA_SUBDOMAIN").Should().Be("mystudio");
         EnvFile.Get(plan.Text, "PUBLIC_URL").Should().BeEmpty();
     }
 
     [Fact]
     public void BothBlank_WritesBothEmpty()
     {
-        var plan = EnvPlanner.Build(null, Example, Answers(), 8080, "1.0.0");
+        var plan = EnvPlanner.Build(null, Example, Answers(token: ""), 8080, "1.0.0");
 
+        EnvFile.Get(plan.Text, "TUNA_TOKEN").Should().BeEmpty();
         EnvFile.Get(plan.Text, "TUNA_DOMAIN").Should().BeEmpty();
-        EnvFile.Get(plan.Text, "TUNA_SUBDOMAIN").Should().BeEmpty();
     }
 
     [Fact]
-    public void BlankDomainKeepsTheExistingOne_AndTheSubdomainStaysEmpty()
+    public void BlankDomainKeepsTheExistingOne()
     {
-        var existing = "POSTGRES_PASSWORD=realpassword123\nTUNA_TOKEN=old-token\nTUNA_DOMAIN=old.example.ru\nTUNA_SUBDOMAIN=\n";
+        var existing = "POSTGRES_PASSWORD=realpassword123\nTUNA_TOKEN=old-token\nTUNA_DOMAIN=old.example.ru\n";
 
-        var plan = EnvPlanner.Build(existing, Example, Answers(token: "", sub: "typed"), 8080, "1.0.0");
+        var plan = EnvPlanner.Build(existing, Example, Answers(token: ""), 8080, "1.0.0");
 
         EnvFile.Get(plan.Text, "TUNA_DOMAIN").Should().Be("old.example.ru");
-        EnvFile.Get(plan.Text, "TUNA_SUBDOMAIN").Should().BeEmpty("an own domain in force replaces the subdomain");
         EnvFile.Get(plan.Text, "TUNA_TOKEN").Should().Be("old-token");
+        EnvFile.Get(plan.Text, "PUBLIC_URL").Should().Be("https://old.example.ru");
     }
 
     [Fact]
@@ -140,17 +139,6 @@ public class DomainPlannerTests
         var plan = EnvPlanner.Build(existing, Example, Answers(domain: "new.example.ru"), 8080, "1.0.0");
 
         EnvFile.Get(plan.Text, "TUNA_DOMAIN").Should().Be("new.example.ru");
-    }
-
-    [Fact]
-    public void BlankDomainKeepsAnExistingSubdomainWhenThereIsNoDomain()
-    {
-        var existing = "TUNA_DOMAIN=\nTUNA_SUBDOMAIN=brave-otter-4821\n";
-
-        var plan = EnvPlanner.Build(existing, Example, Answers(), 8080, "1.0.0");
-
-        EnvFile.Get(plan.Text, "TUNA_SUBDOMAIN").Should().Be("brave-otter-4821");
-        EnvFile.Get(plan.Text, "TUNA_DOMAIN").Should().BeEmpty();
     }
 
     [Fact]
@@ -166,7 +154,7 @@ public class OwnDomainFlowTests : IDisposable
     private static InstallAnswers Answers(string token = "tuna-secret-token-777", string domain = "crm.example.ru") => new()
     {
         FirstName = "Иван", LastName = "Петров", Password = "Sunny-Day-2026",
-        TunaToken = token, TunaDomain = domain, TunaSubdomain = "ignored"
+        TunaToken = token, TunaDomain = domain
     };
 
     [Fact]
@@ -203,7 +191,6 @@ public class OwnDomainFlowTests : IDisposable
         File.ReadAllText(_rig.Paths.PublicUrlFile).Should().Be("https://crm.example.ru");
         var env = File.ReadAllText(_rig.Paths.EnvFile);
         EnvFile.Get(env, "TUNA_DOMAIN").Should().Be("crm.example.ru");
-        EnvFile.Get(env, "TUNA_SUBDOMAIN").Should().BeEmpty();
         EnvFile.Get(env, "PUBLIC_URL").Should().Be("https://crm.example.ru");
     }
 
@@ -218,6 +205,24 @@ public class OwnDomainFlowTests : IDisposable
         context.TunnelEnabled.Should().BeFalse();
         context.ExpectedPublicUrl.Should().BeNull();
         engine.Stages.Select(s => s.Id).Should().NotContain(StageId.PublicUrl);
+    }
+
+    [Fact]
+    public async Task WithoutADomain_NoTunnelRunsEvenWithAToken()
+    {
+        var context = _rig.Context(Answers(domain: ""));
+        var engine = new InstallEngine(context);
+
+        var outcome = await engine.RunAsync(CancellationToken.None);
+
+        outcome.Should().Be(InstallOutcome.Success);
+        context.TunnelEnabled.Should().BeFalse();
+        context.ExpectedPublicUrl.Should().BeNull();
+        context.PublicUrl.Should().BeNull();
+        engine.Stages.Select(s => s.Id).Should().NotContain(StageId.PublicUrl);
+        _rig.Docker.Calls.Should().OnlyContain(c => !c.Tunnel);
+        _rig.Docker.CountOf("logs").Should().Be(0);
+        EnvFile.Get(File.ReadAllText(_rig.Paths.EnvFile), "TUNA_TOKEN").Should().Be("tuna-secret-token-777", "the token is kept for a domain added later");
     }
 
     [Fact]
@@ -241,6 +246,25 @@ public class OwnDomainFlowTests : IDisposable
         vm.Done.PublicUrl.Should().Be("https://crm.example.ru");
         vm.Done.HasPublicUrl.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task DoneAddress_IsEmptyWithoutADomain()
+    {
+        InstallPageViewModel.SuccessPause = TimeSpan.Zero;
+        var vm = new WizardViewModel(_rig.Services(), SetupOptions.Parse(Array.Empty<string>()), () => { });
+        vm.Start();
+        var a = vm.Answers;
+        a.FirstName = "Иван"; a.LastName = "Петров"; a.Password = "Sunny-Day-2026";
+        vm.NavigateTo(vm.Summary);
+
+        vm.Summary.Primary.Command.Execute(null);
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (vm.CurrentPage != vm.Done && DateTime.UtcNow < deadline)
+            await Task.Delay(10);
+
+        vm.CurrentPage.Should().BeSameAs(vm.Done);
+        vm.Done.HasPublicUrl.Should().BeFalse();
+    }
 }
 
 public class OwnDomainKeysPageTests : IDisposable
@@ -258,18 +282,30 @@ public class OwnDomainKeysPageTests : IDisposable
     }
 
     [Fact]
-    public void ValidDomain_IsSavedNormalizedAndTheSubdomainIsCleared()
+    public void ValidDomain_IsSavedNormalized()
     {
         var vm = Wizard();
         vm.Keys.TunaToken = "tok";
-        vm.Keys.TunaSubdomain = "mystudio";
         vm.Keys.TunaDomain = "  CRM.Example.ru ";
 
         vm.Keys.Primary.Command.Execute(null);
 
         vm.CurrentPage.Should().BeSameAs(vm.Summary);
+        vm.Answers.TunaToken.Should().Be("tok");
         vm.Answers.TunaDomain.Should().Be("crm.example.ru");
-        vm.Answers.TunaSubdomain.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void TokenWithoutADomain_MovesOnAndLeavesTheDomainEmpty()
+    {
+        var vm = Wizard();
+        vm.Keys.TunaToken = "  tok  ";
+
+        vm.Keys.Primary.Command.Execute(null);
+
+        vm.CurrentPage.Should().BeSameAs(vm.Summary);
+        vm.Answers.TunaToken.Should().Be("tok");
+        vm.Answers.TunaDomain.Should().BeEmpty();
     }
 
     [Fact]
@@ -316,38 +352,6 @@ public class OwnDomainKeysPageTests : IDisposable
     }
 
     [Fact]
-    public void WithADomain_TheSubdomainFieldIsOffAndItsContentIsIgnored()
-    {
-        var vm = Wizard();
-        vm.Keys.TunaToken = "tok";
-        vm.Keys.TunaSubdomain = "Мой сайт";
-        vm.Keys.HasTunaSubdomainError.Should().BeTrue();
-
-        vm.Keys.TunaDomain = "crm.example.ru";
-
-        vm.Keys.SubdomainEnabled.Should().BeFalse();
-        vm.Keys.HasTunaSubdomainError.Should().BeFalse();
-        vm.Keys.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public void OwnAddressBlock_OpensItselfWhenSomethingIsTypedOrWrong()
-    {
-        var vm = Wizard();
-        vm.Keys.ShowAdvanced.Should().BeFalse("it is folded by default");
-
-        vm.Keys.TunaDomain = "crm.example.ru";
-        vm.Keys.ShowAdvanced.Should().BeTrue();
-
-        var other = Wizard();
-        other.Keys.TunaToken = "tok";
-        other.Keys.TunaDomain = "x";
-        other.Keys.ShowAdvanced = false;
-        other.Keys.Primary.Command.Execute(null);
-        other.Keys.ShowAdvanced.Should().BeTrue("a wrong value must not stay hidden");
-    }
-
-    [Fact]
     public void PrimaryButton_SaysNextWhenOnlyTheDomainIsFilled()
     {
         var vm = Wizard();
@@ -359,29 +363,29 @@ public class OwnDomainKeysPageTests : IDisposable
     }
 
     [Fact]
-    public void Links_OpenTheContractedAddresses()
+    public void Links_OpenTunaAndThePunycodeConverter()
     {
         var vm = Wizard();
 
-        vm.Keys.OpenTunaDomainsCommand.Execute(null);
-        vm.Keys.OpenOwnDomainGuideCommand.Execute(null);
+        vm.Keys.OpenTunaCommand.Execute(null);
+        vm.Keys.OpenPunycodeCommand.Execute(null);
 
-        _rig.Shell.Opened.Should().Equal("https://my.tuna.am/domains", "https://tuna.am/docs/tunnels/guides/connect-self-domain");
+        _rig.Shell.Opened.Should().Equal("https://tuna.am", "https://www.reg.ru/web-tools/punycode");
     }
 
     [Fact]
-    public void SubdomainHint_ExplainsTheFreePlan()
+    public void DomainHint_SaysTheDomainCanBeAttachedLaterInTheProgram()
     {
         var vm = Wizard();
 
-        vm.Keys.SubdomainHintText.Should().Be(
-            "На бесплатном тарифе Tuna сама выдаёт имя вида brave-otter-4821: скопируйте его в личном кабинете (my.tuna.am/domains). " +
-            "Любое другое имя - только по подписке. Если не уверены, оставьте пустым: адрес будет временным.");
-        vm.Keys.DomainHintText.Should().Contain("подписка").And.Contain("DNS");
+        vm.Keys.DomainHintText.Should().Be(
+            "Домен можно не вводить сейчас: подключить его можно позже в самой программе, раздел «Сайт» - «Инструкция». " +
+            "Без домена сайт работает только на этом компьютере.");
+        vm.Keys.TokenHintText.Should().Contain("подписка");
     }
 
     [Fact]
-    public void Summary_MentionsTheOwnDomain()
+    public void Summary_ShowsTheHttpsAddressOfTheOwnDomain()
     {
         var vm = Wizard();
         vm.Answers.FirstName = "Иван"; vm.Answers.LastName = "Петров";
@@ -390,24 +394,20 @@ public class OwnDomainKeysPageTests : IDisposable
 
         vm.NavigateTo(vm.Summary);
 
-        vm.Summary.Rows.Single(r => r.Label == "Адрес для всех").Value.Should().Be("свой домен crm.example.ru через Tuna");
+        vm.Summary.Rows.Single(r => r.Label == "Адрес для всех").Value.Should().Be("https://crm.example.ru");
     }
 
     [Fact]
-    public void Summary_StillDescribesSubdomainAndNoTunnel()
+    public void Summary_WithoutAnAddress_SaysTheSiteIsOnlyOnThisComputer()
     {
         var vm = Wizard();
         vm.Answers.TunaToken = "tok";
-        vm.Answers.TunaSubdomain = "MyStudio";
         vm.NavigateTo(vm.Summary);
-        vm.Summary.Rows.Single(r => r.Label == "Адрес для всех").Value.Should().Contain("mystudio");
-
-        vm.Answers.TunaSubdomain = "";
-        vm.NavigateTo(vm.Summary);
-        vm.Summary.Rows.Single(r => r.Label == "Адрес для всех").Value.Should().Be("будет создан через Tuna");
+        vm.Summary.Rows.Single(r => r.Label == "Адрес для всех").Value.Should().Contain("только на этом компьютере");
 
         vm.Answers.TunaToken = "";
+        vm.Answers.TunaDomain = "crm.example.ru";
         vm.NavigateTo(vm.Summary);
-        vm.Summary.Rows.Single(r => r.Label == "Адрес для всех").Value.Should().Contain("не нужен");
+        vm.Summary.Rows.Single(r => r.Label == "Адрес для всех").Value.Should().Contain("только на этом компьютере");
     }
 }

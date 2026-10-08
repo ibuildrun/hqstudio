@@ -429,21 +429,22 @@ public class WizardTests : IDisposable
 
         vm.Keys.Primary.Text.Should().Be("Пропустить");
 
-        vm.Keys.GeminiKey = "AIza123";
+        vm.Keys.TunaDomain = "crm.example.ru";
         vm.Keys.Primary.Text.Should().Be("Далее");
     }
 
     [Fact]
-    public void Keys_InvalidSubdomainBlocksTheNextStep()
+    public void Keys_InvalidDomainBlocksTheNextStep()
     {
         var vm = Wizard();
         vm.NavigateTo(vm.Keys);
-        vm.Keys.TunaSubdomain = "Мой сайт";
+        vm.Keys.TunaToken = "tok";
+        vm.Keys.TunaDomain = "Мой сайт";
 
         Press(vm.Keys.Primary);
 
         vm.CurrentPage.Should().BeSameAs(vm.Keys);
-        vm.Keys.HasTunaSubdomainError.Should().BeTrue();
+        vm.Keys.HasTunaDomainError.Should().BeTrue();
     }
 
     [Fact]
@@ -451,35 +452,32 @@ public class WizardTests : IDisposable
     {
         var vm = Wizard();
         vm.NavigateTo(vm.Keys);
-        vm.Keys.GeminiKey = "  AIza123  ";
         vm.Keys.TunaToken = " tok ";
-        vm.Keys.TunaSubdomain = " MyStudio ";
+        vm.Keys.TunaDomain = " CRM.Example.ru ";
 
         Press(vm.Keys.Primary);
 
         vm.CurrentPage.Should().BeSameAs(vm.Summary);
-        vm.Answers.GeminiKey.Should().Be("AIza123");
         vm.Answers.TunaToken.Should().Be("tok");
-        vm.Answers.TunaSubdomain.Should().Be("mystudio");
+        vm.Answers.TunaDomain.Should().Be("crm.example.ru");
     }
 
     [Fact]
-    public void Keys_LinksOpenGeminiAndTunaPages()
+    public void Keys_LinkOpensTheTunaPage()
     {
         var vm = Wizard();
 
-        vm.Keys.OpenGeminiCommand.Execute(null);
         vm.Keys.OpenTunaCommand.Execute(null);
 
-        _rig.Shell.Opened.Should().Equal("https://aistudio.google.com/apikey", "https://tuna.am");
+        _rig.Shell.Opened.Should().Equal("https://tuna.am");
     }
 
     [Fact]
-    public void Summary_ListsFoldersAccountAndOptionalFeatures()
+    public void Summary_ListsFoldersAccountAndTheSiteAddress()
     {
         var vm = Wizard();
         var a = vm.Answers;
-        a.FirstName = "Иван"; a.LastName = "Петров"; a.GeminiKey = "k"; a.TunaToken = "t"; a.TunaSubdomain = "mystudio";
+        a.FirstName = "Иван"; a.LastName = "Петров"; a.TunaToken = "t"; a.TunaDomain = "crm.example.ru";
 
         vm.NavigateTo(vm.Summary);
 
@@ -487,8 +485,8 @@ public class WizardTests : IDisposable
         rows["Папка программы"].Should().Be(_rig.Paths.AppDir);
         rows["Папка сайта"].Should().Be(_rig.Paths.ServerDir);
         rows["Главный аккаунт"].Should().Contain("Иван Петров").And.Contain("admin");
-        rows["ИИ на сайте"].Should().Contain("включён");
-        rows["Адрес для всех"].Should().Contain("Tuna").And.Contain("mystudio");
+        rows["Адрес для всех"].Should().Be("https://crm.example.ru");
+        rows.Keys.Should().NotContain("ИИ на сайте");
         vm.Summary.Primary.Text.Should().Be("Установить");
     }
 
@@ -520,8 +518,9 @@ public class WizardTests : IDisposable
         vm.Install.OverallPercent.Should().Be(100);
         vm.Done.SiteReady.Should().BeTrue();
         vm.Done.LocalUrl.Should().Be("http://localhost:8080");
-        vm.Done.PublicUrl.Should().Be("https://mystudio.ru.tuna.am");
+        vm.Done.PublicUrl.Should().Be("https://crm.example.ru");
         vm.Done.HasPublicUrl.Should().BeTrue();
+        vm.Done.GuideNote.Should().Contain("в программе").And.Contain("администратора").And.Contain("«Сайт»");
         vm.Done.LoginHint.Should().Contain("admin").And.Contain("пароль");
         vm.Steps.Should().OnlyContain(s => s.IsDone || s.IsActive);
         vm.Done.Primary.Text.Should().Be("Запустить HQ Studio");
@@ -623,7 +622,7 @@ public class WizardTests : IDisposable
         vm.Done.OpenSiteCommand.Execute(null);
         vm.Done.OpenPublicCommand.Execute(null);
 
-        _rig.Shell.Opened.Should().Equal("http://localhost:8080", "https://mystudio.ru.tuna.am");
+        _rig.Shell.Opened.Should().Equal("http://localhost:8080", "https://crm.example.ru");
     }
 
     [Fact]
@@ -702,8 +701,7 @@ public class WizardTests : IDisposable
         a.FirstName = "Иван";
         a.LastName = "Петров";
         a.Password = "Sunny-Day-2026";
-        a.GeminiKey = "AIzaSyTestKey123456";
         a.TunaToken = "tuna-secret-token-777";
-        a.TunaSubdomain = "mystudio";
+        a.TunaDomain = "crm.example.ru";
     }
 }

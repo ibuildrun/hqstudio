@@ -171,7 +171,7 @@ namespace HQStudio.Services.Site
 
         private static ServiceStatus TunnelNotConfigured() => new(
             SiteServiceIds.Tuna, SiteServiceIds.Title(SiteServiceIds.Tuna), ServiceLevel.NotConfigured,
-            "Не настроен", "Нужен токен Tuna: кнопка «Ключи»");
+            "Не настроен", "Нужны токен Tuna и свой домен: кнопка «Ключи»");
 
         private static ComposeServiceEntry? Find(IReadOnlyList<ComposeServiceEntry> entries, string id) =>
             entries.FirstOrDefault(e => string.Equals(e.Service, id, StringComparison.OrdinalIgnoreCase));
