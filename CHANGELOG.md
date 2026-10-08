@@ -1,3 +1,10 @@
+## [1.21.0](https://github.com/randomu3/hqstudio/compare/v1.20.0...v1.21.0) (2026-10-08)
+
+
+### Features
+
+* **app:** in-app admin guide, own-domain only, drop Gemini ([06668c5](https://github.com/randomu3/hqstudio/commit/06668c5443fa649bad26e82e0d436c91b75be5dd))
+
 ## [1.20.0](https://github.com/randomu3/hqstudio/compare/v1.19.6...v1.20.0) (2026-10-07)
 
 
