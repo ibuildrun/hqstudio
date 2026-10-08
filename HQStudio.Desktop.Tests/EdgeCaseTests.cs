@@ -66,7 +66,7 @@ public class EdgeCaseTests
 
     [Theory]
     [InlineData("a@b.c", true)] // Минимальный валидный
-    [InlineData("very.long.email.address.with.many.dots@subdomain.domain.tld", true)]
+    [InlineData("very.long.email.address.with.many.dots@sub.domain.tld", true)]
     [InlineData("email@123.123.123.123", true)] // IP адрес
     [InlineData("email@domain", false)] // Без TLD
     public void EmailValidation_EdgeCases_HandledCorrectly(string email, bool expected)

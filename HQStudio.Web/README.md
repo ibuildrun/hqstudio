@@ -139,6 +139,5 @@ docker-compose up --build -d    # Пересборка
 
 | Переменная | Описание |
 |------------|----------|
-| `GEMINI_API_KEY` | API ключ для AI функций |
 | `TUNA_TOKEN` | Токен для Tuna туннеля |
 | `TUNA_SUBDOMAIN` | Поддомен на tuna.am |

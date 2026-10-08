@@ -34,19 +34,74 @@ public class SiteManagerStartStopTests
         env.Runner.ComposeCommands(Dir).Should().Equal("up -d --remove-orphans");
     }
 
-    [Fact]
-    public async Task Start_WithToken_AddsTunnelProfile_AndRecordsPublicAddress()
+    [Theory]
+    [InlineData("tunatoken1234", "")]
+    [InlineData("", "crm.example.ru")]
+    public async Task Start_WithOnlyTokenOrOnlyDomain_NeverUsesTunnelProfile(string token, string domain)
     {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken());
-        env.Runner.When("logs --no-color tuna", 0, "tuna-1  | Forwarding https://hq.ru.tuna.am -> proxy:80");
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken(token, domain));
 
         var result = await env.Manager.StartAsync(null, CancellationToken.None);
 
         result.Success.Should().BeTrue();
-        result.Message.Should().Contain("https://hq.ru.tuna.am");
-        env.Runner.ComposeCommands(Dir).Should().StartWith("[tunnel] up -d --remove-orphans", "[tunnel] logs --no-color tuna");
-        env.Files.Files[SiteTestEnv.PublicUrlPath].Should().Be("https://hq.ru.tuna.am");
-        SiteEnvFile.GetValue(env.Env, "PUBLIC_URL").Should().Be("https://hq.ru.tuna.am");
+        result.Message.Should().Be("Сайт запущен.");
+        env.Runner.ComposeCommands(Dir).Should().Equal("up -d --remove-orphans");
+    }
+
+    [Fact]
+    public async Task Start_WithTokenAndDomain_AddsTunnelProfile_ChecksTunnelContainer_AndReportsTheDomain()
+    {
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken()).WithPs(SiteTestEnv.AllRunning(tunnel: true));
+
+        var result = await env.Manager.StartAsync(null, CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.Message.Should().Contain("https://crm.example.ru");
+        env.Runner.ComposeCommands(Dir).Should().Equal(
+            "[tunnel] up -d --remove-orphans",
+            "[tunnel] ps --all --format json",
+            "[tunnel] ps --all --format json");
+        env.Files.Files[SiteTestEnv.PublicUrlPath].Should().Be("https://crm.example.ru");
+        SiteEnvFile.GetValue(env.Env, "PUBLIC_URL").Should().Be("https://crm.example.ru");
+    }
+
+    [Fact]
+    public async Task Start_PublicUrlAlreadyMatchesTheDomain_DoesNotRewriteEnv()
+    {
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken().Replace("PUBLIC_URL=\r\n", "PUBLIC_URL=https://crm.example.ru\r\n"))
+            .WithPs(SiteTestEnv.AllRunning(tunnel: true));
+
+        await env.Manager.StartAsync(null, CancellationToken.None);
+
+        env.Files.Log.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Start_TunnelContainerDoesNotStayUp_SucceedsButExplainsWhatToCheck()
+    {
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken())
+            .WithPs(SiteTestEnv.Entry("db"), SiteTestEnv.Entry("api"), SiteTestEnv.Entry("web"),
+                SiteTestEnv.Entry("proxy", health: ""), SiteTestEnv.Entry("tuna", "restarting", "", "Restarting (1) 5 seconds ago"));
+
+        var result = await env.Manager.StartAsync(null, CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.Message.Should().Contain("пока не заработал").And.Contain("my.tuna.am/domains").And.Contain("токен Tuna");
+        result.Message.Should().NotContain("Адрес в интернете: https");
+    }
+
+    [Fact]
+    public async Task Start_TunnelCheckSeesRunningOnlyOnce_IsNotEnough()
+    {
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken());
+        var polls = 0;
+        env.Runner.When(call => call.Contains(" ps --all --format json"), () => ++polls == 2
+            ? new SiteProcessResult(0, SiteTestEnv.PsJson(SiteTestEnv.AllRunning(tunnel: true)), "")
+            : new SiteProcessResult(0, SiteTestEnv.PsJson(SiteTestEnv.Entry("tuna", "restarting", "", "Restarting")), ""));
+
+        var result = await env.Manager.StartAsync(null, CancellationToken.None);
+
+        result.Message.Should().Contain("пока не заработал");
     }
 
     [Fact]
@@ -220,7 +275,7 @@ public class SiteManagerStartStopTests
     }
 
     [Fact]
-    public async Task Stop_WithToken_IncludesTunnelProfile_SoTheTunnelStopsToo()
+    public async Task Stop_WithTokenAndDomain_IncludesTunnelProfile_SoTheTunnelStopsToo()
     {
         var env = new SiteTestEnv(SiteTestEnv.EnvWithToken());
 
@@ -351,27 +406,33 @@ public class SiteManagerKeysTests
 {
     private static string Dir => SiteTestEnv.ServerDir;
 
-    [Fact]
-    public async Task Apply_WritesEnv_ThenUp_ThenReadsTunnelUrl_ThenWritesPublicUrlFile()
+    private static SiteTestEnv RunningTunnelEnv(string envText)
     {
-        var env = new SiteTestEnv();
-        env.Runner.When("logs --no-color tuna", 0, "Forwarding https://hq.ru.tuna.am -> proxy:80");
+        var env = new SiteTestEnv(envText);
+        env.WithPs(SiteTestEnv.AllRunning(tunnel: true));
+        return env;
+    }
+
+    [Fact]
+    public async Task Apply_WritesEnv_ThenUp_ThenChecksTheTunnelContainer()
+    {
+        var env = RunningTunnelEnv(SiteTestEnv.BaseEnv);
         var timeline = new List<string>();
 
-        var result = await ApplyAndMergeTimeline(env, timeline, new SiteKeysUpdate("AIzaKey123", "tunatoken1234", "hq"));
+        var result = await ApplyAndMergeTimeline(env, timeline, new SiteKeysUpdate("tunatoken1234", "crm.example.ru"));
 
         result.Success.Should().BeTrue();
         var order = timeline.Where(e => e is "write:.env" or "run:version --format {{.Server.Version}}"
                                          || e.StartsWith("run:[tunnel] up")
-                                         || e.StartsWith("run:[tunnel] logs")
+                                         || e.StartsWith("run:[tunnel] ps")
                                          || e == "write:public-url.txt").ToList();
         order.Should().StartWith(new[]
         {
             "write:.env",
+            "write:public-url.txt",
             "run:version --format {{.Server.Version}}",
             "run:[tunnel] up -d --remove-orphans",
-            "run:[tunnel] logs --no-color tuna",
-            "write:public-url.txt"
+            "run:[tunnel] ps --all --format json"
         });
     }
 
@@ -391,69 +452,83 @@ public class SiteManagerKeysTests
     }
 
     [Fact]
-    public async Task Apply_SavesTokensAndKeepsEveryOtherLineOfEnv()
+    public async Task Apply_SavesTokenAndDomain_AndKeepsEveryOtherLineOfEnv()
     {
-        var env = new SiteTestEnv();
-        env.Runner.When("logs --no-color tuna", 0, "Forwarding https://hq.ru.tuna.am -> proxy:80");
+        var env = RunningTunnelEnv(SiteTestEnv.BaseEnv + SiteTestEnv.LegacyLines);
 
-        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("AIzaKey123", "tunatoken1234", "hq"), null, CancellationToken.None);
+        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("tunatoken1234", "crm.example.ru"), null, CancellationToken.None);
 
-        SiteEnvFile.GetValue(env.Env, "GEMINI_API_KEY").Should().Be("AIzaKey123");
         SiteEnvFile.GetValue(env.Env, "TUNA_TOKEN").Should().Be("tunatoken1234");
-        SiteEnvFile.GetValue(env.Env, "TUNA_SUBDOMAIN").Should().Be("hq");
+        SiteEnvFile.GetValue(env.Env, "TUNA_DOMAIN").Should().Be("crm.example.ru");
         env.Env.Should().Contain("# HQ Studio settings\r\n")
             .And.Contain("POSTGRES_PASSWORD=pgsecret123\r\n")
             .And.Contain("JWT_KEY=jwtsecret456789\r\n")
-            .And.Contain("HQSTUDIO_VERSION=1.19.6\r\n");
+            .And.Contain("HQSTUDIO_VERSION=1.19.6\r\n")
+            .And.Contain(SiteTestEnv.LegacyLines);
     }
 
     [Fact]
     public async Task Apply_SecretsNeverReachProgressTextOrResultMessages()
     {
-        var env = new SiteTestEnv();
-        env.Runner.When("logs --no-color tuna", 0, "Forwarding https://hq.ru.tuna.am -> proxy:80");
+        var env = RunningTunnelEnv(SiteTestEnv.BaseEnv);
         var statuses = new List<string>();
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("AIzaKey123", "tunatoken1234", "hq"), statuses.Add, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("tunatoken1234", "crm.example.ru"), statuses.Add, CancellationToken.None);
 
-        string.Join("|", statuses).Should().NotContain("tunatoken1234").And.NotContain("AIzaKey123");
-        result.Message.Should().NotContain("tunatoken1234").And.NotContain("AIzaKey123");
-        env.Runner.Calls.Should().NotContain(c => c.Contains("tunatoken1234") || c.Contains("AIzaKey123"));
+        string.Join("|", statuses).Should().NotContain("tunatoken1234");
+        result.Message.Should().NotContain("tunatoken1234");
+        env.Runner.Calls.Should().NotContain(c => c.Contains("tunatoken1234"));
     }
 
     [Fact]
-    public async Task Apply_AfterTunnelAddress_WritesPublicUrlToEnvAndReappliesOnce()
+    public async Task Apply_Domain_WritesPublicUrlToEnvAndFile_WithASingleUp()
     {
-        var env = new SiteTestEnv();
-        env.Runner.When("logs --no-color tuna", 0, "Forwarding https://hq.ru.tuna.am -> proxy:80");
+        var env = RunningTunnelEnv(SiteTestEnv.BaseEnv);
 
-        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, "tunatoken1234", "hq"), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("tunatoken1234", "crm.example.ru"), null, CancellationToken.None);
 
-        env.Files.Files[SiteTestEnv.PublicUrlPath].Should().Be("https://hq.ru.tuna.am");
-        SiteEnvFile.GetValue(env.Env, "PUBLIC_URL").Should().Be("https://hq.ru.tuna.am");
-        env.Runner.ComposeCommands(Dir).Where(c => c.Contains("up -d")).Should().HaveCount(2);
+        result.Message.Should().Contain("https://crm.example.ru");
+        env.Files.Files[SiteTestEnv.PublicUrlPath].Should().Be("https://crm.example.ru");
+        SiteEnvFile.GetValue(env.Env, "PUBLIC_URL").Should().Be("https://crm.example.ru");
+        env.Runner.ComposeCommands(Dir).Where(c => c.Contains("up -d")).Should().ContainSingle();
     }
 
     [Fact]
-    public async Task Apply_TunnelAddressNotYetKnown_StillSucceeds_WithHint()
+    public async Task Apply_TunnelDoesNotStayUp_StillSucceeds_WithHint()
     {
         var env = new SiteTestEnv();
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, "tunatoken1234", ""), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("tunatoken1234", "crm.example.ru"), null, CancellationToken.None);
 
         result.Success.Should().BeTrue();
-        result.Message.Should().Contain("пока не получен");
-        env.Files.Files.Should().NotContainKey(SiteTestEnv.PublicUrlPath);
+        result.Message.Should().Contain("пока не заработал").And.Contain("my.tuna.am/domains");
+        SiteEnvFile.GetValue(env.Env, "TUNA_DOMAIN").Should().Be("crm.example.ru");
     }
 
     [Fact]
-    public async Task Apply_GeminiOnly_DoesNotLookForTunnelAddress()
+    public async Task Apply_TokenWithoutDomain_NoTunnel_ExplainsThatTheDomainIsNeeded()
     {
         var env = new SiteTestEnv();
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("AIzaKey123", null, null), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("tunatoken1234", null), null, CancellationToken.None);
 
         result.Success.Should().BeTrue();
+        result.Message.Should().Contain("свой домен");
+        env.Runner.ComposeCommands(Dir).Should().Contain("up -d --remove-orphans")
+            .And.NotContain(c => c.StartsWith("[tunnel] up") || c.Contains(" ps "));
+    }
+
+    [Fact]
+    public async Task Apply_DomainWithoutToken_NoTunnel_ExplainsThatTheTokenIsNeeded()
+    {
+        var env = new SiteTestEnv();
+
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, "crm.example.ru"), null, CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.Message.Should().Contain("токен Tuna");
+        SiteEnvFile.GetValue(env.Env, "TUNA_DOMAIN").Should().Be("crm.example.ru");
+        SiteEnvFile.GetValue(env.Env, "PUBLIC_URL").Should().Be("https://crm.example.ru");
         env.Runner.ComposeCommands(Dir).Should().Equal("up -d --remove-orphans");
     }
 
@@ -462,7 +537,7 @@ public class SiteManagerKeysTests
     {
         var env = new SiteTestEnv();
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, null), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null), null, CancellationToken.None);
 
         result.Success.Should().BeTrue();
         env.Files.Log.Should().BeEmpty();
@@ -470,47 +545,18 @@ public class SiteManagerKeysTests
     }
 
     [Theory]
-    [InlineData("Bad Name")]
-    [InlineData("UPPER")]
-    [InlineData("-dash")]
-    [InlineData("кириллица")]
-    public async Task Apply_InvalidSubdomain_IsRejectedBeforeAnyWrite(string subdomain)
-    {
-        var env = new SiteTestEnv();
-
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, subdomain), null, CancellationToken.None);
-
-        result.Success.Should().BeFalse();
-        result.Failure!.Kind.Should().Be(SiteFailureKind.InvalidInput);
-        env.Files.Log.Should().BeEmpty();
-        env.Runner.Calls.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task Apply_SubdomainIsTrimmedBeforeSaving()
-    {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken());
-        env.Runner.When("logs --no-color tuna", 0, "Forwarding https://my-site.tuna.am -> proxy:80");
-
-        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, null, "  my-site "), null, CancellationToken.None);
-
-        SiteEnvFile.GetValue(env.Env, "TUNA_SUBDOMAIN").Should().Be("my-site");
-    }
-
-    [Theory]
     [InlineData("has space")]
     [InlineData("dollar$")]
     [InlineData("quo\"te")]
-    public async Task Apply_KeyWithBreakingCharacters_IsRejected(string key)
+    public async Task Apply_TokenWithBreakingCharacters_IsRejected(string token)
     {
         var env = new SiteTestEnv();
 
-        var gemini = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(key, null, null), null, CancellationToken.None);
-        var tuna = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, key, null), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(token, null), null, CancellationToken.None);
 
-        gemini.Failure!.Kind.Should().Be(SiteFailureKind.InvalidInput);
-        tuna.Failure!.Kind.Should().Be(SiteFailureKind.InvalidInput);
+        result.Failure!.Kind.Should().Be(SiteFailureKind.InvalidInput);
         env.Files.Log.Should().BeEmpty();
+        env.Runner.Calls.Should().BeEmpty();
     }
 
     [Fact]
@@ -519,11 +565,11 @@ public class SiteManagerKeysTests
         var env = new SiteTestEnv();
         env.Runner.When("version", 1, "", "error during connect");
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("AIzaKey123", null, null), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("tunatoken1234", "crm.example.ru"), null, CancellationToken.None);
 
         result.Success.Should().BeTrue();
         result.Message.Should().Contain("когда вы запустите сайт");
-        SiteEnvFile.GetValue(env.Env, "GEMINI_API_KEY").Should().Be("AIzaKey123");
+        SiteEnvFile.GetValue(env.Env, "TUNA_TOKEN").Should().Be("tunatoken1234");
         env.Runner.ComposeCommands(Dir).Should().BeEmpty();
     }
 
@@ -533,12 +579,12 @@ public class SiteManagerKeysTests
         var env = new SiteTestEnv();
         env.Locator.Docker = null;
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("AIzaKey123", null, null), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("tunatoken1234", null), null, CancellationToken.None);
 
         result.Success.Should().BeFalse();
         result.ConfigSaved.Should().BeTrue();
         result.Message.Should().StartWith("Настройки сохранены, но применить их не получилось.");
-        SiteEnvFile.GetValue(env.Env, "GEMINI_API_KEY").Should().Be("AIzaKey123");
+        SiteEnvFile.GetValue(env.Env, "TUNA_TOKEN").Should().Be("tunatoken1234");
     }
 
     [Fact]
@@ -547,12 +593,12 @@ public class SiteManagerKeysTests
         var env = new SiteTestEnv();
         env.Runner.When(" up -d", 1, "", "lookup registry-1.docker.io: no such host");
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("AIzaKey123", null, null), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("tunatoken1234", null), null, CancellationToken.None);
 
         result.Success.Should().BeFalse();
         result.ConfigSaved.Should().BeTrue();
         result.Failure!.Kind.Should().Be(SiteFailureKind.NoInternet);
-        SiteEnvFile.GetValue(env.Env, "GEMINI_API_KEY").Should().Be("AIzaKey123");
+        SiteEnvFile.GetValue(env.Env, "TUNA_TOKEN").Should().Be("tunatoken1234");
     }
 
     [Fact]
@@ -561,7 +607,7 @@ public class SiteManagerKeysTests
         var env = new SiteTestEnv();
         env.Files.FailWrite = _ => true;
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("AIzaKey123", null, null), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("tunatoken1234", null), null, CancellationToken.None);
 
         result.Success.Should().BeFalse();
         result.ConfigSaved.Should().BeFalse();
@@ -570,16 +616,17 @@ public class SiteManagerKeysTests
     }
 
     [Fact]
-    public async Task Apply_RemovingToken_StopsTunnelContainer_AndClearsPublicAddress()
+    public async Task Apply_RemovingDomain_StopsTunnelContainer_AndClearsPublicAddress()
     {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken().Replace("PUBLIC_URL=\r\n", "PUBLIC_URL=https://hq.ru.tuna.am\r\n"));
-        env.Files.Add(SiteTestEnv.PublicUrlPath, "https://hq.ru.tuna.am");
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken().Replace("PUBLIC_URL=\r\n", "PUBLIC_URL=https://crm.example.ru\r\n"));
+        env.Files.Add(SiteTestEnv.PublicUrlPath, "https://crm.example.ru");
 
-        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, "", null), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, ""), null, CancellationToken.None);
 
         result.Success.Should().BeTrue();
         result.Message.Should().Contain("отключён");
-        SiteEnvFile.GetValue(env.Env, "TUNA_TOKEN").Should().Be("");
+        SiteEnvFile.GetValue(env.Env, "TUNA_DOMAIN").Should().Be("");
+        SiteEnvFile.GetValue(env.Env, "TUNA_TOKEN").Should().Be("tunatoken1234");
         SiteEnvFile.GetValue(env.Env, "PUBLIC_URL").Should().Be("");
         env.Files.Files.Should().NotContainKey(SiteTestEnv.PublicUrlPath);
         env.Runner.ComposeCommands(Dir).Should().Contain("[tunnel] rm --stop --force tuna");
@@ -587,31 +634,75 @@ public class SiteManagerKeysTests
     }
 
     [Fact]
-    public async Task Apply_RemovingToken_LeavesForeignPublicUrlAlone()
+    public async Task Apply_RemovingToken_StopsTunnelContainer_ButKeepsTheDomain()
     {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken().Replace("PUBLIC_URL=\r\n", "PUBLIC_URL=https://hq.example.ru\r\n"));
-        env.Files.Add(SiteTestEnv.PublicUrlPath, "https://hq.ru.tuna.am");
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken().Replace("PUBLIC_URL=\r\n", "PUBLIC_URL=https://crm.example.ru\r\n"));
 
-        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, "", null), null, CancellationToken.None);
+        var result = await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("", null), null, CancellationToken.None);
 
-        SiteEnvFile.GetValue(env.Env, "PUBLIC_URL").Should().Be("https://hq.example.ru");
+        result.Success.Should().BeTrue();
+        result.Message.Should().Contain("отключён");
+        SiteEnvFile.GetValue(env.Env, "TUNA_TOKEN").Should().Be("");
+        SiteEnvFile.GetValue(env.Env, "TUNA_DOMAIN").Should().Be("crm.example.ru");
+        env.Runner.ComposeCommands(Dir).Should().Contain("[tunnel] rm --stop --force tuna");
+    }
+
+    [Fact]
+    public async Task Apply_RemovingDomain_LeavesForeignPublicUrlAlone()
+    {
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken().Replace("PUBLIC_URL=\r\n", "PUBLIC_URL=https://hq.example.org\r\n"));
+
+        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, ""), null, CancellationToken.None);
+
+        SiteEnvFile.GetValue(env.Env, "PUBLIC_URL").Should().Be("https://hq.example.org");
+    }
+
+    [Fact]
+    public async Task Apply_ChangingTheDomain_ReplacesPublicUrl()
+    {
+        var env = RunningTunnelEnv(SiteTestEnv.EnvWithToken().Replace("PUBLIC_URL=\r\n", "PUBLIC_URL=https://crm.example.ru\r\n"));
+
+        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate(null, "new.example.ru"), null, CancellationToken.None);
+
+        SiteEnvFile.GetValue(env.Env, "TUNA_DOMAIN").Should().Be("new.example.ru");
+        SiteEnvFile.GetValue(env.Env, "PUBLIC_URL").Should().Be("https://new.example.ru");
+        env.Files.Files[SiteTestEnv.PublicUrlPath].Should().Be("https://new.example.ru");
+    }
+
+    [Fact]
+    public async Task Apply_LinesTheProgramNoLongerKnows_StayExactlyAsTheyWere()
+    {
+        var env = RunningTunnelEnv(SiteTestEnv.BaseEnv + SiteTestEnv.LegacyLines);
+
+        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("tunatoken1234", "crm.example.ru"), null, CancellationToken.None);
+        await env.Manager.ApplyKeysAsync(new SiteKeysUpdate("", ""), null, CancellationToken.None);
+
+        env.Env.Should().Contain(SiteTestEnv.LegacyLines);
     }
 
     [Fact]
     public void ReadKeysState_ReportsPresenceButNeverTheValues()
     {
-        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", "hq").Replace("GEMINI_API_KEY=\r\n", "GEMINI_API_KEY=AIzaKey123\r\n"));
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", "crm.example.ru"));
 
         var state = env.Manager.ReadKeysState();
 
-        state.Should().Be(new SiteKeysState(true, true, "hq"));
-        state!.ToString().Should().NotContain("tunatoken1234").And.NotContain("AIzaKey123");
+        state.Should().Be(new SiteKeysState(true, "crm.example.ru"));
+        state!.ToString().Should().NotContain("tunatoken1234");
     }
 
     [Fact]
     public void ReadKeysState_FreshInstall_HasNothing()
     {
-        new SiteTestEnv().Manager.ReadKeysState().Should().Be(new SiteKeysState(false, false, ""));
+        new SiteTestEnv().Manager.ReadKeysState().Should().Be(new SiteKeysState(false, ""));
+    }
+
+    [Fact]
+    public void ReadKeysState_EnvWithUnknownLegacyLines_IsStillReadable()
+    {
+        var env = new SiteTestEnv(SiteTestEnv.BaseEnv + SiteTestEnv.LegacyLines);
+
+        env.Manager.ReadKeysState().Should().Be(new SiteKeysState(false, ""));
     }
 
     [Fact]
@@ -657,6 +748,18 @@ public class SiteManagerLogsAndRefreshTests
     }
 
     [Fact]
+    public async Task GetLogs_AlsoHidesValuesOfSecretLookingLinesTheProgramNoLongerKnows()
+    {
+        var env = new SiteTestEnv(SiteTestEnv.BaseEnv + SiteTestEnv.LegacyLines);
+        env.Runner.When("logs --no-color --tail 300 api", 0, "calling service with legacykey98765 now\nname is oldvalue");
+
+        var result = await env.Manager.GetLogsAsync("api", CancellationToken.None);
+
+        result.Text.Should().NotContain("legacykey98765");
+        result.Text.Should().Contain("name is oldvalue");
+    }
+
+    [Fact]
     public async Task GetLogs_UnknownService_IsRejected_WithoutRunningAnything()
     {
         var env = new SiteTestEnv();
@@ -669,22 +772,33 @@ public class SiteManagerLogsAndRefreshTests
     }
 
     [Fact]
-    public async Task GetLogs_TunnelWithoutToken_ExplainsInsteadOfFailing()
+    public async Task GetLogs_TunnelNotConfigured_ExplainsInsteadOfFailing()
     {
         var env = new SiteTestEnv();
 
         var result = await env.Manager.GetLogsAsync("tuna", CancellationToken.None);
 
         result.Success.Should().BeTrue();
+        result.Text.Should().Contain("не настроен").And.Contain("свой домен");
+        env.Runner.Calls.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetLogs_TunnelWithTokenButNoDomain_ExplainsToo()
+    {
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken(domain: ""));
+
+        var result = await env.Manager.GetLogsAsync("tuna", CancellationToken.None);
+
         result.Text.Should().Contain("не настроен");
         env.Runner.Calls.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task GetLogs_TunnelWithToken_UsesProfile()
+    public async Task GetLogs_TunnelWithTokenAndDomain_UsesProfile()
     {
         var env = new SiteTestEnv(SiteTestEnv.EnvWithToken());
-        env.Runner.When("logs", 0, "tuna-1  | Forwarding https://x.tuna.am -> proxy:80");
+        env.Runner.When("logs", 0, "tuna-1  | tunnel is up");
 
         await env.Manager.GetLogsAsync("tuna", CancellationToken.None);
 
@@ -717,28 +831,53 @@ public class SiteManagerLogsAndRefreshTests
     public async Task Refresh_AllRunning_ReportsRunningWithAddressesAndVersion()
     {
         var env = new SiteTestEnv(SiteTestEnv.EnvWithToken()).WithPs(SiteTestEnv.AllRunning(tunnel: true));
-        env.Files.Add(SiteTestEnv.PublicUrlPath, "https://hq.ru.tuna.am\r\n");
 
         var snapshot = await env.Manager.RefreshAsync(SiteOperation.None, CancellationToken.None);
 
         snapshot.Overview.Pill.Should().Be(SitePill.Running);
         snapshot.Version.Should().Be("1.19.6");
         snapshot.LocalUrl.Should().Be("http://localhost:8080");
-        snapshot.PublicUrl.Should().Be("https://hq.ru.tuna.am");
+        snapshot.PublicUrl.Should().Be("https://crm.example.ru");
         snapshot.TunnelConfigured.Should().BeTrue();
         snapshot.Services.Should().HaveCount(5).And.OnlyContain(s => s.Level == ServiceLevel.Ok);
         env.Runner.ComposeCommands(Dir).Should().Equal("[tunnel] ps --all --format json");
     }
 
     [Fact]
-    public async Task Refresh_PublicUrlFallsBackToEnvValue()
+    public async Task Refresh_WithoutDomain_HasNoPublicAddress_EvenIfOldAddressIsLeftInEnv()
     {
-        var env = new SiteTestEnv(SiteTestEnv.BaseEnv.Replace("PUBLIC_URL=\r\n", "PUBLIC_URL=https://from-env.example\r\n"))
+        var env = new SiteTestEnv(SiteTestEnv.BaseEnv.Replace("PUBLIC_URL=\r\n", "PUBLIC_URL=https://old.example.org\r\n"))
             .WithPs(SiteTestEnv.AllRunning());
+        env.Files.Add(SiteTestEnv.PublicUrlPath, "https://old.example.org");
 
         var snapshot = await env.Manager.RefreshAsync(SiteOperation.None, CancellationToken.None);
 
-        snapshot.PublicUrl.Should().Be("https://from-env.example");
+        snapshot.PublicUrl.Should().BeNull();
+        snapshot.TunnelConfigured.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Refresh_DomainWithoutToken_ShowsTheAddress_ButTheTunnelIsNotConfigured()
+    {
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("", "crm.example.ru")).WithPs(SiteTestEnv.AllRunning());
+
+        var snapshot = await env.Manager.RefreshAsync(SiteOperation.None, CancellationToken.None);
+
+        snapshot.PublicUrl.Should().Be("https://crm.example.ru");
+        snapshot.TunnelConfigured.Should().BeFalse();
+        snapshot.Services.Last().Level.Should().Be(ServiceLevel.NotConfigured);
+        env.Runner.ComposeCommands(Dir).Should().Equal("ps --all --format json");
+    }
+
+    [Fact]
+    public async Task Refresh_TokenWithoutDomain_HasNoTunnelAndNoAddress()
+    {
+        var env = new SiteTestEnv(SiteTestEnv.EnvWithToken("tunatoken1234", "")).WithPs(SiteTestEnv.AllRunning());
+
+        var snapshot = await env.Manager.RefreshAsync(SiteOperation.None, CancellationToken.None);
+
+        snapshot.PublicUrl.Should().BeNull();
+        snapshot.TunnelConfigured.Should().BeFalse();
     }
 
     [Fact]

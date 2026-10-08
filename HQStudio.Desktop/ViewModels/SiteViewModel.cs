@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Windows.Threading;
 using HQStudio.Services;
+using HQStudio.Services.Guide;
 using HQStudio.Services.Site;
 
 namespace HQStudio.ViewModels
@@ -70,9 +71,12 @@ namespace HQStudio.ViewModels
     /// <summary>Окна, которые открывает страница. Реализация живёт в представлении, тесты подставляют заглушку.</summary>
     public interface ISiteDialogs
     {
-        void ShowKeys(ISiteService service);
+        /// <param name="openGuide">Открывает инструкцию из окна; <c>null</c>, если она недоступна (не администратор).</param>
+        void ShowKeys(ISiteService service, Action? openGuide);
         void ShowLogs(ISiteService service);
         void ShowUpdates();
+        /// <param name="sectionId">Глава, с которой открыть инструкцию; <c>null</c> - с первой.</param>
+        void ShowGuide(string? sectionId);
         bool ConfirmUninstall();
     }
 
@@ -100,6 +104,7 @@ namespace HQStudio.ViewModels
         private readonly ISiteDialogs _dialogs;
         private readonly ISiteUninstallHost _uninstallHost;
         private readonly ISiteNotifier _notifier;
+        private readonly Func<bool> _isAdministrator;
         private readonly SynchronizationContext? _context = SynchronizationContext.Current;
 
         private DispatcherTimer? _timer;
@@ -120,18 +125,20 @@ namespace HQStudio.ViewModels
 
         public SiteViewModel()
             : this(SiteManager.CreateDefault(), new WindowsSiteShell(), new Views.WpfSiteDialogs(),
-                new WindowsSiteUninstallHost(), new ToastSiteNotifier())
+                new WindowsSiteUninstallHost(), new ToastSiteNotifier(), AdminAccess.IsCurrentUserAdmin)
         {
         }
 
+        /// <param name="isAdministrator">Вошёл ли администратор. Спрашивается при каждом обращении: от этого зависит инструкция.</param>
         public SiteViewModel(ISiteService service, ISiteShell shell, ISiteDialogs dialogs,
-            ISiteUninstallHost uninstallHost, ISiteNotifier notifier)
+            ISiteUninstallHost uninstallHost, ISiteNotifier notifier, Func<bool> isAdministrator)
         {
             _service = service;
             _shell = shell;
             _dialogs = dialogs;
             _uninstallHost = uninstallHost;
             _notifier = notifier;
+            _isAdministrator = isAdministrator;
 
             StartCommand = new SiteAsyncCommand(StartSiteAsync, () => CanStart);
             StopCommand = new SiteAsyncCommand(StopSiteAsync, () => CanStop);
@@ -146,6 +153,8 @@ namespace HQStudio.ViewModels
             KeysCommand = new RelayCommand(_ => ShowKeys(), _ => IsInstalled && !IsBusy);
             LogsCommand = new RelayCommand(_ => _dialogs.ShowLogs(_service), _ => IsInstalled);
             UpdatesCommand = new RelayCommand(_ => ShowUpdates());
+            GuideCommand = new RelayCommand(_ => OpenGuide(), _ => CanOpenGuide);
+            DomainGuideCommand = new RelayCommand(_ => OpenGuide(SiteGuideContent.DomainSectionId), _ => CanOpenGuide);
             UninstallCommand = new SiteAsyncCommand(UninstallAsync, () => !IsBusy);
         }
 
@@ -165,9 +174,19 @@ namespace HQStudio.ViewModels
         public bool HasLocalUrl => _snapshot.LocalUrl.Length > 0;
         public string? PublicUrl => _snapshot.PublicUrl;
         public bool HasPublicUrl => !string.IsNullOrEmpty(_snapshot.PublicUrl);
-        public string PublicUrlText => HasPublicUrl
-            ? _snapshot.PublicUrl!
-            : _snapshot.TunnelConfigured ? "Адрес ещё не получен" : "Не настроен";
+        public bool IsTunnelConfigured => _snapshot.TunnelConfigured;
+
+        /// <summary>Адрес на своём домене; без токена Tuna туннель не запускается, и адрес пока не работает.</summary>
+        public string PublicUrlText => !HasPublicUrl
+            ? "Сайт доступен только на этом компьютере"
+            : _snapshot.TunnelConfigured
+                ? _snapshot.PublicUrl!
+                : $"{_snapshot.PublicUrl} - пока не работает: нужен токен Tuna (кнопка «Ключи»)";
+
+        /// <summary>Инструкция только для администратора: и кнопки, и открытие проверяют это.</summary>
+        public bool CanOpenGuide => _isAdministrator();
+
+        public bool ShowDomainGuideButton => !HasPublicUrl && CanOpenGuide;
 
         public IReadOnlyList<ServiceStatus> Services => _services;
 
@@ -241,6 +260,8 @@ namespace HQStudio.ViewModels
         public ICommand KeysCommand { get; }
         public ICommand LogsCommand { get; }
         public ICommand UpdatesCommand { get; }
+        public ICommand GuideCommand { get; }
+        public ICommand DomainGuideCommand { get; }
         public ICommand UninstallCommand { get; }
 
         // ------------------------------------------------------------------ автообновление
@@ -324,7 +345,8 @@ namespace HQStudio.ViewModels
                      {
                          nameof(Pill), nameof(PillText), nameof(Explanation), nameof(IsInstalled), nameof(ShowNotInstalled),
                          nameof(ShowSiteContent), nameof(ShowStartDockerBanner), nameof(Version), nameof(LocalUrl),
-                         nameof(HasLocalUrl), nameof(PublicUrl), nameof(HasPublicUrl), nameof(PublicUrlText)
+                         nameof(HasLocalUrl), nameof(PublicUrl), nameof(HasPublicUrl), nameof(PublicUrlText),
+                         nameof(IsTunnelConfigured), nameof(ShowDomainGuideButton)
                      })
                 OnPropertyChanged(name);
             RaiseAvailability();
@@ -460,8 +482,22 @@ namespace HQStudio.ViewModels
 
         private void ShowKeys()
         {
-            _dialogs.ShowKeys(_service);
+            _dialogs.ShowKeys(_service, CanOpenGuide ? () => OpenGuide(SiteGuideContent.DomainSectionId) : null);
             _ = RefreshAsync();
+        }
+
+        /// <summary>Открывает инструкцию. Не администратору она не открывается, даже если команду вызвали в обход кнопок.</summary>
+        /// <returns><c>true</c>, если инструкция открыта.</returns>
+        public bool OpenGuide(string? sectionId = null)
+        {
+            if (!CanOpenGuide)
+            {
+                _notifier.Warning("Инструкция доступна только администратору.");
+                return false;
+            }
+
+            _dialogs.ShowGuide(sectionId);
+            return true;
         }
 
         private void ShowUpdates()
@@ -531,29 +567,23 @@ namespace HQStudio.ViewModels
         Clear
     }
 
-    /// <summary>Окно «Ключи»: Gemini, токен Tuna и имя адреса. Сохранённые значения не показываются.</summary>
+    /// <summary>Окно «Ключи»: токен Tuna и свой домен. Сохранённый токен не показывается.</summary>
     public sealed class SiteKeysViewModel : BaseViewModel
     {
-        public const string GeminiHelpUrl = "https://aistudio.google.com/apikey";
-        public const string TunaHelpUrl = "https://tuna.am";
+        public const string TunaHelpUrl = "https://my.tuna.am";
         public const string TunaDomainsUrl = "https://my.tuna.am/domains";
-        public const string DomainHelpUrl = "https://tuna.am/docs/tunnels/guides/connect-self-domain";
         public const string PunycodeUrl = "https://www.reg.ru/web-tools/punycode";
 
         private readonly ISiteService _service;
         private readonly ISiteShell _shell;
+        private readonly Action? _openGuide;
         private readonly SynchronizationContext? _context = SynchronizationContext.Current;
         private CancellationTokenSource? _cts;
 
-        private bool _hasGemini;
         private bool _hasToken;
-        private string _originalSubdomain = "";
         private string _originalDomain = "";
-        private SiteSecretMode _geminiMode;
         private SiteSecretMode _tunaMode;
-        private string _geminiInput = "";
         private string _tunaInput = "";
-        private string _subdomain = "";
         private string _domain = "";
         private bool _isBusy;
         private string _statusText = "";
@@ -562,22 +592,20 @@ namespace HQStudio.ViewModels
         private string _errorDetails = "";
         private bool _completed;
 
-        public SiteKeysViewModel(ISiteService service, ISiteShell shell)
+        /// <param name="openGuide">Открывает инструкцию. <c>null</c> - кнопки инструкции нет (не администратор).</param>
+        public SiteKeysViewModel(ISiteService service, ISiteShell shell, Action? openGuide = null)
         {
             _service = service;
             _shell = shell;
+            _openGuide = openGuide;
 
-            ChangeGeminiCommand = new RelayCommand(_ => GeminiMode = SiteSecretMode.Edit, _ => !IsBusy);
-            ClearGeminiCommand = new RelayCommand(_ => GeminiMode = SiteSecretMode.Clear, _ => !IsBusy);
-            KeepGeminiCommand = new RelayCommand(_ => { GeminiInput = ""; GeminiMode = SiteSecretMode.Keep; }, _ => !IsBusy);
             ChangeTunaCommand = new RelayCommand(_ => TunaMode = SiteSecretMode.Edit, _ => !IsBusy);
             ClearTunaCommand = new RelayCommand(_ => TunaMode = SiteSecretMode.Clear, _ => !IsBusy);
             KeepTunaCommand = new RelayCommand(_ => { TunaInput = ""; TunaMode = SiteSecretMode.Keep; }, _ => !IsBusy);
-            OpenGeminiHelpCommand = new RelayCommand(_ => _shell.OpenUrl(GeminiHelpUrl));
             OpenTunaHelpCommand = new RelayCommand(_ => _shell.OpenUrl(TunaHelpUrl));
             OpenTunaDomainsCommand = new RelayCommand(_ => _shell.OpenUrl(TunaDomainsUrl));
-            OpenDomainHelpCommand = new RelayCommand(_ => _shell.OpenUrl(DomainHelpUrl));
             OpenPunycodeCommand = new RelayCommand(_ => _shell.OpenUrl(PunycodeUrl));
+            OpenGuideCommand = new RelayCommand(_ => _openGuide?.Invoke(), _ => CanOpenGuide);
             SaveCommand = new SiteAsyncCommand(SaveAsync, () => CanSave);
 
             Load();
@@ -586,31 +614,16 @@ namespace HQStudio.ViewModels
         public void Load()
         {
             var state = _service.ReadKeysState();
-            _hasGemini = state?.HasGeminiKey ?? false;
             _hasToken = state?.HasTunaToken ?? false;
-            _originalSubdomain = state?.TunaSubdomain ?? "";
             _originalDomain = state?.TunaDomain ?? "";
-            _geminiMode = _hasGemini ? SiteSecretMode.Keep : SiteSecretMode.Edit;
             _tunaMode = _hasToken ? SiteSecretMode.Keep : SiteSecretMode.Edit;
-            _geminiInput = "";
             _tunaInput = "";
-            _subdomain = _originalSubdomain;
             _domain = _originalDomain;
             RaiseAll();
         }
 
-        public bool HasGemini => _hasGemini;
         public bool HasToken => _hasToken;
-
-        public SiteSecretMode GeminiMode
-        {
-            get => _geminiMode;
-            private set
-            {
-                if (SetProperty(ref _geminiMode, value))
-                    RaiseState();
-            }
-        }
+        public bool CanOpenGuide => _openGuide != null;
 
         public SiteSecretMode TunaMode
         {
@@ -622,24 +635,10 @@ namespace HQStudio.ViewModels
             }
         }
 
-        public bool ShowGeminiSaved => _hasGemini && _geminiMode == SiteSecretMode.Keep;
-        public bool ShowGeminiInput => _geminiMode == SiteSecretMode.Edit;
-        public bool ShowGeminiCleared => _geminiMode == SiteSecretMode.Clear;
-        public bool CanCancelGeminiEdit => _hasGemini && _geminiMode == SiteSecretMode.Edit;
         public bool ShowTunaSaved => _hasToken && _tunaMode == SiteSecretMode.Keep;
         public bool ShowTunaInput => _tunaMode == SiteSecretMode.Edit;
         public bool ShowTunaCleared => _tunaMode == SiteSecretMode.Clear;
         public bool CanCancelTunaEdit => _hasToken && _tunaMode == SiteSecretMode.Edit;
-
-        public string GeminiInput
-        {
-            get => _geminiInput;
-            set
-            {
-                if (SetProperty(ref _geminiInput, value))
-                    RaiseState();
-            }
-        }
 
         public string TunaInput
         {
@@ -647,16 +646,6 @@ namespace HQStudio.ViewModels
             set
             {
                 if (SetProperty(ref _tunaInput, value))
-                    RaiseState();
-            }
-        }
-
-        public string Subdomain
-        {
-            get => _subdomain;
-            set
-            {
-                if (SetProperty(ref _subdomain, value))
                     RaiseState();
             }
         }
@@ -671,22 +660,6 @@ namespace HQStudio.ViewModels
             }
         }
 
-        /// <summary>Пока указан свой домен, имя адреса Tuna не используется и поле недоступно.</summary>
-        public bool SubdomainEnabled => _domain.Trim().Length == 0;
-
-        public string SubdomainError
-        {
-            get
-            {
-                if (!SubdomainEnabled)
-                    return "";
-                var value = _subdomain.Trim();
-                return SiteEnvFile.IsValidSubdomain(value)
-                    ? ""
-                    : "Можно использовать только латинские буквы в нижнем регистре, цифры и дефис.";
-            }
-        }
-
         public string DomainError => SiteEnvFile.CheckDomain(_domain.Trim()) switch
         {
             DomainCheck.NonAscii => "Домен нужно записать латиницей (punycode). Перевести его можно по кнопке ниже.",
@@ -695,10 +668,6 @@ namespace HQStudio.ViewModels
         };
 
         public bool ShowPunycodeLink => SiteEnvFile.CheckDomain(_domain.Trim()) == DomainCheck.NonAscii;
-
-        public string GeminiInputError => _geminiMode == SiteSecretMode.Edit && !SiteEnvFile.IsSafeValue(_geminiInput.Trim())
-            ? "В ключе не должно быть пробелов и необычных символов."
-            : "";
 
         public string TunaInputError => _tunaMode == SiteSecretMode.Edit && !SiteEnvFile.IsSafeValue(_tunaInput.Trim())
             ? "В токене не должно быть пробелов и необычных символов."
@@ -758,52 +727,27 @@ namespace HQStudio.ViewModels
 
         public bool HasChanges => BuildUpdate().IsEmpty == false;
 
-        public bool CanSave => !IsBusy && HasChanges && SubdomainError.Length == 0 && DomainError.Length == 0 &&
-                               GeminiInputError.Length == 0 && TunaInputError.Length == 0;
+        public bool CanSave => !IsBusy && HasChanges && DomainError.Length == 0 && TunaInputError.Length == 0;
 
-        public ICommand ChangeGeminiCommand { get; }
-        public ICommand ClearGeminiCommand { get; }
-        public ICommand KeepGeminiCommand { get; }
         public ICommand ChangeTunaCommand { get; }
         public ICommand ClearTunaCommand { get; }
         public ICommand KeepTunaCommand { get; }
-        public ICommand OpenGeminiHelpCommand { get; }
         public ICommand OpenTunaHelpCommand { get; }
         public ICommand OpenTunaDomainsCommand { get; }
-        public ICommand OpenDomainHelpCommand { get; }
         public ICommand OpenPunycodeCommand { get; }
+        public ICommand OpenGuideCommand { get; }
         public ICommand SaveCommand { get; }
 
         public SiteKeysUpdate BuildUpdate()
         {
-            string? gemini = _geminiMode switch
-            {
-                SiteSecretMode.Clear => "",
-                SiteSecretMode.Edit when _geminiInput.Trim().Length > 0 => _geminiInput.Trim(),
-                _ => null
-            };
             string? token = _tunaMode switch
             {
                 SiteSecretMode.Clear => "",
                 SiteSecretMode.Edit when _tunaInput.Trim().Length > 0 => _tunaInput.Trim(),
                 _ => null
             };
-            var dom = _domain.Trim();
-            string? domain;
-            string? subdomain;
-            if (dom.Length > 0)
-            {
-                // При домене имя Tuna не меняем: сохранение само запишет его пустым.
-                domain = dom != _originalDomain ? dom : null;
-                subdomain = null;
-            }
-            else
-            {
-                domain = _originalDomain.Length > 0 ? "" : null;
-                var sub = _subdomain.Trim();
-                subdomain = sub != _originalSubdomain ? sub : null;
-            }
-            return new SiteKeysUpdate(gemini, token, subdomain, domain);
+            var domain = _domain.Trim();
+            return new SiteKeysUpdate(token, domain != _originalDomain ? domain : null);
         }
 
         public void Cancel()
@@ -863,11 +807,7 @@ namespace HQStudio.ViewModels
 
         private void RaiseAll()
         {
-            foreach (var name in new[]
-                     {
-                         nameof(HasGemini), nameof(HasToken), nameof(GeminiMode), nameof(TunaMode), nameof(GeminiInput),
-                         nameof(TunaInput), nameof(Subdomain), nameof(Domain)
-                     })
+            foreach (var name in new[] { nameof(HasToken), nameof(TunaMode), nameof(TunaInput), nameof(Domain) })
                 OnPropertyChanged(name);
             RaiseState();
         }
@@ -876,9 +816,8 @@ namespace HQStudio.ViewModels
         {
             foreach (var name in new[]
                      {
-                         nameof(ShowGeminiSaved), nameof(ShowGeminiInput), nameof(ShowGeminiCleared), nameof(CanCancelGeminiEdit),
                          nameof(ShowTunaSaved), nameof(ShowTunaInput), nameof(ShowTunaCleared), nameof(CanCancelTunaEdit),
-                         nameof(SubdomainError), nameof(SubdomainEnabled), nameof(DomainError), nameof(ShowPunycodeLink), nameof(GeminiInputError), nameof(TunaInputError), nameof(HasChanges), nameof(CanSave)
+                         nameof(DomainError), nameof(ShowPunycodeLink), nameof(TunaInputError), nameof(HasChanges), nameof(CanSave)
                      })
                 OnPropertyChanged(name);
             CommandManager.InvalidateRequerySuggested();

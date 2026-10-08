@@ -31,7 +31,10 @@ public class SiteViewModelTests
         public SiteFakeNotifier Notifier { get; } = new();
         public SiteViewModel Vm { get; }
 
-        public Rig() => Vm = new SiteViewModel(Service, Shell, Dialogs, Host, Notifier);
+        /// <summary>Роль пользователя, от которой зависит инструкция; меняется в тесте на лету.</summary>
+        public bool IsAdmin { get; set; } = true;
+
+        public Rig() => Vm = new SiteViewModel(Service, Shell, Dialogs, Host, Notifier, () => IsAdmin);
     }
 
     private static SiteSnapshot Snap(SitePill pill, SiteDockerState docker = SiteDockerState.Running, bool installed = true,
@@ -125,9 +128,10 @@ public class SiteViewModelTests
     }
 
     [Theory]
-    [InlineData("https://hq.ru.tuna.am", true, "https://hq.ru.tuna.am", true)]
-    [InlineData(null, true, "Адрес ещё не получен", false)]
-    [InlineData(null, false, "Не настроен", false)]
+    [InlineData("https://crm.example.ru", true, "https://crm.example.ru", true)]
+    [InlineData("https://crm.example.ru", false, "https://crm.example.ru - пока не работает: нужен токен Tuna (кнопка «Ключи»)", true)]
+    [InlineData(null, false, "Сайт доступен только на этом компьютере", false)]
+    [InlineData(null, true, "Сайт доступен только на этом компьютере", false)]
     public void PublicUrlText_ExplainsEachCase(string? url, bool tunnel, string expected, bool hasUrl)
     {
         var vm = new Rig().Vm;
@@ -425,7 +429,7 @@ public class SiteViewModelTests
     public void CopyAndOpen_UseTheShell()
     {
         var rig = new Rig();
-        rig.Vm.Apply(Snap(SitePill.Running, publicUrl: "https://hq.ru.tuna.am", tunnel: true));
+        rig.Vm.Apply(Snap(SitePill.Running, publicUrl: "https://crm.example.ru", tunnel: true));
 
         rig.Vm.CopyLocalCommand.Execute(null);
         rig.Vm.CopyPublicCommand.Execute(null);
@@ -433,8 +437,8 @@ public class SiteViewModelTests
         rig.Vm.OpenPublicCommand.Execute(null);
         rig.Vm.OpenSiteCommand.Execute(null);
 
-        rig.Shell.Copied.Should().Equal("http://localhost:8080", "https://hq.ru.tuna.am");
-        rig.Shell.Opened.Should().Equal("http://localhost:8080", "https://hq.ru.tuna.am", "http://localhost:8080");
+        rig.Shell.Copied.Should().Equal("http://localhost:8080", "https://crm.example.ru");
+        rig.Shell.Opened.Should().Equal("http://localhost:8080", "https://crm.example.ru", "http://localhost:8080");
         rig.Notifier.Messages.Should().Contain("success:Адрес скопирован");
     }
 
@@ -466,6 +470,106 @@ public class SiteViewModelTests
         rig.Dialogs.KeysShown.Should().Be(1);
         rig.Dialogs.LogsShown.Should().Be(1);
         rig.Dialogs.UpdatesShown.Should().Be(1);
+    }
+
+    // ---------------------------------------------------------------- инструкция только для администратора
+
+    [Fact]
+    public void Guide_Administrator_SeesAndOpensIt()
+    {
+        var rig = new Rig();
+        rig.Vm.Apply(SiteTestEnv.RunningSnapshot());
+
+        rig.Vm.CanOpenGuide.Should().BeTrue();
+        rig.Vm.GuideCommand.CanExecute(null).Should().BeTrue();
+        rig.Vm.DomainGuideCommand.CanExecute(null).Should().BeTrue();
+
+        rig.Vm.GuideCommand.Execute(null);
+        rig.Vm.DomainGuideCommand.Execute(null);
+
+        rig.Dialogs.GuideOpened.Should().Equal(new string?[] { null, "domain" });
+        rig.Notifier.Messages.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Guide_NotAdministrator_DoesNotSeeIt_AndCannotOpenIt()
+    {
+        var rig = new Rig { IsAdmin = false };
+        rig.Vm.Apply(SiteTestEnv.RunningSnapshot());
+
+        rig.Vm.CanOpenGuide.Should().BeFalse();
+        rig.Vm.ShowDomainGuideButton.Should().BeFalse();
+        rig.Vm.GuideCommand.CanExecute(null).Should().BeFalse();
+        rig.Vm.DomainGuideCommand.CanExecute(null).Should().BeFalse();
+
+        // Команду могут вызвать в обход кнопок: открытие всё равно должно быть закрыто.
+        rig.Vm.GuideCommand.Execute(null);
+        rig.Vm.DomainGuideCommand.Execute(null);
+        rig.Vm.OpenGuide().Should().BeFalse();
+        rig.Vm.OpenGuide("domain").Should().BeFalse();
+
+        rig.Dialogs.GuideOpened.Should().BeEmpty();
+        rig.Notifier.Messages.Should().NotBeEmpty().And.OnlyContain(m => m == "warning:Инструкция доступна только администратору.");
+    }
+
+    [Fact]
+    public void Guide_FollowsTheRoleAtTheMomentOfTheCall()
+    {
+        var rig = new Rig();
+        rig.Vm.OpenGuide().Should().BeTrue();
+
+        rig.IsAdmin = false;
+
+        rig.Vm.CanOpenGuide.Should().BeFalse();
+        rig.Vm.OpenGuide().Should().BeFalse();
+        rig.Dialogs.GuideOpened.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void DomainGuideButton_IsShownOnlyToAdministratorsWhileThereIsNoPublicAddress()
+    {
+        var rig = new Rig();
+
+        rig.Vm.Apply(Snap(SitePill.Running));
+        rig.Vm.ShowDomainGuideButton.Should().BeTrue();
+
+        rig.Vm.Apply(Snap(SitePill.Running, publicUrl: "https://crm.example.ru", tunnel: true));
+        rig.Vm.ShowDomainGuideButton.Should().BeFalse();
+
+        rig.IsAdmin = false;
+        rig.Vm.Apply(Snap(SitePill.Running));
+        rig.Vm.ShowDomainGuideButton.Should().BeFalse();
+    }
+
+    [Fact]
+    public void KeysDialog_GetsTheGuideOnlyWhenTheUserIsAnAdministrator()
+    {
+        var admin = new Rig();
+        admin.Vm.Apply(SiteTestEnv.RunningSnapshot());
+        var worker = new Rig { IsAdmin = false };
+        worker.Vm.Apply(SiteTestEnv.RunningSnapshot());
+
+        admin.Vm.KeysCommand.Execute(null);
+        worker.Vm.KeysCommand.Execute(null);
+
+        worker.Dialogs.KeysGuide.Should().BeNull();
+        admin.Dialogs.KeysGuide.Should().NotBeNull();
+        admin.Dialogs.KeysGuide!();
+        admin.Dialogs.GuideOpened.Should().Equal(new string?[] { "domain" });
+    }
+
+    [Fact]
+    public void KeysDialog_GuideOpenedAfterTheRoleWasLost_IsStillRefused()
+    {
+        var rig = new Rig();
+        rig.Vm.Apply(SiteTestEnv.RunningSnapshot());
+        rig.Vm.KeysCommand.Execute(null);
+        var openGuide = rig.Dialogs.KeysGuide!;
+
+        rig.IsAdmin = false;
+        openGuide();
+
+        rig.Dialogs.GuideOpened.Should().BeEmpty();
     }
 
     [Fact]
@@ -511,53 +615,51 @@ public class SiteKeysViewModelTests
 {
     private static (SiteKeysViewModel Vm, SiteFakeService Service, SiteFakeShell Shell) Make(SiteKeysState? state = null)
     {
-        var service = new SiteFakeService { Keys = state ?? new SiteKeysState(false, false, "") };
+        var service = new SiteFakeService { Keys = state ?? new SiteKeysState(false, "") };
         var shell = new SiteFakeShell();
         return (new SiteKeysViewModel(service, shell), service, shell);
     }
 
     [Fact]
-    public void Fresh_BothFieldsAreInEditMode_AndNothingToSave()
+    public void Fresh_TokenIsInEditMode_AndNothingToSave()
     {
         var (vm, _, _) = Make();
 
-        vm.ShowGeminiInput.Should().BeTrue();
         vm.ShowTunaInput.Should().BeTrue();
-        vm.ShowGeminiSaved.Should().BeFalse();
+        vm.ShowTunaSaved.Should().BeFalse();
+        vm.Domain.Should().BeEmpty();
         vm.HasChanges.Should().BeFalse();
         vm.CanSave.Should().BeFalse();
         vm.BuildUpdate().IsEmpty.Should().BeTrue();
     }
 
     [Fact]
-    public void Saved_ShowsMaskedRow_AndNeverExposesValues()
+    public void Saved_ShowsMaskedRow_AndNeverExposesTheToken()
     {
-        var (vm, _, _) = Make(new SiteKeysState(true, true, "hq"));
+        var (vm, _, _) = Make(new SiteKeysState(true, "crm.example.ru"));
 
-        vm.ShowGeminiSaved.Should().BeTrue();
         vm.ShowTunaSaved.Should().BeTrue();
-        vm.ShowGeminiInput.Should().BeFalse();
-        vm.GeminiInput.Should().BeEmpty();
+        vm.ShowTunaInput.Should().BeFalse();
         vm.TunaInput.Should().BeEmpty();
-        vm.Subdomain.Should().Be("hq");
+        vm.Domain.Should().Be("crm.example.ru");
         vm.CanSave.Should().BeFalse();
     }
 
     [Fact]
     public void Change_SwitchesToInput_AndKeepGoesBack()
     {
-        var (vm, _, _) = Make(new SiteKeysState(true, false, ""));
+        var (vm, _, _) = Make(new SiteKeysState(true, ""));
 
-        vm.ChangeGeminiCommand.Execute(null);
-        vm.ShowGeminiInput.Should().BeTrue();
-        vm.CanCancelGeminiEdit.Should().BeTrue();
-        vm.GeminiInput = "typed";
+        vm.ChangeTunaCommand.Execute(null);
+        vm.ShowTunaInput.Should().BeTrue();
+        vm.CanCancelTunaEdit.Should().BeTrue();
+        vm.TunaInput = "typed";
 
-        vm.KeepGeminiCommand.Execute(null);
+        vm.KeepTunaCommand.Execute(null);
 
-        vm.ShowGeminiSaved.Should().BeTrue();
-        vm.GeminiInput.Should().BeEmpty();
-        vm.BuildUpdate().GeminiKey.Should().BeNull();
+        vm.ShowTunaSaved.Should().BeTrue();
+        vm.TunaInput.Should().BeEmpty();
+        vm.BuildUpdate().TunaToken.Should().BeNull();
     }
 
     [Fact]
@@ -565,28 +667,22 @@ public class SiteKeysViewModelTests
     {
         var (vm, _, _) = Make();
 
-        vm.GeminiInput = "  AIzaKey123  ";
-        vm.Subdomain = "my-site";
+        vm.TunaInput = "  tunatoken1234  ";
 
         var update = vm.BuildUpdate();
-        update.GeminiKey.Should().Be("AIzaKey123");
-        update.TunaToken.Should().BeNull();
-        update.TunaSubdomain.Should().Be("my-site");
+        update.TunaToken.Should().Be("tunatoken1234");
+        update.TunaDomain.Should().BeNull();
         vm.CanSave.Should().BeTrue();
     }
 
     [Fact]
     public void BuildUpdate_ClearMeansEmptyString()
     {
-        var (vm, _, _) = Make(new SiteKeysState(true, true, "hq"));
+        var (vm, _, _) = Make(new SiteKeysState(true, "crm.example.ru"));
 
-        vm.ClearGeminiCommand.Execute(null);
         vm.ClearTunaCommand.Execute(null);
 
-        var update = vm.BuildUpdate();
-        update.GeminiKey.Should().Be("");
-        update.TunaToken.Should().Be("");
-        vm.ShowGeminiCleared.Should().BeTrue();
+        vm.BuildUpdate().TunaToken.Should().Be("");
         vm.ShowTunaCleared.Should().BeTrue();
         vm.CanSave.Should().BeTrue();
 
@@ -595,45 +691,21 @@ public class SiteKeysViewModelTests
     }
 
     [Fact]
-    public void BuildUpdate_SubdomainUnchanged_IsNotSent_ClearingItIs()
-    {
-        var (vm, _, _) = Make(new SiteKeysState(false, true, "hq"));
-        vm.BuildUpdate().TunaSubdomain.Should().BeNull();
-
-        vm.Subdomain = "";
-
-        vm.BuildUpdate().TunaSubdomain.Should().Be("");
-    }
-
-    [Theory]
-    [InlineData("Мой Сайт")]
-    [InlineData("UPPER")]
-    [InlineData("with space")]
-    [InlineData("-dash")]
-    public void InvalidSubdomain_ShowsMessage_AndBlocksSave(string value)
-    {
-        var (vm, _, _) = Make();
-        vm.GeminiInput = "AIzaKey123";
-
-        vm.Subdomain = value;
-
-        vm.SubdomainError.Should().Contain("латинские буквы");
-        vm.CanSave.Should().BeFalse();
-    }
-
-    [Fact]
-    public void KeyWithSpaces_ShowsMessage_AndBlocksSave()
+    public void TokenWithSpaces_ShowsMessage_AndBlocksSave()
     {
         var (vm, _, _) = Make();
 
-        vm.GeminiInput = "has space";
-        vm.GeminiInputError.Should().NotBeEmpty();
+        vm.TunaInput = "has space";
+        vm.TunaInputError.Should().NotBeEmpty();
         vm.CanSave.Should().BeFalse();
 
-        vm.GeminiInput = "";
         vm.TunaInput = "bad$token";
         vm.TunaInputError.Should().NotBeEmpty();
         vm.CanSave.Should().BeFalse();
+
+        vm.TunaInput = "good-token_1";
+        vm.TunaInputError.Should().BeEmpty();
+        vm.CanSave.Should().BeTrue();
     }
 
     [Fact]
@@ -642,20 +714,21 @@ public class SiteKeysViewModelTests
         var (vm, service, _) = Make();
         service.ApplyHandler = (_, _, _) =>
         {
-            service.Keys = new SiteKeysState(true, false, "");
+            service.Keys = new SiteKeysState(true, "crm.example.ru");
             return Task.FromResult(SiteOperationResult.Ok("Настройки сохранены и применены."));
         };
-        vm.GeminiInput = "AIzaKey123";
+        vm.TunaInput = "tunatoken1234";
+        vm.Domain = "crm.example.ru";
 
         await vm.SaveAsync();
 
-        service.Applied.Should().ContainSingle().Which.Should().Be(new SiteKeysUpdate("AIzaKey123", null, null));
+        service.Applied.Should().ContainSingle().Which.Should().Be(new SiteKeysUpdate("tunatoken1234", "crm.example.ru"));
         vm.ResultMessage.Should().Be("Настройки сохранены и применены.");
         vm.ResultIsError.Should().BeFalse();
         vm.Completed.Should().BeTrue();
         vm.IsBusy.Should().BeFalse();
-        vm.ShowGeminiSaved.Should().BeTrue();
-        vm.GeminiInput.Should().BeEmpty();
+        vm.ShowTunaSaved.Should().BeTrue();
+        vm.TunaInput.Should().BeEmpty();
     }
 
     [Fact]
@@ -681,7 +754,7 @@ public class SiteKeysViewModelTests
         var (vm, service, _) = Make();
         service.ApplyHandler = (_, _, _) => Task.FromResult(new SiteOperationResult(false,
             "Настройки сохранены, но применить их не получилось.", SiteErrorMapper.DockerMissing(), ConfigSaved: true));
-        vm.GeminiInput = "AIzaKey123";
+        vm.Domain = "crm.example.ru";
 
         await vm.SaveAsync();
 
@@ -699,7 +772,7 @@ public class SiteKeysViewModelTests
             status?.Invoke("Применяю настройки");
             return gate.Task;
         };
-        vm.GeminiInput = "AIzaKey123";
+        vm.TunaInput = "tunatoken1234";
 
         var saving = vm.SaveAsync();
 
@@ -725,7 +798,7 @@ public class SiteKeysViewModelTests
             await Task.Delay(Timeout.Infinite, ct);
             return SiteOperationResult.Ok("never");
         };
-        vm.GeminiInput = "AIzaKey123";
+        vm.TunaInput = "tunatoken1234";
 
         var saving = vm.SaveAsync();
         await started.Task;
@@ -737,25 +810,27 @@ public class SiteKeysViewModelTests
     }
 
     [Fact]
-    public void HelpLinks_OpenTheRightPages()
-    {
-        var (vm, _, shell) = Make();
-
-        vm.OpenGeminiHelpCommand.Execute(null);
-        vm.OpenTunaHelpCommand.Execute(null);
-
-        shell.Opened.Should().Equal("https://aistudio.google.com/apikey", "https://tuna.am");
-    }
-
-    [Fact]
     public void NotInstalled_StateIsNull_ViewModelStillWorks()
     {
         var service = new SiteFakeService { Keys = null };
 
         var vm = new SiteKeysViewModel(service, new SiteFakeShell());
 
-        vm.HasGemini.Should().BeFalse();
-        vm.ShowGeminiInput.Should().BeTrue();
+        vm.HasToken.Should().BeFalse();
+        vm.ShowTunaInput.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Dialog_OffersOnlyTokenAndDomain()
+    {
+        var names = typeof(SiteKeysViewModel).GetProperties().Select(p => p.Name)
+            .Concat(typeof(SiteKeysState).GetProperties().Select(p => p.Name))
+            .Concat(typeof(SiteKeysUpdate).GetProperties().Select(p => p.Name))
+            .ToList();
+
+        names.Should().Contain("Domain").And.Contain("TunaInput");
+        foreach (var banned in RemovedFeatureWords.All)
+            names.Should().NotContain(n => n.Contains(banned, StringComparison.OrdinalIgnoreCase));
     }
 }
 

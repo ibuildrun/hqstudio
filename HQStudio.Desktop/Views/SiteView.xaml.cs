@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using HQStudio.Services;
+using HQStudio.Services.Guide;
 using HQStudio.Services.Site;
 using HQStudio.ViewModels;
 using HQStudio.Views.Dialogs;
@@ -61,10 +63,24 @@ namespace HQStudio.Views
     {
         private static Window? Owner => Application.Current?.MainWindow;
 
-        public void ShowKeys(ISiteService service)
+        // Из окна «Ключи» инструкция открывается поверх него, а не за ним.
+        private static Window? ActiveOwner =>
+            Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? Owner;
+
+        public void ShowKeys(ISiteService service, Action? openGuide)
         {
-            var vm = new SiteKeysViewModel(service, new WindowsSiteShell());
+            var vm = new SiteKeysViewModel(service, new WindowsSiteShell(), openGuide);
             new SiteKeysDialog(vm) { Owner = Owner }.ShowDialog();
+        }
+
+        public void ShowGuide(string? sectionId)
+        {
+            // Вторая проверка на случай, если окно попытаются открыть мимо страницы «Сайт».
+            if (!AdminAccess.IsCurrentUserAdmin())
+                return;
+
+            var vm = new SiteGuideViewModel(SiteGuideContent.Sections, new WindowsSiteShell(), new ToastSiteNotifier(), sectionId);
+            new SiteGuideDialog(vm) { Owner = ActiveOwner }.ShowDialog();
         }
 
         public void ShowLogs(ISiteService service)

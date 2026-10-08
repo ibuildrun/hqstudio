@@ -79,7 +79,10 @@ namespace HQStudio.Services.Site
     /// <summary>Итог для большой плашки в шапке страницы.</summary>
     public sealed record SiteOverview(SitePill Pill, string PillText, string Explanation);
 
-    /// <summary>Снимок состояния сайта на момент опроса.</summary>
+    /// <summary>
+    /// Снимок состояния сайта на момент опроса. <c>PublicUrl</c> - адрес на своём домене, если домен указан;
+    /// <c>TunnelConfigured</c> - заданы и токен Tuna, и домен (только тогда запускается туннель).
+    /// </summary>
     public sealed record SiteSnapshot(
         bool Installed,
         SiteDockerState Docker,
@@ -123,12 +126,12 @@ namespace HQStudio.Services.Site
     }
 
     /// <summary>Что показывать в окне ключей: значения секретов наружу не отдаются.</summary>
-    public sealed record SiteKeysState(bool HasGeminiKey, bool HasTunaToken, string TunaSubdomain, string TunaDomain = "");
+    public sealed record SiteKeysState(bool HasTunaToken, string TunaDomain = "");
 
     /// <summary>Изменения ключей. <c>null</c> - не менять, пустая строка - удалить значение.</summary>
-    public sealed record SiteKeysUpdate(string? GeminiKey, string? TunaToken, string? TunaSubdomain, string? TunaDomain = null)
+    public sealed record SiteKeysUpdate(string? TunaToken, string? TunaDomain = null)
     {
-        public bool IsEmpty => GeminiKey == null && TunaToken == null && TunaSubdomain == null && TunaDomain == null;
+        public bool IsEmpty => TunaToken == null && TunaDomain == null;
     }
 
     public sealed record SiteLogsResult(bool Success, string Text, SiteFailure? Failure);

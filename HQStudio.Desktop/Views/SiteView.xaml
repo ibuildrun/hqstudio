@@ -125,16 +125,26 @@
         <StackPanel MaxWidth="980">
 
             <!-- Header -->
-            <StackPanel Margin="0,0,0,28">
-                <TextBlock Style="{DynamicResource TextH1}">
-                    <TextBlock.Effect>
-                        <DropShadowEffect Color="White" BlurRadius="15" ShadowDepth="0" Opacity="0.2"/>
-                    </TextBlock.Effect>
-                    САЙТ
-                </TextBlock>
-                <TextBlock Text="Управление сайтом HQ Studio, который работает на этом компьютере"
-                           Style="{DynamicResource TextBody}" Margin="0,8,0,0"/>
-            </StackPanel>
+            <Grid Margin="0,0,0,28">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Style="{DynamicResource TextH1}">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="White" BlurRadius="15" ShadowDepth="0" Opacity="0.2"/>
+                        </TextBlock.Effect>
+                        САЙТ
+                    </TextBlock>
+                    <TextBlock Text="Управление сайтом HQ Studio, который работает на этом компьютере"
+                               Style="{DynamicResource TextBody}" Margin="0,8,0,0"/>
+                </StackPanel>
+                <!-- Инструкция видна только администратору -->
+                <Button Grid.Column="1" Content="Инструкция" Style="{StaticResource SiteBtnSecondary}"
+                        Command="{Binding GuideCommand}" VerticalAlignment="Top" Margin="16,6,0,0"
+                        Visibility="{Binding CanOpenGuide, Converter={StaticResource BoolToVisibility}}"/>
+            </Grid>
 
             <!-- Не установлен -->
             <Border Style="{DynamicResource Card}" Padding="32"
@@ -260,7 +270,7 @@
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="В ИНТЕРНЕТЕ" Style="{DynamicResource TextLabel}"
                                        VerticalAlignment="Center" Margin="0,16,0,0"/>
                             <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PublicUrlText}" FontSize="14"
-                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,16,0,0">
+                                       VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,16,0,0">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
@@ -277,6 +287,10 @@
                                 <Button Content="Копировать" Style="{StaticResource SiteBtnSmall}" Command="{Binding CopyPublicCommand}"/>
                                 <Button Content="Открыть" Style="{StaticResource SiteBtnSmall}" Command="{Binding OpenPublicCommand}"/>
                             </StackPanel>
+                            <Button Grid.Row="2" Grid.Column="2" Content="Как подключить свой домен"
+                                    Style="{StaticResource SiteBtnSmall}" Command="{Binding DomainGuideCommand}"
+                                    Margin="12,16,0,0"
+                                    Visibility="{Binding ShowDomainGuideButton, Converter={StaticResource BoolToVisibility}}"/>
                         </Grid>
                     </StackPanel>
                 </Border>

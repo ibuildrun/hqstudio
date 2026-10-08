@@ -71,7 +71,6 @@
     <Geometry x:Key="IconCopy">M9,9 L20,9 L20,20 L9,20 Z M5,15 L4,15 A1,1 0 0 1 3,14 L3,4 A1,1 0 0 1 4,3 L14,3 A1,1 0 0 1 15,4 L15,5</Geometry>
     <Geometry x:Key="IconDownload">M21,15 L21,19 A2,2 0 0 1 19,21 L5,21 A2,2 0 0 1 3,19 L3,15 M7,10 L12,15 L17,10 M12,15 L12,3</Geometry>
     <Geometry x:Key="IconRefresh">M23,4 L23,10 L17,10 M1,20 L1,14 L7,14 M3.5,9 A9,9 0 0 1 18.4,5.6 L23,10 M1,14 L5.6,18.4 A9,9 0 0 0 20.5,15</Geometry>
-    <Geometry x:Key="IconSpark">M12,2 L14.5,9.5 L22,12 L14.5,14.5 L12,22 L9.5,14.5 L2,12 L9.5,9.5 Z</Geometry>
     <Geometry x:Key="IconFolder">M3,6 A2,2 0 0 1 5,4 L9,4 L11,7 L19,7 A2,2 0 0 1 21,9 L21,18 A2,2 0 0 1 19,20 L5,20 A2,2 0 0 1 3,18 Z</Geometry>
 
     <Style x:Key="IconPath" TargetType="Path">

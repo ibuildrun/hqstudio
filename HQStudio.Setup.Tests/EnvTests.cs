@@ -86,20 +86,19 @@ public class EnvPlannerTests
 {
     private static readonly string Example = SimPayloadSource.DefaultEnvExample;
 
-    private static InstallAnswers Answers(string password = "Sunny-Day-2026", string gemini = "", string token = "", string sub = "") => new()
+    private static InstallAnswers Answers(string password = "Sunny-Day-2026", string token = "", string domain = "") => new()
     {
         FirstName = "Иван",
         LastName = "Петров",
         Password = password,
-        GeminiKey = gemini,
         TunaToken = token,
-        TunaSubdomain = sub
+        TunaDomain = domain
     };
 
     [Fact]
     public void NewInstall_GeneratesSecretsAndFillsAnswers()
     {
-        var plan = EnvPlanner.Build(null, Example, Answers(gemini: "AIza123", token: "tok-1", sub: "MyStudio"), 8081, "1.20.0");
+        var plan = EnvPlanner.Build(null, Example, Answers(token: "tok-1", domain: "CRM.Example.ru"), 8081, "1.20.0");
 
         plan.KeptExistingSecrets.Should().BeFalse();
         plan.PostgresPassword.Should().HaveLength(EnvPlanner.PostgresPasswordLength);
@@ -110,9 +109,8 @@ public class EnvPlannerTests
         EnvFile.Get(plan.Text, "JWT_KEY").Should().Be(plan.JwtKey);
         EnvFile.Get(plan.Text, "ADMIN_PASSWORD").Should().Be("Sunny-Day-2026");
         EnvFile.Get(plan.Text, "ADMIN_NAME").Should().Be("Иван Петров");
-        EnvFile.Get(plan.Text, "GEMINI_API_KEY").Should().Be("AIza123");
         EnvFile.Get(plan.Text, "TUNA_TOKEN").Should().Be("tok-1");
-        EnvFile.Get(plan.Text, "TUNA_SUBDOMAIN").Should().Be("mystudio", "the subdomain is lower-cased");
+        EnvFile.Get(plan.Text, "TUNA_DOMAIN").Should().Be("crm.example.ru", "the domain is lower-cased");
         EnvFile.Get(plan.Text, "HQSTUDIO_VERSION").Should().Be("1.20.0");
     }
 
@@ -179,13 +177,12 @@ public class EnvPlannerTests
     [Fact]
     public void BlankAnswersKeepExistingKeys()
     {
-        var existing = "POSTGRES_PASSWORD=realpassword123\nJWT_KEY=" + new string('k', 40) + "\nGEMINI_API_KEY=old-gemini\nTUNA_TOKEN=old-token\nTUNA_SUBDOMAIN=oldsub\n";
+        var existing = "POSTGRES_PASSWORD=realpassword123\nJWT_KEY=" + new string('k', 40) + "\nTUNA_TOKEN=old-token\nTUNA_DOMAIN=old.example.ru\n";
 
         var plan = EnvPlanner.Build(existing, Example, Answers(), 8080, "1.0.0");
 
-        EnvFile.Get(plan.Text, "GEMINI_API_KEY").Should().Be("old-gemini");
         EnvFile.Get(plan.Text, "TUNA_TOKEN").Should().Be("old-token");
-        EnvFile.Get(plan.Text, "TUNA_SUBDOMAIN").Should().Be("oldsub");
+        EnvFile.Get(plan.Text, "TUNA_DOMAIN").Should().Be("old.example.ru");
     }
 
     [Fact]

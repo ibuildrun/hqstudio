@@ -35,22 +35,22 @@
         </Ellipse>
 
         <StackPanel VerticalAlignment="Center" Margin="0,-4,0,0">
-            <Border x:Name="CheckCircle" Width="88" Height="88" CornerRadius="44" HorizontalAlignment="Center"
+            <Border x:Name="CheckCircle" Width="80" Height="80" CornerRadius="40" HorizontalAlignment="Center"
                     Background="{StaticResource SuccessBgBrush}" BorderBrush="{StaticResource AccentGreenBrush}" BorderThickness="2"
                     Effect="{StaticResource GlowGreen}" RenderTransformOrigin="0.5,0.5">
                 <Border.RenderTransform>
                     <ScaleTransform x:Name="CheckScale" ScaleX="1" ScaleY="1"/>
                 </Border.RenderTransform>
-                <Path Data="{StaticResource IconCheck}" Style="{StaticResource IconPath}" Stroke="#4CAF50" Width="40" Height="40"
+                <Path Data="{StaticResource IconCheck}" Style="{StaticResource IconPath}" Stroke="#4CAF50" Width="36" Height="36"
                       StrokeThickness="3"/>
             </Border>
 
-            <TextBlock Text="{Binding Headline}" Style="{StaticResource TextTitle}" FontSize="28" HorizontalAlignment="Center" Margin="0,22,0,0"/>
+            <TextBlock Text="{Binding Headline}" Style="{StaticResource TextTitle}" FontSize="28" HorizontalAlignment="Center" Margin="0,18,0,0"/>
             <TextBlock Text="{Binding Lead}" Style="{StaticResource TextBody}" HorizontalAlignment="Center" TextAlignment="Center"
                        MaxWidth="460" Margin="0,6,0,0"/>
 
             <!-- Site addresses -->
-            <StackPanel Margin="0,22,0,0" Visibility="{Binding SiteReady, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel Margin="0,16,0,0" Visibility="{Binding SiteReady, Converter={StaticResource BoolToVisibility}}">
                 <Border Style="{StaticResource Card}" Padding="18,12">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -92,7 +92,7 @@
             </StackPanel>
 
             <!-- Site not installed yet -->
-            <Border Margin="0,22,0,0" Padding="18,14" CornerRadius="14" Background="{StaticResource WarningBgBrush}"
+            <Border Margin="0,16,0,0" Padding="18,14" CornerRadius="14" Background="{StaticResource WarningBgBrush}"
                     BorderBrush="{StaticResource WarningBorderBrush}" BorderThickness="1"
                     Visibility="{Binding SiteSkipped, Converter={StaticResource BoolToVisibility}}">
                 <Grid>
@@ -110,13 +110,17 @@
             </Border>
 
             <!-- Login reminder -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,18,0,0"
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0"
                         Visibility="{Binding SiteReady, Converter={StaticResource BoolToVisibility}}">
                 <Path Data="{StaticResource IconKey}" Style="{StaticResource IconPath}" Stroke="#B0B0B0" Width="16" Height="16"
                       StrokeThickness="1.8" VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding LoginHint}" Style="{StaticResource TextBody}" FontSize="13" Margin="10,0,0,0" VerticalAlignment="Center"
                            MaxWidth="480"/>
             </StackPanel>
+
+            <!-- Where the domain guide lives -->
+            <TextBlock Text="{Binding GuideNote}" Style="{StaticResource TextSmall}" HorizontalAlignment="Center" TextAlignment="Center"
+                       TextWrapping="Wrap" Margin="0,8,0,0"/>
         </StackPanel>
     </Grid>
 </UserControl>

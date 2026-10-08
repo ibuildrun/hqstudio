@@ -70,7 +70,7 @@ public sealed class HealthStage : StageBase
     }
 }
 
-/// <summary>Reads the Tuna address from the tunnel container log. A missing address is a warning, not a failure.</summary>
+/// <summary>Reads the address from the tunnel container log. A missing address is a warning, not a failure.</summary>
 public sealed class PublicUrlStage : StageBase
 {
     public const int PollSeconds = 3;
@@ -82,6 +82,10 @@ public sealed class PublicUrlStage : StageBase
 
     public override async Task<StageOutcome> RunAsync(InstallContext ctx, IStageReporter reporter, CancellationToken ct)
     {
+        // The tunnel runs only with an own domain, so the stage is never listed without one.
+        if (ctx.ExpectedPublicUrl is not { } expected)
+            return StageOutcome.Done;
+
         for (var i = 0; i < MaxPolls; i++)
         {
             reporter.Report((double)i / MaxPolls, "Подключаю публичный адрес...");
@@ -91,16 +95,7 @@ public sealed class PublicUrlStage : StageBase
             var url = TunnelUrlParser.Parse(result.Output);
             if (url != null)
             {
-                ctx.PublicUrl = url;
-                var envPath = ctx.Paths.EnvFile;
-                var text = EnvFile.ReadAllTextOrNull(envPath);
-                await Task.Run(() =>
-                {
-                    if (text != null)
-                        EnvFile.WriteAtomic(envPath, EnvPlanner.SetPublicUrl(text, url));
-                    File.WriteAllText(ctx.Paths.PublicUrlFile, url);
-                }, ct);
-
+                await SaveAsync(ctx, url, ct);
                 ctx.Log.Write($"Публичный адрес: {url}");
                 reporter.Report(1, "Публичный адрес получен");
                 return StageOutcome.Done;
@@ -109,24 +104,22 @@ public sealed class PublicUrlStage : StageBase
             await ctx.Services.Delay.DelayAsync(TimeSpan.FromSeconds(PollSeconds), ct);
         }
 
-        if (ctx.ExpectedPublicUrl is { } expected)
-        {
-            // Own domain: Tuna may still be waiting for the domain to be added and verified, so the expected address is used.
-            ctx.PublicUrl = expected;
-            var envPath = ctx.Paths.EnvFile;
-            var text = EnvFile.ReadAllTextOrNull(envPath);
-            await Task.Run(() =>
-            {
-                if (text != null)
-                    EnvFile.WriteAtomic(envPath, EnvPlanner.SetPublicUrl(text, expected));
-                File.WriteAllText(ctx.Paths.PublicUrlFile, expected);
-            }, ct);
-
-            ctx.PublicUrlNote = "Свой домен заработает, когда вы добавите его на my.tuna.am/domains и подтвердите DNS.";
-            return StageOutcome.Warning(ctx.PublicUrlNote);
-        }
-
-        ctx.PublicUrlNote = "Публичный адрес пока не получен. Проверьте токен Tuna.";
+        // Tuna may still be waiting for the domain to be added and verified, so the expected address is used.
+        await SaveAsync(ctx, expected, ct);
+        ctx.PublicUrlNote = "Свой домен заработает, когда вы добавите его на my.tuna.am/domains и подтвердите DNS.";
         return StageOutcome.Warning(ctx.PublicUrlNote);
+    }
+
+    private static async Task SaveAsync(InstallContext ctx, string url, CancellationToken ct)
+    {
+        ctx.PublicUrl = url;
+        var envPath = ctx.Paths.EnvFile;
+        var text = EnvFile.ReadAllTextOrNull(envPath);
+        await Task.Run(() =>
+        {
+            if (text != null)
+                EnvFile.WriteAtomic(envPath, EnvPlanner.SetPublicUrl(text, url));
+            File.WriteAllText(ctx.Paths.PublicUrlFile, url);
+        }, ct);
     }
 }

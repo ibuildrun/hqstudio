@@ -15,7 +15,6 @@ services:
       - /app/.next
     environment:
       - NODE_ENV=development
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     networks:
       - hqstudio-network
 

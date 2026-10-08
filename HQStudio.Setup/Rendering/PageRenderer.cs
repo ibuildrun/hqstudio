@@ -18,11 +18,7 @@ public static class PageRenderer
     private sealed record Scenario(string Name, Action<WizardViewModel> Setup);
 
     // Pages taller than the window are shown scrolled to the bottom, to review the part that is below the fold.
-    private static readonly HashSet<string> ScrolledToEnd = new()
-    {
-        "12b-keys-own-address-open", "13-keys-filled-error", "13b-keys-domain-valid",
-        "13c-keys-domain-non-ascii", "13d-keys-domain-without-token"
-    };
+    private static readonly HashSet<string> ScrolledToEnd = new();
 
     public static int RenderAll(string directory)
     {
@@ -103,9 +99,8 @@ public static class PageRenderer
         a.FirstName = "Иван";
         a.LastName = "Петров";
         a.Password = "Sunny-Day-2026";
-        a.GeminiKey = "AIzaSyExampleKey1234567890";
         a.TunaToken = tuna ? "tuna_example_token" : "";
-        a.TunaSubdomain = tuna ? "mystudio" : "";
+        a.TunaDomain = tuna ? "crm.example.ru" : "";
     }
 
     private static IReadOnlyList<(StageId, StageState, string?)> Stages(StageState prepare, StageState configure, StageState docker,
@@ -214,15 +209,8 @@ public static class PageRenderer
         yield return new("12-keys-empty", vm => vm.ShowForPreview(vm.Keys));
         yield return new("13-keys-filled-error", vm =>
         {
-            vm.Keys.GeminiKey = "AIzaSyExampleKey1234567890";
             vm.Keys.TunaToken = "tuna_example_token";
-            vm.Keys.TunaSubdomain = "Мой сайт";
-            vm.ShowForPreview(vm.Keys);
-        });
-
-        yield return new("12b-keys-own-address-open", vm =>
-        {
-            vm.Keys.ShowAdvanced = true;
+            vm.Keys.TunaDomain = "https://crm.example.ru/login";
             vm.ShowForPreview(vm.Keys);
         });
         yield return new("13b-keys-domain-valid", vm =>
@@ -237,24 +225,20 @@ public static class PageRenderer
             vm.Keys.TunaDomain = "кафе.рф";
             vm.ShowForPreview(vm.Keys);
         });
-        yield return new("13d-keys-domain-without-token", vm =>
+        yield return new("13d-keys-domain-invalid", vm =>
         {
-            vm.Keys.TunaDomain = "https://crm.example.ru/login";
+            vm.Keys.TunaDomain = "crm";
             vm.ShowForPreview(vm.Keys);
         });
-
         yield return new("13e-keys-domain-needs-token", vm =>
         {
             vm.Keys.TunaDomain = "crm.example.ru";
-            vm.Keys.ShowAdvanced = false;
             vm.ShowForPreview(vm.Keys);
         });
 
-        yield return new("14b-summary-own-domain", vm =>
+        yield return new("14b-summary-no-domain", vm =>
         {
-            Fill(vm.Answers);
-            vm.Answers.TunaDomain = "crm.example.ru";
-            vm.Answers.TunaSubdomain = "";
+            Fill(vm.Answers, tuna: false);
             vm.ShowForPreview(vm.Summary);
         });
 
@@ -317,7 +301,7 @@ public static class PageRenderer
                 Stages(StageState.Done, StageState.Done, StageState.Done, StageState.Done, null,
                     StageState.Done, StageState.Done, StageState.Warning, StageState.Running),
                 96, "Шаг 8 из 8: Ярлыки", InstallRunState.Running);
-            vm.Install.Stages[6].Preview(StageState.Warning, "Публичный адрес пока не получен. Проверьте токен Tuna.");
+            vm.Install.Stages[6].Preview(StageState.Warning, "Свой домен заработает, когда вы добавите его на my.tuna.am/domains и подтвердите DNS.");
             vm.ShowForPreview(vm.Install);
         });
 
@@ -328,10 +312,10 @@ public static class PageRenderer
         });
         yield return new("22-done-public", vm =>
         {
-            vm.Done.LoadPreview(true, "http://localhost:8081", "https://mystudio.ru.tuna.am", null, false);
+            vm.Done.LoadPreview(true, "http://localhost:8081", "https://crm.example.ru", null, false);
             vm.ShowForPreview(vm.Done);
         });
-        yield return new("22b-done-own-domain", vm =>
+        yield return new("22b-done-domain-pending", vm =>
         {
             vm.Done.LoadPreview(true, "http://localhost:8080", "https://crm.example.ru",
                 "Свой домен заработает, когда вы добавите его на my.tuna.am/domains и подтвердите DNS.", false);

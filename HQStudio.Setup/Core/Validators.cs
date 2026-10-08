@@ -15,9 +15,6 @@ public static class Validators
 {
     public const int MinPasswordLength = 8;
     public const int MaxNameLength = 60;
-    public const int MaxSubdomainLength = 40;
-
-    private static readonly Regex SubdomainPattern = new(@"^[a-z0-9]+(-[a-z0-9]+)*$", RegexOptions.Compiled);
 
     private static readonly HashSet<string> CommonPasswords = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -88,19 +85,6 @@ public static class Validators
         PasswordStrength.Strong => "Надёжный пароль",
         _ => "Не короче 8 символов, лучше с цифрами и заглавными буквами"
     };
-
-    /// <summary>Empty is fine (the field is optional). Upper case is accepted here and lowered when saved.</summary>
-    public static string? Subdomain(string? value)
-    {
-        var v = value?.Trim() ?? "";
-        if (v.Length == 0)
-            return null;
-        if (v.Length > MaxSubdomainLength)
-            return $"Не длиннее {MaxSubdomainLength} символов";
-        if (!SubdomainPattern.IsMatch(v.ToLowerInvariant()))
-            return "Только латинские буквы, цифры и дефис (дефис не в начале и не в конце)";
-        return null;
-    }
 
     public const int MaxDomainLength = 253;
     public const int MaxDomainLabelLength = 63;

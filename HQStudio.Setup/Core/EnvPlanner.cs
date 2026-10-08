@@ -40,13 +40,11 @@ public static class EnvPlanner
         text = EnvFile.Set(text, "JWT_KEY", jwt);
         text = EnvFile.Set(text, "ADMIN_PASSWORD", answers.Password);
         text = EnvFile.Set(text, "ADMIN_NAME", answers.AdminName);
-        text = EnvFile.Set(text, "GEMINI_API_KEY", EffectiveGemini(baseText, answers));
         text = EnvFile.Set(text, "TUNA_TOKEN", EffectiveTunaToken(baseText, answers));
 
-        // An own domain replaces the Tuna subdomain, and is also the address the site will be reached at.
+        // The own domain is also the address the site will be reached at.
         var domain = EffectiveTunaDomain(baseText, answers);
         text = EnvFile.Set(text, "TUNA_DOMAIN", domain);
-        text = EnvFile.Set(text, "TUNA_SUBDOMAIN", EffectiveTunaSubdomain(baseText, answers));
         if (domain.Length > 0)
             text = SetPublicUrl(text, PublicUrlFor(domain));
 
@@ -57,20 +55,11 @@ public static class EnvPlanner
     }
 
     // A blank answer keeps what is already configured, so a re-install never silently drops a key.
-    public static string EffectiveGemini(string? envText, InstallAnswers answers) =>
-        Pick(answers.GeminiKey, envText, "GEMINI_API_KEY");
-
     public static string EffectiveTunaToken(string? envText, InstallAnswers answers) =>
         Pick(answers.TunaToken, envText, "TUNA_TOKEN");
 
     public static string EffectiveTunaDomain(string? envText, InstallAnswers answers) =>
         Validators.NormalizeDomain(Pick(answers.TunaDomain, envText, "TUNA_DOMAIN"));
-
-    /// <summary>Empty whenever an own domain is in force.</summary>
-    public static string EffectiveTunaSubdomain(string? envText, InstallAnswers answers) =>
-        EffectiveTunaDomain(envText, answers).Length > 0
-            ? ""
-            : Pick(answers.TunaSubdomain, envText, "TUNA_SUBDOMAIN").ToLowerInvariant();
 
     public static string PublicUrlFor(string domain) => "https://" + domain;
 

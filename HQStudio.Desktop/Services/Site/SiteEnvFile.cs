@@ -11,9 +11,7 @@ namespace HQStudio.Services.Site
         public const string PostgresPassword = "POSTGRES_PASSWORD";
         public const string JwtKey = "JWT_KEY";
         public const string AdminPassword = "ADMIN_PASSWORD";
-        public const string GeminiKey = "GEMINI_API_KEY";
         public const string TunaToken = "TUNA_TOKEN";
-        public const string TunaSubdomain = "TUNA_SUBDOMAIN";
         public const string TunaDomain = "TUNA_DOMAIN";
         public const string PublicUrl = "PUBLIC_URL";
 
@@ -22,7 +20,7 @@ namespace HQStudio.Services.Site
         /// <summary>Значения, которые нельзя показывать в логах и на экране.</summary>
         public static readonly IReadOnlyList<string> Secrets = new[]
         {
-            PostgresPassword, JwtKey, AdminPassword, GeminiKey, TunaToken
+            PostgresPassword, JwtKey, AdminPassword, TunaToken
         };
     }
 
@@ -40,7 +38,7 @@ namespace HQStudio.Services.Site
         private static readonly Regex Assignment = new(@"^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_.\-]*)\s*=(.*)$",
             RegexOptions.Compiled);
 
-        private static readonly Regex SubdomainPattern = new(@"^[a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?$",
+        private static readonly Regex LabelPattern = new(@"^[a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?$",
             RegexOptions.Compiled);
 
         public static string? GetValue(string text, string key)
@@ -122,9 +120,8 @@ namespace HQStudio.Services.Site
             return true;
         }
 
-        /// <summary>Имя адреса Tuna: латиница в нижнем регистре, цифры и дефис; пустое значение допустимо.</summary>
-        public static bool IsValidSubdomain(string value) =>
-            value.Length == 0 || SubdomainPattern.IsMatch(value);
+        /// <summary>Публичный адрес сайта на своём домене.</summary>
+        public static string PublicUrlOf(string domain) => "https://" + domain;
 
         /// <summary>
         /// Собственный домен для Tuna: имя хоста из строчных латинских меток через точки (минимум две),
@@ -140,7 +137,7 @@ namespace HQStudio.Services.Site
                 return DomainCheck.Invalid;
 
             var labels = value.Split('.');
-            if (labels.Length < 2 || !labels.All(l => SubdomainPattern.IsMatch(l)))
+            if (labels.Length < 2 || !labels.All(l => LabelPattern.IsMatch(l)))
                 return DomainCheck.Invalid;
 
             // Четыре числа через точки это IP-адрес, а не домен.

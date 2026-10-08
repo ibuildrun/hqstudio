@@ -5,6 +5,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using HQStudio.Services.Guide;
 using HQStudio.ViewModels;
 using HQStudio.Views;
 using HQStudio.Views.Dialogs;
@@ -73,6 +74,8 @@ namespace HQStudio.Services.Site
                         "Сайт не смог занять свой порт (порт 8080): его уже использует другая программа. Закройте её или перезагрузите компьютер и попробуйте ещё раз.",
                         "Error response from daemon: driver failed programming external connectivity on endpoint hqstudio-proxy-1:\nBind for 127.0.0.1:8080 failed: port is already allocated"),
                     1170, 1260),
+                ("site-local-only", Snapshot(Running(false), false), null, null, 1170, 1180),
+                ("site-domain-no-token", Snapshot(Running(false), true), null, null, 1170, 1180),
                 ("site-not-installed", Snapshot(NotInstalled(), false), null, null, 1170, 620)
             };
 
@@ -80,7 +83,7 @@ namespace HQStudio.Services.Site
             {
                 var service = new PreviewService { Snapshot = item.Snapshot };
                 var vm = new SiteViewModel(service, new PreviewShell(), new PreviewDialogs(), new PreviewUninstallHost(),
-                    new PreviewNotifier());
+                    new PreviewNotifier(), () => true);
                 vm.ShowPreview(item.Snapshot, item.Busy, item.Busy != null, item.Failure);
 
                 var view = new SiteView { DataContext = vm };
@@ -126,46 +129,38 @@ namespace HQStudio.Services.Site
 
         private static async Task RenderDialogsAsync(string dir)
         {
-            // Ключи: всё сохранено
-            await CaptureKeysAsync(dir, "keys-saved", new SiteKeysState(true, true, "hq-studio"), null);
+            // Ключи: токен и домен сохранены
+            await CaptureKeysAsync(dir, "keys-saved", new SiteKeysState(true, "crm.example.ru"), null);
 
-            // Ключи: пусто, имя адреса введено с ошибкой
-            await CaptureKeysAsync(dir, "keys-empty", new SiteKeysState(false, false, ""), (vm, _) =>
-            {
-                vm.Subdomain = "Мой Сайт";
-                return Task.CompletedTask;
-            });
+            // Ключи: пусто
+            await CaptureKeysAsync(dir, "keys-empty", new SiteKeysState(false, ""), null);
 
-            // Ключи: свой домен сохранён, имя Tuna недоступно
-            await CaptureKeysAsync(dir, "keys-domain-saved", new SiteKeysState(true, true, "", "crm.example.ru"), null);
-
-            // Ключи: домен вводят, имя Tuna стало недоступным
-            await CaptureKeysAsync(dir, "keys-domain-typed", new SiteKeysState(true, true, "hq-studio"), (vm, _) =>
+            // Ключи: домен вводят
+            await CaptureKeysAsync(dir, "keys-domain-typed", new SiteKeysState(true, ""), (vm, _) =>
             {
                 vm.Domain = "crm.example.ru";
                 return Task.CompletedTask;
             });
 
             // Ключи: домен кириллицей, нужна ссылка на punycode
-            await CaptureKeysAsync(dir, "keys-domain-nonascii", new SiteKeysState(true, true, ""), (vm, _) =>
+            await CaptureKeysAsync(dir, "keys-domain-nonascii", new SiteKeysState(true, ""), (vm, _) =>
             {
                 vm.Domain = "црм.пример.рф";
                 return Task.CompletedTask;
             });
 
             // Ключи: домен с адресом и путём
-            await CaptureKeysAsync(dir, "keys-domain-invalid", new SiteKeysState(true, true, ""), (vm, _) =>
+            await CaptureKeysAsync(dir, "keys-domain-invalid", new SiteKeysState(true, ""), (vm, _) =>
             {
                 vm.Domain = "https://crm.example.ru/page";
                 return Task.CompletedTask;
             });
 
             // Ключи: идёт применение
-            await CaptureKeysAsync(dir, "keys-busy", new SiteKeysState(true, false, ""), async (vm, service) =>
+            await CaptureKeysAsync(dir, "keys-busy", new SiteKeysState(false, ""), async (vm, service) =>
             {
-                vm.ChangeTunaCommand.Execute(null);
                 vm.TunaInput = "tuna-token-123";
-                vm.Subdomain = "hq-studio";
+                vm.Domain = "crm.example.ru";
                 var gate = new TaskCompletionSource<SiteOperationResult>();
                 service.ApplyGate = gate;
                 vm.SaveCommand.Execute(null);
@@ -173,9 +168,8 @@ namespace HQStudio.Services.Site
             });
 
             // Ключи: результат с ошибкой
-            await CaptureKeysAsync(dir, "keys-result", new SiteKeysState(true, false, ""), async (vm, service) =>
+            await CaptureKeysAsync(dir, "keys-result", new SiteKeysState(false, ""), async (vm, service) =>
             {
-                vm.ChangeTunaCommand.Execute(null);
                 vm.TunaInput = "tuna-token-123";
                 var gate = new TaskCompletionSource<SiteOperationResult>();
                 service.ApplyGate = gate;
@@ -194,13 +188,32 @@ namespace HQStudio.Services.Site
             ShowOffscreen(logs);
             await CaptureAsync(logs, Path.Combine(dir, "logs.png"));
             logs.Close();
+
+            // Инструкция: каждая глава отдельным снимком
+            foreach (var section in SiteGuideContent.Sections)
+            {
+                var guideVm = new SiteGuideViewModel(SiteGuideContent.Sections, new PreviewShell(),
+                    new PreviewNotifier(), section.Id);
+                var guide = new SiteGuideDialog(guideVm) { MaxHeight = 3200, Height = 2600 };
+                ShowOffscreen(guide);
+                await CaptureAsync(guide, Path.Combine(dir, "guide-" + section.Id + ".png"));
+
+                // Длинные главы не помещаются в окно: листаем и снимаем каждую страницу.
+                var scroll = guide.ChapterScroll;
+                for (var page = 2; page <= 8 && scroll.VerticalOffset < scroll.ScrollableHeight - 1; page++)
+                {
+                    scroll.ScrollToVerticalOffset(scroll.VerticalOffset + scroll.ViewportHeight - 40);
+                    await CaptureAsync(guide, Path.Combine(dir, $"guide-{section.Id}-p{page}.png"));
+                }
+                guide.Close();
+            }
         }
 
         private static async Task CaptureKeysAsync(string dir, string name, SiteKeysState state,
             Func<SiteKeysViewModel, PreviewService, Task>? prepare)
         {
             var service = new PreviewService { Keys = state, Snapshot = Snapshot(Running(true), true) };
-            var vm = new SiteKeysViewModel(service, new PreviewShell());
+            var vm = new SiteKeysViewModel(service, new PreviewShell(), () => { });
             var dialog = new SiteKeysDialog(vm) { MaxHeight = 1300 };
             ShowOffscreen(dialog);
             if (prepare != null)
@@ -219,7 +232,7 @@ namespace HQStudio.Services.Site
                 vm.DeleteData = true;
                 return Task.CompletedTask;
             });
-            await CaptureUninstallAsync(dir, "uninstall-running", false, true, async (vm, release) =>
+            await CaptureUninstallAsync(dir, "uninstall-progress", false, true, async (vm, release) =>
             {
                 vm.StartCommand.Execute(null);
                 await Task.Delay(400);
@@ -380,7 +393,7 @@ namespace HQStudio.Services.Site
             var overview = SiteStatusEvaluator.Evaluate(input, services);
             return new SiteSnapshot(input.Installed, input.Docker, overview, services,
                 input.Installed ? "1.19.6" : "", input.Installed ? "http://localhost:8080" : "",
-                hasPublic ? "https://hq-studio.ru.tuna.am" : null, input.TunnelConfigured, null);
+                hasPublic ? "https://crm.example.ru" : null, input.TunnelConfigured, null);
         }
 
         private const string PreviewLog =
@@ -405,7 +418,7 @@ namespace HQStudio.Services.Site
     internal sealed class PreviewService : ISiteService
     {
         public SiteSnapshot Snapshot { get; set; } = SiteSnapshot.Checking;
-        public SiteKeysState Keys { get; set; } = new(false, false, "");
+        public SiteKeysState Keys { get; set; } = new(false, "");
         public string LogText { get; set; } = "";
         public TaskCompletionSource<SiteOperationResult>? ApplyGate { get; set; }
 
@@ -443,9 +456,10 @@ namespace HQStudio.Services.Site
 
     internal sealed class PreviewDialogs : ISiteDialogs
     {
-        public void ShowKeys(ISiteService service) { }
+        public void ShowKeys(ISiteService service, Action? openGuide) { }
         public void ShowLogs(ISiteService service) { }
         public void ShowUpdates() { }
+        public void ShowGuide(string? sectionId) { }
         public bool ConfirmUninstall() => false;
     }
 

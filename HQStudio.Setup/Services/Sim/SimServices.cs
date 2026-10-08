@@ -91,11 +91,7 @@ public sealed class SimDockerClient : IDockerClient
     {
         var env = EnvFile.ReadAllTextOrNull(_paths.EnvFile);
         var domain = env == null ? null : EnvFile.Get(env, "TUNA_DOMAIN");
-        if (!string.IsNullOrWhiteSpace(domain))
-            return $"https://{domain}";
-
-        var sub = env == null ? null : EnvFile.Get(env, "TUNA_SUBDOMAIN");
-        return $"https://{(string.IsNullOrWhiteSpace(sub) ? "brave-otter-4821" : sub)}.ru.tuna.am";
+        return $"https://{(string.IsNullOrWhiteSpace(domain) ? "crm.example.ru" : domain)}";
     }
 
     private static async Task FakePullAsync(Action<string> emit, bool tunnel, CancellationToken ct)
@@ -244,9 +240,13 @@ public sealed class SimShellActions : IShellActions
     public void OpenUrl(string url)
     {
         _log($"[simulate] open {url}");
-        if (Uri.TryCreate(url, UriKind.Absolute, out var uri) && !uri.IsLoopback && !uri.Host.EndsWith(".tuna.am", StringComparison.OrdinalIgnoreCase))
+        if (Uri.TryCreate(url, UriKind.Absolute, out var uri) && !uri.IsLoopback && !IsFakeHost(uri.Host))
             _real.OpenUrl(url);
     }
+
+    // The simulated tunnel and domain addresses are made up, so they are never opened for real.
+    private static bool IsFakeHost(string host) =>
+        host.EndsWith(".tuna.am", StringComparison.OrdinalIgnoreCase) || host.EndsWith(".example.ru", StringComparison.OrdinalIgnoreCase);
 
     public void Launch(string path, string? arguments = null) => _log($"[simulate] launch {path} {arguments}");
 
@@ -268,7 +268,6 @@ public sealed class SimPayloadSource : IPayloadSource
         using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
         {
             Add(zip, "app/HQStudio.exe", "simulated executable");
-            Add(zip, "app/ИНСТРУКЦИЯ.html", "<html><body>simulated</body></html>");
             Add(zip, "server/docker-compose.yml", "name: hqstudio\nservices: {}\n");
             Add(zip, "server/.env.example", _envExample);
             Add(zip, "server/nginx/default.conf", "server { listen 80; }\n");
@@ -292,9 +291,7 @@ public sealed class SimPayloadSource : IPayloadSource
         "JWT_KEY=change-me-to-a-random-string-of-at-least-32-characters\n" +
         "ADMIN_PASSWORD=\n" +
         "ADMIN_NAME=\n" +
-        "GEMINI_API_KEY=\n" +
         "TUNA_TOKEN=\n" +
-        "TUNA_SUBDOMAIN=\n" +
         "TUNA_DOMAIN=\n" +
         "PUBLIC_URL=\n";
 }

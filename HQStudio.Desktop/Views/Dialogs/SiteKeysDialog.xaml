@@ -123,7 +123,7 @@
                     <StackPanel>
                         <TextBlock Text="Ключи сайта" FontSize="16" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextPrimaryBrush}"/>
-                        <TextBlock Text="ИИ-помощник на сайте и постоянный адрес в интернете"
+                        <TextBlock Text="Токен Tuna и свой домен: по ним сайт открывается из интернета"
                                    Style="{DynamicResource TextSmall}" Margin="0,2,0,0"/>
                     </StackPanel>
                     <Button Content="✕" Click="CloseButton_Click" Style="{DynamicResource BtnIcon}"
@@ -135,57 +135,8 @@
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="24,20,24,8">
 
-                    <!-- Gemini -->
-                    <TextBlock Text="КЛЮЧ GEMINI (ИИ-ПОМОЩНИК НА САЙТЕ)" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
-
-                    <Border Style="{StaticResource KeysSavedRow}"
-                            Visibility="{Binding ShowGeminiSaved, Converter={StaticResource BoolToVisibility}}">
-                        <Grid>
-                            <TextBlock Text="•••••••  сохранён" FontSize="14" VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button Content="Изменить" Style="{StaticResource KeysBtnSmall}" Command="{Binding ChangeGeminiCommand}"/>
-                                <Button Content="Удалить" Style="{StaticResource KeysBtnSmall}" Command="{Binding ClearGeminiCommand}"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-
-                    <Border Style="{StaticResource KeysSavedRow}"
-                            Visibility="{Binding ShowGeminiCleared, Converter={StaticResource BoolToVisibility}}">
-                        <Grid>
-                            <TextBlock Text="Ключ будет удалён после сохранения" FontSize="14" VerticalAlignment="Center"
-                                       Foreground="#FFB300"/>
-                            <Button Content="Вернуть" Style="{StaticResource KeysBtnSmall}" HorizontalAlignment="Right"
-                                    Command="{Binding KeepGeminiCommand}"/>
-                        </Grid>
-                    </Border>
-
-                    <Grid Visibility="{Binding ShowGeminiInput, Converter={StaticResource BoolToVisibility}}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <PasswordBox x:Name="GeminiPassword" Style="{DynamicResource InputPassword}"
-                                     PasswordChanged="GeminiPassword_PasswordChanged"
-                                     Visibility="{Binding IsChecked, ElementName=GeminiShow, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
-                        <TextBox x:Name="GeminiText" Style="{DynamicResource InputText}"
-                                 Text="{Binding GeminiInput, UpdateSourceTrigger=PropertyChanged}"
-                                 Visibility="{Binding IsChecked, ElementName=GeminiShow, Converter={StaticResource BoolToVisibility}}"/>
-                        <ToggleButton x:Name="GeminiShow" Grid.Column="1" Style="{StaticResource KeysShowToggle}"
-                                      Checked="GeminiShow_Changed" Unchecked="GeminiShow_Changed"/>
-                    </Grid>
-                    <TextBlock Text="{Binding GeminiInputError}" FontSize="12" Foreground="#F44336" Margin="2,6,0,0"
-                               TextWrapping="Wrap"
-                               Visibility="{Binding GeminiInputError, Converter={StaticResource StringToVisibility}}"/>
-                    <StackPanel Orientation="Horizontal">
-                        <Button Content="Где взять ключ" Style="{StaticResource KeysLink}" Command="{Binding OpenGeminiHelpCommand}"/>
-                        <Button Content="Оставить прежний" Style="{StaticResource KeysLink}" Margin="18,8,0,0"
-                                Command="{Binding KeepGeminiCommand}"
-                                Visibility="{Binding CanCancelGeminiEdit, Converter={StaticResource BoolToVisibility}}"/>
-                    </StackPanel>
-
                     <!-- Tuna token -->
-                    <TextBlock Text="ТОКЕН TUNA (АДРЕС В ИНТЕРНЕТЕ)" Style="{DynamicResource TextLabel}" Margin="0,24,0,8"/>
+                    <TextBlock Text="ТОКЕН TUNA" Style="{DynamicResource TextLabel}" Margin="0,0,0,8"/>
 
                     <Border Style="{StaticResource KeysSavedRow}"
                             Visibility="{Binding ShowTunaSaved, Converter={StaticResource BoolToVisibility}}">
@@ -233,19 +184,8 @@
                                 Visibility="{Binding CanCancelTunaEdit, Converter={StaticResource BoolToVisibility}}"/>
                     </StackPanel>
 
-                    <!-- Subdomain -->
-                    <TextBlock Text="ИМЯ АДРЕСА TUNA" Style="{DynamicResource TextLabel}" Margin="0,24,0,8"/>
-                    <TextBox Style="{StaticResource KeysInputText}" IsEnabled="{Binding SubdomainEnabled}"
-                             Text="{Binding Subdomain, UpdateSourceTrigger=PropertyChanged}" MaxLength="63"/>
-                    <TextBlock Text="{Binding SubdomainError}" FontSize="12" Foreground="#F44336" Margin="2,6,0,0"
-                               TextWrapping="Wrap"
-                               Visibility="{Binding SubdomainError, Converter={StaticResource StringToVisibility}}"/>
-                    <TextBlock Style="{DynamicResource TextSmall}" TextWrapping="Wrap" Margin="2,8,0,0" LineHeight="18"
-                               Text="На бесплатном тарифе Tuna сама выдаёт имя вида brave-otter-4821: скопируйте его в личном кабинете (my.tuna.am/domains). Любое другое имя - только по подписке. Если не уверены, оставьте пустым: адрес будет временным."/>
-                    <Button Content="Личный кабинет Tuna" Style="{StaticResource KeysLink}" Command="{Binding OpenTunaDomainsCommand}"/>
-
                     <!-- Own domain -->
-                    <TextBlock Text="СВОЙ ДОМЕН (НЕОБЯЗАТЕЛЬНО)" Style="{DynamicResource TextLabel}" Margin="0,24,0,8"/>
+                    <TextBlock Text="СВОЙ ДОМЕН" Style="{DynamicResource TextLabel}" Margin="0,24,0,8"/>
                     <TextBox Style="{StaticResource KeysInputText}"
                              Text="{Binding Domain, UpdateSourceTrigger=PropertyChanged}" MaxLength="253"/>
                     <TextBlock Text="{Binding DomainError}" FontSize="12" Foreground="#F44336" Margin="2,6,0,0"
@@ -255,8 +195,14 @@
                             Command="{Binding OpenPunycodeCommand}"
                             Visibility="{Binding ShowPunycodeLink, Converter={StaticResource BoolToVisibility}}"/>
                     <TextBlock Style="{DynamicResource TextSmall}" TextWrapping="Wrap" Margin="2,8,0,0" LineHeight="18"
-                               Text="Если у вас есть собственный адрес, например crm.example.ru, сайт можно открывать по нему вместо адреса от Tuna. Нужна платная подписка Tuna: сначала добавьте домен в личном кабинете (my.tuna.am/domains) и подтвердите его там. Пока домен указан, имя адреса выше не используется. Если не уверены, оставьте пустым."/>
-                    <Button Content="Как подключить свой домен" Style="{StaticResource KeysLink}" Command="{Binding OpenDomainHelpCommand}"/>
+                               Text="Адрес вашего сайта, например crm.example.ru. Сначала добавьте его в личном кабинете Tuna (my.tuna.am/domains) и дождитесь подтверждения. Сайт откроется по этому адресу, когда указаны и токен, и домен. Если пока не готовы, оставьте поля пустыми: сайт будет работать на этом компьютере."/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Личный кабинет Tuna (домены)" Style="{StaticResource KeysLink}"
+                                Command="{Binding OpenTunaDomainsCommand}"/>
+                        <Button Content="Как подключить свой домен" Style="{StaticResource KeysLink}" Margin="18,8,0,0"
+                                Command="{Binding OpenGuideCommand}"
+                                Visibility="{Binding CanOpenGuide, Converter={StaticResource BoolToVisibility}}"/>
+                    </StackPanel>
 
                     <!-- Идёт применение -->
                     <Border Background="{DynamicResource BgInputBrush}" CornerRadius="12" Padding="18,14" Margin="0,22,0,0"

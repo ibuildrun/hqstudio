@@ -37,13 +37,14 @@ public sealed class InstallContext
         // A token typed earlier stays in force when the field is left blank on a re-install.
         ExistingEnv = ExistingEnvReader.Read(Paths);
         var existing = ExistingEnv?.Text;
-        TunnelEnabled = !answers.SkipSite
-            && !string.IsNullOrWhiteSpace(EnvPlanner.EffectiveTunaToken(existing, answers));
         var domain = EnvPlanner.EffectiveTunaDomain(existing, answers);
-        TunaDomain = TunnelEnabled && domain.Length > 0 ? domain : null;
+        TunnelEnabled = !answers.SkipSite
+            && !string.IsNullOrWhiteSpace(EnvPlanner.EffectiveTunaToken(existing, answers))
+            && domain.Length > 0;
+        TunaDomain = TunnelEnabled ? domain : null;
         if (existing != null)
         {
-            foreach (var key in new[] { "TUNA_TOKEN", "GEMINI_API_KEY", "POSTGRES_PASSWORD", "JWT_KEY" })
+            foreach (var key in new[] { "TUNA_TOKEN", "POSTGRES_PASSWORD", "JWT_KEY" })
                 Log.Masker.Add(EnvFile.Get(existing, key));
         }
     }

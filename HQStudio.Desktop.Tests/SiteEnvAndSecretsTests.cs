@@ -10,8 +10,8 @@ public class SiteEnvFileTests
         "# Настройки HQ Studio\r\n" +
         "HQSTUDIO_VERSION=1.19.6\r\n" +
         "\r\n" +
-        "# ключ ИИ\r\n" +
-        "GEMINI_API_KEY=\r\n" +
+        "# адрес и токен\r\n" +
+        "TUNA_DOMAIN=\r\n" +
         "TUNA_TOKEN=old-token\r\n" +
         "POSTGRES_PASSWORD=pg=secret\r\n";
 
@@ -20,7 +20,7 @@ public class SiteEnvFileTests
     {
         var result = SiteEnvFile.SetValues(Sample, new Dictionary<string, string>
         {
-            ["GEMINI_API_KEY"] = "AIzaNew",
+            ["TUNA_DOMAIN"] = "crm.example.ru",
             ["TUNA_TOKEN"] = "new-token"
         });
 
@@ -28,8 +28,8 @@ public class SiteEnvFileTests
             "# Настройки HQ Studio\r\n" +
             "HQSTUDIO_VERSION=1.19.6\r\n" +
             "\r\n" +
-            "# ключ ИИ\r\n" +
-            "GEMINI_API_KEY=AIzaNew\r\n" +
+            "# адрес и токен\r\n" +
+            "TUNA_DOMAIN=crm.example.ru\r\n" +
             "TUNA_TOKEN=new-token\r\n" +
             "POSTGRES_PASSWORD=pg=secret\r\n");
     }
@@ -37,9 +37,9 @@ public class SiteEnvFileTests
     [Fact]
     public void SetValues_AppendsMissingKeysAtTheEnd()
     {
-        var result = SiteEnvFile.SetValues(Sample, new Dictionary<string, string> { ["TUNA_SUBDOMAIN"] = "my-site" });
+        var result = SiteEnvFile.SetValues(Sample, new Dictionary<string, string> { ["PUBLIC_URL"] = "https://crm.example.ru" });
 
-        result.Should().StartWith(Sample).And.EndWith("TUNA_SUBDOMAIN=my-site\r\n");
+        result.Should().StartWith(Sample).And.EndWith("PUBLIC_URL=https://crm.example.ru\r\n");
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public class SiteEnvFileTests
     }
 
     [Theory]
-    [InlineData("AIzaSyD-example_key123", true)]
+    [InlineData("key-abc_123", true)]
     [InlineData("tuna_abc.def-123", true)]
     [InlineData("", true)]
     [InlineData("has space", false)]
@@ -133,29 +133,6 @@ public class SiteEnvFileTests
     {
         SiteEnvFile.IsSafeValue(value).Should().Be(expected);
     }
-
-    [Theory]
-    [InlineData("", true)]
-    [InlineData("mysite", true)]
-    [InlineData("my-site-2", true)]
-    [InlineData("a", true)]
-    [InlineData("-mysite", false)]
-    [InlineData("mysite-", false)]
-    [InlineData("MySite", false)]
-    [InlineData("my_site", false)]
-    [InlineData("my site", false)]
-    [InlineData("сайт", false)]
-    public void IsValidSubdomain_AcceptsLowercaseLatinDigitsAndDash(string value, bool expected)
-    {
-        SiteEnvFile.IsValidSubdomain(value).Should().Be(expected);
-    }
-
-    [Fact]
-    public void IsValidSubdomain_RejectsTooLongNames()
-    {
-        SiteEnvFile.IsValidSubdomain(new string('a', 63)).Should().BeTrue();
-        SiteEnvFile.IsValidSubdomain(new string('a', 64)).Should().BeFalse();
-    }
 }
 
 public class SiteSecretSanitizerTests
@@ -163,7 +140,7 @@ public class SiteSecretSanitizerTests
     [Theory]
     [InlineData("POSTGRES_PASSWORD=pgsecret123", "POSTGRES_PASSWORD=***")]
     [InlineData("JWT_KEY=abcdef123456", "JWT_KEY=***")]
-    [InlineData("GEMINI_API_KEY=AIzaSyAbcdefghijklmnopqrstuvwxyz0123456", "GEMINI_API_KEY=***")]
+    [InlineData("MAIL_API_KEY=abcdefghijklmnopqrstuvwxyz0123456", "MAIL_API_KEY=***")]
     [InlineData("TUNA_TOKEN: tuna_abc123", "TUNA_TOKEN: ***")]
     [InlineData("Jwt__Key: supersecretkeyvalue", "Jwt__Key: ***")]
     [InlineData("ADMIN_PASSWORD=adminsecret1", "ADMIN_PASSWORD=***")]
@@ -200,14 +177,6 @@ public class SiteSecretSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_MasksGoogleApiKeyInsideUrl()
-    {
-        var result = SiteSecretSanitizer.Sanitize("GET https://generativelanguage.googleapis.com/v1/models?key=AIzaSyAbcdefghijklmnopqrstuvwxyz0123456 200");
-
-        result.Should().NotContain("AIzaSy").And.Contain("200");
-    }
-
-    [Fact]
     public void Sanitize_MasksPasswordInUrlUserInfo()
     {
         SiteSecretSanitizer.Sanitize("postgres://hqstudio:pgsecret123@db:5432/hqstudio")
@@ -237,7 +206,7 @@ public class SiteSecretSanitizerTests
     }
 
     [Theory]
-    [InlineData("Forwarding https://hq-studio.ru.tuna.am -> proxy:80")]
+    [InlineData("tuna-1  | tunnel is up")]
     [InlineData("info: Request finished HTTP/1.1 GET http://localhost:5000/api/health - 200 - 1.4ms")]
     [InlineData("api-1  | Now listening on: http://[::]:5000")]
     public void Sanitize_LeavesOrdinaryLogLinesAlone(string line)
@@ -267,6 +236,23 @@ public class SiteSecretSanitizerTests
         var result = SiteSecretSanitizer.Sanitize("line one\nJWT_KEY=abc123456\nline three");
 
         result.Should().Be("line one\nJWT_KEY=***\nline three");
+    }
+
+    [Theory]
+    [InlineData("TUNA_TOKEN", true)]
+    [InlineData("JWT_KEY", true)]
+    [InlineData("POSTGRES_PASSWORD", true)]
+    [InlineData("ADMIN_PASSWORD", true)]
+    [InlineData("MAIL_API_KEY", true)]
+    [InlineData("client_secret", true)]
+    [InlineData("HQ_PORT", false)]
+    [InlineData("TUNA_DOMAIN", false)]
+    [InlineData("PUBLIC_URL", false)]
+    [InlineData("HQSTUDIO_VERSION", false)]
+    [InlineData("POSTGRES_IMAGE", false)]
+    public void LooksLikeSecretName_FindsKeysByTheirNames(string name, bool expected)
+    {
+        SiteSecretSanitizer.LooksLikeSecretName(name).Should().Be(expected);
     }
 }
 

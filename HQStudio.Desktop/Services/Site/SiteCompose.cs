@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace HQStudio.Services.Site
 {
@@ -9,7 +8,7 @@ namespace HQStudio.Services.Site
 
         /// <summary>
         /// <c>compose --project-directory D -f D\docker-compose.yml [--profile tunnel] команда...</c>.
-        /// Профиль tunnel добавляется только когда в .env задан TUNA_TOKEN.
+        /// Профиль tunnel добавляется только когда в .env заданы и TUNA_TOKEN, и TUNA_DOMAIN.
         /// </summary>
         public static IReadOnlyList<string> Build(string serverDir, bool tunnelEnabled, params string[] command)
         {
@@ -116,23 +115,6 @@ namespace HQStudio.Services.Site
                     return value;
             }
             return null;
-        }
-    }
-
-    public static class SiteTunnelUrlParser
-    {
-        private static readonly Regex Forwarding = new(@"Forwarding\s+(https?://\S+?)\s+->", RegexOptions.Compiled);
-
-        /// <summary>Последний «Forwarding https://... -> ...» в журнале tuna: после перезапуска адрес пишется заново.</summary>
-        public static string? Parse(string? log)
-        {
-            if (string.IsNullOrEmpty(log))
-                return null;
-
-            string? url = null;
-            foreach (Match match in Forwarding.Matches(log))
-                url = match.Groups[1].Value;
-            return url;
         }
     }
 }

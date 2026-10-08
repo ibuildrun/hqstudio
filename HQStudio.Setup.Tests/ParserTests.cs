@@ -169,25 +169,25 @@ public class TunnelUrlParserTests
     [Fact]
     public void Parse_FindsForwardingAddress()
     {
-        const string log = "tuna-1  | Tuna client v0.19\ntuna-1  | Forwarding https://mystudio.ru.tuna.am -> proxy:80\ntuna-1  | Ready";
+        const string log = "tuna-1  | Tuna client v0.19\ntuna-1  | Forwarding https://crm.example.ru -> proxy:80\ntuna-1  | Ready";
 
-        TunnelUrlParser.Parse(log).Should().Be("https://mystudio.ru.tuna.am");
+        TunnelUrlParser.Parse(log).Should().Be("https://crm.example.ru");
     }
 
     [Fact]
     public void Parse_ReturnsTheNewestAddressAfterARestart()
     {
-        const string log = "Forwarding https://old.ru.tuna.am -> proxy:80\nrestarting\nForwarding https://new.ru.tuna.am -> proxy:80";
+        const string log = "Forwarding https://old.example.ru -> proxy:80\nrestarting\nForwarding https://new.example.ru -> proxy:80";
 
-        TunnelUrlParser.Parse(log).Should().Be("https://new.ru.tuna.am");
+        TunnelUrlParser.Parse(log).Should().Be("https://new.example.ru");
     }
 
     [Fact]
     public void Parse_StripsColourCodes()
     {
-        var log = "\u001b[32mForwarding\u001b[0m https://x.ru.tuna.am -> proxy:80";
+        var log = "\u001b[32mForwarding\u001b[0m https://x.example.ru -> proxy:80";
 
-        TunnelUrlParser.Parse(log).Should().Be("https://x.ru.tuna.am");
+        TunnelUrlParser.Parse(log).Should().Be("https://x.example.ru");
     }
 
     [Theory]

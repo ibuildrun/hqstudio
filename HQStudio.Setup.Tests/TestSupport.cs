@@ -85,7 +85,7 @@ public sealed class FakeDocker : IDockerClient
     private static CommandResult DefaultResult(ComposeCall call) => call.Verb switch
     {
         "pull" => new CommandResult(0, " Image postgres:16-alpine Pulling\n 3c6d4a1b9e2f Pulling fs layer\n 3c6d4a1b9e2f Pull complete\n Image postgres:16-alpine Pulled\n"),
-        "logs" => new CommandResult(0, "tuna-1  | Forwarding https://mystudio.ru.tuna.am -> proxy:80\n"),
+        "logs" => new CommandResult(0, "tuna-1  | Forwarding https://crm.example.ru -> proxy:80\n"),
         _ => new CommandResult(0, "")
     };
 }
@@ -193,7 +193,6 @@ public sealed class FakePayload : IPayloadSource
     public static byte[] StandardZip() => Zip(new[]
     {
         ("app/HQStudio.exe", "exe"),
-        ("app/ИНСТРУКЦИЯ.html", "<html/>"),
         ("server/docker-compose.yml", "name: hqstudio"),
         ("server/.env.example", SimPayloadSource.DefaultEnvExample),
         ("server/nginx/default.conf", "server {}")
@@ -255,9 +254,8 @@ public sealed class Rig : IDisposable
         FirstName = "Иван",
         LastName = "Петров",
         Password = "Sunny-Day-2026",
-        GeminiKey = "AIzaSyTestKey123456",
         TunaToken = tuna ? "tuna-secret-token-777" : "",
-        TunaSubdomain = tuna ? "MyStudio" : "",
+        TunaDomain = tuna ? "crm.example.ru" : "",
         SkipSite = skipSite,
         DesktopShortcut = desktopShortcut
     };

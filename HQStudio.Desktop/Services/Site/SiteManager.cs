@@ -66,9 +66,16 @@ namespace HQStudio.Services.Site
         {
             public string ServerDir => Info.ServerDir;
 
-            public IEnumerable<string> Secrets => SiteEnvKeys.Secrets
-                .Select(key => SiteEnvFile.GetValue(EnvText, key) ?? "")
-                .Where(v => v.Length > 0);
+            public string Token => (SiteEnvFile.GetValue(EnvText, SiteEnvKeys.TunaToken) ?? "").Trim();
+
+            public string Domain => (SiteEnvFile.GetValue(EnvText, SiteEnvKeys.TunaDomain) ?? "").Trim();
+
+            /// <summary>Известные секреты и любые переменные, похожие на секрет (в том числе давно не используемые).</summary>
+            public IEnumerable<string> Secrets => SiteEnvFile.Parse(EnvText)
+                .Where(p => SiteEnvKeys.Secrets.Contains(p.Key) || SiteSecretSanitizer.LooksLikeSecretName(p.Key))
+                .Select(p => p.Value)
+                .Where(v => v.Length > 0)
+                .Distinct();
         }
 
         // ------------------------------------------------------------------ опрос
@@ -133,7 +140,7 @@ namespace HQStudio.Services.Site
             var input = new SiteStatusInput(true, null, state, entries, composeProblem, ctx.Tunnel, healthOk,
                 _healthFailures, operation);
             return Build(input, SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.Version) ?? "",
-                $"http://localhost:{ctx.Port}", ReadPublicUrl(ctx));
+                $"http://localhost:{ctx.Port}", PublicUrlOf(ctx));
         }
 
         private static SiteSnapshot Build(SiteStatusInput input, string version, string localUrl, string? publicUrl)
@@ -149,11 +156,7 @@ namespace HQStudio.Services.Site
             var (ctx, _) = LoadContext();
             if (ctx == null)
                 return null;
-            return new SiteKeysState(
-                !string.IsNullOrEmpty(SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.GeminiKey)),
-                !string.IsNullOrEmpty(SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.TunaToken)),
-                SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.TunaSubdomain) ?? "",
-                SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.TunaDomain) ?? "");
+            return new SiteKeysState(ctx.Token.Length > 0, ctx.Domain);
         }
 
         // ------------------------------------------------------------------ запуск, остановка
@@ -193,6 +196,8 @@ namespace HQStudio.Services.Site
                         return started;
                 }
 
+                ctx = SyncPublicUrl(ctx);
+
                 status?.Invoke("Запускаю сайт");
                 var up = await ComposeAsync(docker, ctx, line => OnUpLine(line, status), ct,
                     "up", "-d", "--remove-orphans").ConfigureAwait(false);
@@ -209,11 +214,10 @@ namespace HQStudio.Services.Site
                 var message = doneMessage;
                 if (ctx.Tunnel)
                 {
-                    status?.Invoke("Получаю адрес в интернете");
-                    var address = await SyncTunnelAddressAsync(docker, ctx, ct).ConfigureAwait(false);
-                    message += address.Found
-                        ? $" Адрес в интернете: {address.Url}"
-                        : " Адрес в интернете пока не получен: проверьте токен Tuna.";
+                    status?.Invoke("Проверяю адрес в интернете");
+                    message += await WaitTunnelAsync(docker, ctx, ct).ConfigureAwait(false)
+                        ? $" Адрес в интернете: {SiteEnvFile.PublicUrlOf(ctx.Domain)}"
+                        : TunnelNotUpHint;
                 }
                 return SiteOperationResult.Ok(message);
             }
@@ -304,18 +308,11 @@ namespace HQStudio.Services.Site
             if (update.IsEmpty)
                 return SiteOperationResult.Ok("Ничего не изменилось.");
 
-            var changes = new Dictionary<string, string>();
-            var gemini = update.GeminiKey?.Trim();
             var token = update.TunaToken?.Trim();
-            var subdomain = update.TunaSubdomain?.Trim();
             var domain = update.TunaDomain?.Trim();
 
-            if (gemini != null && !SiteEnvFile.IsSafeValue(gemini))
-                return SiteOperationResult.Fail(SiteErrorMapper.InvalidInput("Ключ Gemini содержит пробелы или недопустимые символы. Скопируйте его заново."));
             if (token != null && !SiteEnvFile.IsSafeValue(token))
                 return SiteOperationResult.Fail(SiteErrorMapper.InvalidInput("Токен Tuna содержит пробелы или недопустимые символы. Скопируйте его заново."));
-            if (subdomain != null && !SiteEnvFile.IsValidSubdomain(subdomain))
-                return SiteOperationResult.Fail(SiteErrorMapper.InvalidInput("Имя адреса может состоять только из латинских букв в нижнем регистре, цифр и дефиса."));
             if (domain != null)
             {
                 var check = SiteEnvFile.CheckDomain(domain);
@@ -323,38 +320,38 @@ namespace HQStudio.Services.Site
                     return SiteOperationResult.Fail(SiteErrorMapper.InvalidInput("Домен нужно записать латиницей (punycode), например xn--80aswg.xn--p1ai."));
                 if (check == DomainCheck.Invalid)
                     return SiteOperationResult.Fail(SiteErrorMapper.InvalidInput("Домен записывается так: crm.example.ru. Только строчные латинские буквы, цифры, дефис и точки, без http:// и без пути."));
-                if (domain.Length > 0 && !string.IsNullOrEmpty(subdomain))
-                    return SiteOperationResult.Fail(SiteErrorMapper.InvalidInput("Укажите что-то одно: имя адреса Tuna или свой домен."));
             }
 
             var (ctx, failure) = LoadContext();
             if (ctx == null)
                 return SiteOperationResult.Fail(failure!);
 
-            if (gemini != null) changes[SiteEnvKeys.GeminiKey] = gemini;
-            if (token != null) changes[SiteEnvKeys.TunaToken] = token;
-            if (subdomain != null) changes[SiteEnvKeys.TunaSubdomain] = subdomain;
+            var hadToken = ctx.Token.Length > 0;
+            var hadTunnel = ctx.Tunnel;
+            var oldDomain = ctx.Domain;
+
+            var changes = new Dictionary<string, string>();
+            if (token != null)
+                changes[SiteEnvKeys.TunaToken] = token;
             if (domain != null)
             {
                 changes[SiteEnvKeys.TunaDomain] = domain;
-                // Свой домен и имя от Tuna исключают друг друга: при домене имя записывается пустым.
+                // API берёт PUBLIC_URL для CORS. Чужое значение при удалении домена не трогаем.
                 if (domain.Length > 0)
-                    changes[SiteEnvKeys.TunaSubdomain] = "";
+                    changes[SiteEnvKeys.PublicUrl] = SiteEnvFile.PublicUrlOf(domain);
+                else if (oldDomain.Length > 0 &&
+                         SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.PublicUrl) == SiteEnvFile.PublicUrlOf(oldDomain))
+                    changes[SiteEnvKeys.PublicUrl] = "";
             }
-            else if (!string.IsNullOrEmpty(subdomain) &&
-                     !string.IsNullOrEmpty(SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.TunaDomain)))
-            {
-                // Новое имя заменяет прежний домен.
-                changes[SiteEnvKeys.TunaDomain] = "";
-            }
-
-            var hadToken = !string.IsNullOrEmpty(SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.TunaToken));
-            var tunnelChanged = token != null || subdomain != null || domain != null;
 
             try
             {
                 status?.Invoke("Сохраняю настройки");
                 _files.WriteAllTextAtomic(ctx.EnvPath, SiteEnvFile.SetValues(ctx.EnvText, changes));
+                if (domain is { Length: > 0 })
+                    _files.WriteAllTextAtomic(SitePaths.PublicUrlFile(ctx.ServerDir), SiteEnvFile.PublicUrlOf(domain));
+                else if (domain != null && _files.FileExists(SitePaths.PublicUrlFile(ctx.ServerDir)))
+                    _files.DeleteFile(SitePaths.PublicUrlFile(ctx.ServerDir));
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -390,26 +387,31 @@ namespace HQStudio.Services.Site
                         await _runner.RunAsync(docker,
                             SiteComposeCommand.Build(ctx.ServerDir, true, "rm", "--stop", "--force", SiteServiceIds.Tuna),
                             null, ct).ConfigureAwait(false);
-                        await ClearPublicAddressAsync(docker, ctx, ct).ConfigureAwait(false);
                     }
-                    return SiteOperationResult.Ok(hadToken
-                        ? "Настройки сохранены и применены. Адрес в интернете отключён."
-                        : "Настройки сохранены и применены.");
+                    return SiteOperationResult.Ok(NoTunnelMessage(ctx, hadTunnel));
                 }
 
-                if (!tunnelChanged)
-                    return SiteOperationResult.Ok("Настройки сохранены и применены.");
-
-                status?.Invoke("Получаю адрес в интернете");
-                var address = await SyncTunnelAddressAsync(docker, ctx, ct).ConfigureAwait(false);
-                return SiteOperationResult.Ok(address.Found
-                    ? $"Настройки сохранены и применены. Адрес в интернете: {address.Url}"
-                    : "Настройки сохранены и применены, но адрес в интернете пока не получен. Проверьте токен Tuna и, если указан свой домен, что он добавлен и подтверждён в my.tuna.am/domains.");
+                status?.Invoke("Проверяю адрес в интернете");
+                return SiteOperationResult.Ok(await WaitTunnelAsync(docker, ctx, ct).ConfigureAwait(false)
+                    ? $"Настройки сохранены и применены. Адрес в интернете: {SiteEnvFile.PublicUrlOf(ctx.Domain)}"
+                    : "Настройки сохранены и применены." + TunnelNotUpHint);
             }
             catch (Exception ex) when (ex is OperationCanceledException or Win32Exception)
             {
                 return SavedNotApplied(SiteErrorMapper.FromException("Применение настроек", ex));
             }
+        }
+
+        // Туннель работает только при токене и домене вместе: подсказываем, чего не хватает.
+        private static string NoTunnelMessage(Context ctx, bool hadTunnel)
+        {
+            if (hadTunnel)
+                return "Настройки сохранены и применены. Адрес в интернете отключён.";
+            if (ctx.Token.Length > 0)
+                return "Настройки сохранены и применены. Чтобы сайт открывался из интернета, добавьте ещё и свой домен.";
+            if (ctx.Domain.Length > 0)
+                return "Настройки сохранены и применены. Чтобы сайт открывался из интернета, добавьте ещё и токен Tuna.";
+            return "Настройки сохранены и применены.";
         }
 
         private static SiteOperationResult SavedNotApplied(SiteFailure failure)
@@ -430,7 +432,7 @@ namespace HQStudio.Services.Site
                 return new SiteLogsResult(false, "", failure);
 
             if (service == SiteServiceIds.Tuna && !ctx.Tunnel)
-                return new SiteLogsResult(true, "Адрес в интернете не настроен, журнала нет. Укажите токен Tuna в окне «Ключи».", null);
+                return new SiteLogsResult(true, "Адрес в интернете не настроен, журнала нет. Укажите токен Tuna и свой домен в окне «Ключи».", null);
 
             var docker = _locator.FindDocker();
             if (docker == null)
@@ -502,7 +504,9 @@ namespace HQStudio.Services.Site
             var port = int.TryParse(SiteEnvFile.GetValue(envText, SiteEnvKeys.Port), out var p) && p is > 0 and < 65536
                 ? p
                 : SiteEnvKeys.DefaultPort;
-            var tunnel = !string.IsNullOrWhiteSpace(SiteEnvFile.GetValue(envText, SiteEnvKeys.TunaToken));
+            // Туннель нужен только при токене и своём домене вместе.
+            var tunnel = !string.IsNullOrWhiteSpace(SiteEnvFile.GetValue(envText, SiteEnvKeys.TunaToken)) &&
+                         !string.IsNullOrWhiteSpace(SiteEnvFile.GetValue(envText, SiteEnvKeys.TunaDomain));
             return (new Context(info, envPath, envText, port, tunnel), null);
         }
 
@@ -533,75 +537,58 @@ namespace HQStudio.Services.Site
             return false;
         }
 
-        private async Task<string?> WaitTunnelUrlAsync(string docker, Context ctx, CancellationToken ct)
+        private const string TunnelNotUpHint =
+            " Адрес в интернете пока не заработал: проверьте токен Tuna и что домен добавлен и подтверждён в my.tuna.am/domains. Подробности: «Логи», служба «Адрес в интернете».";
+
+        /// <summary>
+        /// Ждёт, пока контейнер tuna стабильно работает (два опроса подряд): упавший или перезапускающийся контейнер
+        /// значит неверный токен или неподтверждённый домен.
+        /// </summary>
+        private async Task<bool> WaitTunnelAsync(string docker, Context ctx, CancellationToken ct)
         {
             var attempts = _timings.Attempts(_timings.TunnelWait);
+            var stable = 0;
             for (var attempt = 0; attempt < attempts; attempt++)
             {
-                var logs = await ComposeAsync(docker, ctx, null, ct, "logs", "--no-color", SiteServiceIds.Tuna).ConfigureAwait(false);
-                var url = SiteTunnelUrlParser.Parse(logs.Combined);
-                if (url != null)
-                    return url;
+                var ps = await ComposeAsync(docker, ctx, null, ct, "ps", "--all", "--format", "json").ConfigureAwait(false);
+                var tuna = ps.ExitCode == 0
+                    ? SiteComposePsParser.Parse(ps.Output).FirstOrDefault(e => e.Service == SiteServiceIds.Tuna)
+                    : null;
+                stable = tuna is { State: "running" } ? stable + 1 : 0;
+                if (stable >= 2)
+                    return true;
                 if (attempt < attempts - 1)
                     await _timings.Delay(_timings.PollInterval, ct).ConfigureAwait(false);
             }
-            return null;
+            return false;
         }
 
-        /// <summary>Читает адрес из журнала tuna, пишет public-url.txt и PUBLIC_URL; при смене PUBLIC_URL перезапускает службы.</summary>
-        private async Task<(bool Found, string? Url)> SyncTunnelAddressAsync(string docker, Context ctx, CancellationToken ct)
+        /// <summary>Приводит PUBLIC_URL в .env к адресу на своём домене: API берёт его для CORS при создании контейнера.</summary>
+        private Context SyncPublicUrl(Context ctx)
         {
-            var url = await WaitTunnelUrlAsync(docker, ctx, ct).ConfigureAwait(false);
-            if (url == null)
-                return (false, null);
+            if (ctx.Domain.Length == 0)
+                return ctx;
 
-            _files.WriteAllTextAtomic(SitePaths.PublicUrlFile(ctx.ServerDir), url);
+            var expected = SiteEnvFile.PublicUrlOf(ctx.Domain);
+            if (SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.PublicUrl) == expected)
+                return ctx;
 
-            if (SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.PublicUrl) != url)
-            {
-                _files.WriteAllTextAtomic(ctx.EnvPath, SiteEnvFile.SetValue(ctx.EnvText, SiteEnvKeys.PublicUrl, url));
-                // API берёт PUBLIC_URL при создании контейнера, поэтому без повторного up адрес не применится.
-                await ComposeAsync(docker, ctx, null, ct, "up", "-d", "--remove-orphans").ConfigureAwait(false);
-            }
-            return (true, url);
-        }
-
-        private async Task ClearPublicAddressAsync(string docker, Context ctx, CancellationToken ct)
-        {
-            var urlFile = SitePaths.PublicUrlFile(ctx.ServerDir);
-            var recorded = _files.FileExists(urlFile) ? _files.ReadAllText(urlFile).Trim() : "";
-            if (_files.FileExists(urlFile))
-                _files.DeleteFile(urlFile);
-
-            // Очищаем только тот PUBLIC_URL, который записали мы, чужое значение не трогаем.
-            var current = SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.PublicUrl);
-            if (recorded.Length > 0 && current == recorded)
-            {
-                _files.WriteAllTextAtomic(ctx.EnvPath, SiteEnvFile.SetValue(ctx.EnvText, SiteEnvKeys.PublicUrl, ""));
-                await ComposeAsync(docker, ctx, null, ct, "up", "-d", "--remove-orphans").ConfigureAwait(false);
-            }
-        }
-
-        private string? ReadPublicUrl(Context ctx)
-        {
             try
             {
-                var file = SitePaths.PublicUrlFile(ctx.ServerDir);
-                if (_files.FileExists(file))
-                {
-                    var text = _files.ReadAllText(file).Trim();
-                    if (text.Length > 0)
-                        return text;
-                }
+                var text = SiteEnvFile.SetValue(ctx.EnvText, SiteEnvKeys.PublicUrl, expected);
+                _files.WriteAllTextAtomic(ctx.EnvPath, text);
+                _files.WriteAllTextAtomic(SitePaths.PublicUrlFile(ctx.ServerDir), expected);
+                return ctx with { EnvText = text };
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                // Адрес необязателен для работы страницы.
+                // Адрес для CORS не должен мешать запуску сайта.
+                return ctx;
             }
-
-            var fromEnv = SiteEnvFile.GetValue(ctx.EnvText, SiteEnvKeys.PublicUrl);
-            return string.IsNullOrWhiteSpace(fromEnv) ? null : fromEnv;
         }
+
+        private static string? PublicUrlOf(Context ctx) =>
+            ctx.Domain.Length == 0 ? null : SiteEnvFile.PublicUrlOf(ctx.Domain);
 
         private static void OnUpLine(string line, Action<string>? status)
         {

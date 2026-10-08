@@ -14,7 +14,7 @@ public class LogSanitizerTests
     [InlineData("POSTGRES_PASSWORD=abcDEF123456", "abcDEF123456")]
     [InlineData("JWT_KEY=averylongrandomjwtkeyvalue1234567890", "averylongrandomjwtkeyvalue1234567890")]
     [InlineData("TUNA_TOKEN=tuna-secret-token-777", "tuna-secret-token-777")]
-    [InlineData("GEMINI_API_KEY=AIzaSyTestKey123456", "AIzaSyTestKey123456")]
+    [InlineData("SERVICE_API_KEY=AIzaSyTestKey123456", "AIzaSyTestKey123456")]
     [InlineData("api_key: \"quoted-secret-value\"", "quoted-secret-value")]
     [InlineData("--password hunter22222", "hunter22222")]
     [InlineData("--token=abc123xyz789", "abc123xyz789")]

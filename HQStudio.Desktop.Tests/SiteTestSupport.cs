@@ -212,10 +212,18 @@ internal sealed class SiteFakeDialogs : ISiteDialogs
     public int KeysShown { get; private set; }
     public int LogsShown { get; private set; }
     public int UpdatesShown { get; private set; }
+    public Action? KeysGuide { get; private set; }
+    public List<string?> GuideOpened { get; } = new();
 
-    public void ShowKeys(ISiteService service) => KeysShown++;
+    public void ShowKeys(ISiteService service, Action? openGuide)
+    {
+        KeysShown++;
+        KeysGuide = openGuide;
+    }
+
     public void ShowLogs(ISiteService service) => LogsShown++;
     public void ShowUpdates() => UpdatesShown++;
+    public void ShowGuide(string? sectionId) => GuideOpened.Add(sectionId);
     public bool ConfirmUninstall() => ConfirmResult;
 }
 
@@ -261,7 +269,7 @@ internal sealed class SiteFakeService : ISiteService
         (_, _, _) => Task.FromResult(SiteOperationResult.Ok("Настройки сохранены и применены."));
     public Func<string, Task<SiteLogsResult>> LogsHandler { get; set; } =
         service => Task.FromResult(new SiteLogsResult(true, $"log of {service}", null));
-    public SiteKeysState? Keys { get; set; } = new(false, false, "");
+    public SiteKeysState? Keys { get; set; } = new(false, "");
     public List<SiteKeysUpdate> Applied { get; } = new();
     public List<string> LogRequests { get; } = new();
 
@@ -307,11 +315,14 @@ internal sealed class SiteTestEnv
         "POSTGRES_PASSWORD=pgsecret123\r\n" +
         "JWT_KEY=jwtsecret456789\r\n" +
         "ADMIN_PASSWORD=adminsecret1\r\n" +
-        "GEMINI_API_KEY=\r\n" +
         "TUNA_TOKEN=\r\n" +
-        "TUNA_SUBDOMAIN=\r\n" +
         "TUNA_DOMAIN=\r\n" +
         "PUBLIC_URL=\r\n";
+
+    /// <summary>Строки, которых программа больше не знает: они должны остаться нетронутыми и не попасть в журналы.</summary>
+    public const string LegacyLines =
+        "LEGACY_API_KEY=legacykey98765\r\n" +
+        "LEGACY_NAME=oldvalue\r\n";
 
     public SiteFakeFiles Files { get; } = new();
     public SiteFakeRunner Runner { get; } = new();
@@ -330,9 +341,9 @@ internal sealed class SiteTestEnv
         Manager = new SiteManager(Install, Files, Runner, Locator, Probe, timings);
     }
 
-    public static string EnvWithToken(string token = "tunatoken1234", string subdomain = "hq", string domain = "") =>
+    /// <summary>Токен и домен заданы: туннель включён. Домен можно оставить пустым (тогда туннеля нет).</summary>
+    public static string EnvWithToken(string token = "tunatoken1234", string domain = "crm.example.ru") =>
         BaseEnv.Replace("TUNA_TOKEN=\r\n", $"TUNA_TOKEN={token}\r\n")
-            .Replace("TUNA_SUBDOMAIN=\r\n", $"TUNA_SUBDOMAIN={subdomain}\r\n")
             .Replace("TUNA_DOMAIN=\r\n", $"TUNA_DOMAIN={domain}\r\n");
 
     public string Env => Files.Files[EnvPath];
@@ -379,4 +390,19 @@ internal sealed class SiteTestEnv
 
     public static SiteProcessResult DockerDown() => new(1, "",
         "error during connect: Get \"http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/v1.46/version\": open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.");
+}
+
+/// <summary>
+/// Слова удалённых возможностей для проверок «этого больше нет». Первые два собраны из частей,
+/// чтобы поиск по репозиторию не находил их в самих проверках.
+/// </summary>
+internal static class RemovedFeatureWords
+{
+    public static readonly string[] All = { "gem" + "ini", "sub" + "domain" };
+
+    /// <summary>Тексты бесплатного тарифа, временного адреса и случайного имени.</summary>
+    public static readonly string[] FreeTariff =
+    {
+        "бесплатн", "временн", "brave-otter", "ru.tuna.am", "Имя адреса", "случайн"
+    };
 }

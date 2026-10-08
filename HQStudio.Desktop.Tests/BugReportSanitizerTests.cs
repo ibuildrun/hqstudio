@@ -69,7 +69,7 @@ public class BugReportSanitizerTests
     [InlineData("apikey=hunter2", "hunter2")]
     [InlineData("JWT_KEY=hunter2", "hunter2")]
     [InlineData("TUNA_TOKEN=hunter2", "hunter2")]
-    [InlineData("GEMINI_API_KEY=hunter2", "hunter2")]
+    [InlineData("MAIL_API_KEY=hunter2", "hunter2")]
     [InlineData("POSTGRES_PASSWORD=hunter2", "hunter2")]
     [InlineData("POSTGRES_PASSWORD: hunter2", "hunter2")]
     public void RedactsKeyValueForms(string line, string secret)
@@ -216,7 +216,7 @@ public class BugReportSanitizerTests
         {
             "JWT_KEY=aaaaaaaa",
             "TUNA_TOKEN=bbbbbbbb",
-            "GEMINI_API_KEY=cccccccc",
+            "MAIL_API_KEY=cccccccc",
             "POSTGRES_PASSWORD=dddddddd",
             "ok line"
         });
